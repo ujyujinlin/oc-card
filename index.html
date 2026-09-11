@@ -127,15 +127,16 @@
     }
     .color-picker-popover.active { display: block; }
 
-    /* 雙證件照區 */
-    .id-photos-grid { display: flex; gap: 10px; flex: 1; }
-    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 200px; }
+    /* 雙證件照區 (上下排列) */
+    .id-photos-column { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 180px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; background: #fff; overflow: hidden; position: relative;
+      cursor: pointer; background: #fff; overflow: hidden; position: relative; padding: 8px; text-align: center;
     }
     .image-uploader img { width: 100%; height: 100%; object-fit: cover; }
+    .file-fallback-info { font-size: 0.85em; color: #333; word-break: break-all; padding: 8px; font-weight: bold; }
     .image-uploader span { font-size: 0.8em; color: #666; text-align: center; }
 
     .image-overlay {
@@ -147,16 +148,38 @@
 
     .overlay-btn { background: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
 
-    /* 多角色長方形條時間軸 */
-    .multi-progress-container { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
-    .progress-item-bar { display: flex; align-items: center; gap: 8px; }
-    .progress-char-name { font-size: 0.85em; font-weight: bold; width: 80px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .bar-outer {
-      flex: 1; height: 14px; border: 2px solid #000; background: #e9ecef;
-      border-radius: 2px; position: relative; overflow: hidden;
+    /* ---------------- 直線年份時間軸 ---------------- */
+    .timeline-title-bar {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 0.95em; font-weight: bold;
     }
-    .bar-inner { height: 100%; width: 0%; transition: width 0.3s ease; }
-    .bar-text { font-size: 0.8em; width: 50px; font-weight: bold; }
+    .timeline-title-bar input[type="number"] {
+      width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;
+    }
+
+    .line-timeline-wrapper {
+      margin: 25px 10px 15px 10px; position: relative; height: 50px;
+    }
+    .timeline-line {
+      position: absolute; top: 20px; left: 0; right: 0; height: 4px; background: #000; border-radius: 2px;
+    }
+    .timeline-endpoint {
+      position: absolute; top: 32px; font-weight: bold; font-size: 0.85em; transform: translateX(-50%);
+    }
+    .timeline-endpoint.start { left: 0; }
+    .timeline-endpoint.end { left: 100%; }
+
+    /* × 標記按鈕 */
+    .timeline-mark-x {
+      position: absolute; top: 8px; transform: translateX(-50%);
+      width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2em; font-weight: 900; color: #ff0000; z-index: 10;
+      transition: transform 0.2s; user-select: none;
+    }
+    .timeline-mark-x:hover { transform: translateX(-50%) scale(1.3); }
+    .timeline-mark-x::after {
+      content: attr(data-label); position: absolute; top: -18px; font-size: 0.7em; font-weight: bold;
+      color: #333; white-space: nowrap; background: rgba(255,255,255,0.85); padding: 1px 4px; border-radius: 3px; border: 1px solid #ccc;
+    }
 
     /* 廣義卡片 */
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
@@ -171,11 +194,7 @@
 
     .add-btn { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer; }
 
-    /* 時間軸控制與重大事件 */
-    .timeline-control-bar { display: flex; align-items: center; gap: 10px; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; flex-wrap: wrap; }
-    .timeline-control-bar input[type="number"] { width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; }
-    .max-progress-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; }
-
+    /* 重大事件區塊 */
     .events-bar { margin-top: 10px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9; }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
@@ -184,12 +203,14 @@
 
     .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
     
-    /* 重大事件純色標籤 (文字根據背景動態切換黑/白) */
+    /* 重大事件標籤 */
     .event-chip {
       border-radius: 16px; padding: 4px 12px; font-size: 0.85em;
       display: flex; align-items: center; gap: 6px; cursor: pointer;
       font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
     }
+    .event-chip.highlight { outline: 3px solid #ff4d4f; transform: scale(1.05); }
     .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
     .event-chip button:hover { opacity: 1; }
 
@@ -218,7 +239,6 @@
 
 <button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">☰ 選單</button>
 
-<!-- 左側選單 -->
 <div class="sidebar closed" id="sidebar">
   <div class="sidebar-header">
     <span class="sidebar-title">📁 角色卡系統</span>
@@ -233,14 +253,12 @@
   <div class="folder-container" id="tree-root"></div>
 </div>
 
-<!-- 右側主內容 -->
 <div class="main-wrapper">
   <div class="card-container">
     <form id="ocForm">
-      <!-- 基本資料與證件照 -->
       <div class="grid-row">
         <div class="section-box info-left">
-          <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateMaxProgressTag()"></div>
+          <div class="form-group"><label>名字：</label><input type="text" id="field-name"></div>
           <div class="form-group"><label>別稱：</label><input type="text" id="field-alias"></div>
           <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" placeholder="DD/MM/YY"></div>
           <div class="form-group"><label>身份：</label><input type="text" id="field-identity"></div>
@@ -248,7 +266,6 @@
           <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
           <div class="form-group"><label>種族：</label><input type="text" id="field-race"></div>
           
-          <!-- 性格 (標籤化) -->
           <div class="form-group vertical">
             <label>性格：</label>
             <div class="tag-wrapper">
@@ -261,7 +278,6 @@
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           
-          <!-- 關鍵詞 (標籤化) -->
           <div class="form-group vertical">
             <label>關鍵詞：</label>
             <div class="tag-wrapper">
@@ -270,7 +286,6 @@
             </div>
           </div>
 
-          <!-- 代表色 Picker (固定倒三角 HSV 色輪) -->
           <div class="form-group">
             <label>代表色：</label>
             <div class="color-picker-group">
@@ -287,40 +302,38 @@
           </div>
         </div>
 
-        <!-- 證件照 (2 個欄位，0.75cm 留白) -->
         <div class="section-box avatar-right">
           <div class="section-title">證件照</div>
-          <div class="id-photos-grid">
-            <!-- 證件照 1 -->
+          <div class="id-photos-column">
             <div class="image-uploader-wrapper">
               <div class="image-uploader" onclick="triggerInitialUpload('avatar1')">
                 <img id="avatar1-preview" src="" style="display:none;">
-                <span id="avatar1-text">📷 證件照 1</span>
+                <div id="avatar1-fallback" class="file-fallback-info" style="display:none;"></div>
+                <span id="avatar1-text">📁 上傳證件照 1<br>(.png, .jpeg, .pdf, .psd, .gif)</span>
               </div>
               <div class="image-overlay" id="avatar1-overlay" style="display:none;">
-                <button type="button" class="overlay-btn" onclick="openModalById('avatar1-preview')">🔍 檢視</button>
+                <button type="button" class="overlay-btn" onclick="openFileView('avatar1')">🔍 檢視/下載</button>
                 <button type="button" class="overlay-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
               </div>
             </div>
-            <input type="file" id="avatar1-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar1')">
+            <input type="file" id="avatar1-input" accept=".png,.jpg,.jpeg,.gif,.pdf,.psd" style="display:none" onchange="handleFileUpload(this, 'avatar1')">
 
-            <!-- 證件照 2 -->
             <div class="image-uploader-wrapper">
               <div class="image-uploader" onclick="triggerInitialUpload('avatar2')">
                 <img id="avatar2-preview" src="" style="display:none;">
-                <span id="avatar2-text">📷 證件照 2</span>
+                <div id="avatar2-fallback" class="file-fallback-info" style="display:none;"></div>
+                <span id="avatar2-text">📁 上傳證件照 2<br>(.png, .jpeg, .pdf, .psd, .gif)</span>
               </div>
               <div class="image-overlay" id="avatar2-overlay" style="display:none;">
-                <button type="button" class="overlay-btn" onclick="openModalById('avatar2-preview')">🔍 檢視</button>
+                <button type="button" class="overlay-btn" onclick="openFileView('avatar2')">🔍 檢視/下載</button>
                 <button type="button" class="overlay-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
               </div>
             </div>
-            <input type="file" id="avatar2-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar2')">
+            <input type="file" id="avatar2-input" accept=".png,.jpg,.jpeg,.gif,.pdf,.psd" style="display:none" onchange="handleFileUpload(this, 'avatar2')">
           </div>
         </div>
       </div>
 
-      <!-- 重要的人 -->
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>重要的人</span>
@@ -329,48 +342,49 @@
         <div class="cards-grid" id="person-grid"></div>
       </div>
 
-      <!-- 時間軸 -->
+      <div class="section-box" style="margin-bottom: 12px;">
+        <div class="section-title">
+          <span>重要信物</span>
+          <button type="button" class="add-btn" onclick="addKeepsakeCard()">+ 增加更多</button>
+        </div>
+        <div class="cards-grid" id="keepsake-grid"></div>
+      </div>
+
       <div class="section-box timeline-container" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>成長時間線</span>
-          <div class="max-progress-tag">
-            <span>記錄至</span>
-            <span id="charNameDisplay">未命名角色</span>
-            <input type="number" id="maxLimitInput" value="100" min="1" style="width:55px; text-align:center; border:none; border-radius:4px; font-weight:bold;" onchange="updateSliderMax(this.value)">
-            <span>歲時</span>
+          <div class="timeline-title-bar">
+            <span>記錄始自</span>
+            <input type="number" id="startYearInput" value="2000" onchange="updateLineTimeline()">
+            <span>至</span>
+            <input type="number" id="endYearInput" value="2030" onchange="updateLineTimeline()">
+            <span>年</span>
+            <span id="totalYearsSpan" style="color: var(--accent-color); font-weight: bold; margin-left: 4px;">（共 30 年）</span>
           </div>
         </div>
 
-        <!-- 跳轉歲數 -->
-        <div class="timeline-control-bar">
-          <span>跳轉至 <input type="number" id="jumpInput" value="0" min="0" onchange="jumpToTimeline(this.value)"> 歲時</span>
+        <div class="line-timeline-wrapper" id="line-timeline-wrapper">
+          <div class="timeline-line"></div>
+          <div class="timeline-endpoint start" id="timeline-start-label">2000年</div>
+          <div class="timeline-endpoint end" id="timeline-end-label">2030年</div>
+          <div id="timeline-marks-container"></div>
         </div>
 
-        <!-- 多角色細長方形進度條區域 -->
-        <div class="multi-progress-container" id="multi-progress-container"></div>
-
-        <!-- 重大事件 -->
         <div class="events-bar">
           <div class="events-title">
             <span>重大事件</span>
             <button type="button" class="add-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增重大事件</button>
           </div>
           
-          <!-- 同資料夾角色勾選清單 -->
           <div class="char-filter-box" id="char-filter-box">
-            <span style="font-weight:bold;">顯示角色進度條：</span>
+            <span style="font-weight:bold;">顯示角色：</span>
             <div id="char-checkbox-list" style="display:inline-flex; flex-wrap:wrap; gap:8px;"></div>
           </div>
 
           <div class="events-list" id="events-list"></div>
         </div>
-
-        <div style="margin-top: 10px;">
-          <textarea id="timelineNote" style="width:100%; border:1px solid #ccc; border-radius:6px; padding:8px; min-height:75px;" placeholder="輸入該歲數的備忘說明..." oninput="onNoteInput()"></textarea>
-        </div>
       </div>
 
-      <!-- 衣服穿搭 -->
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>衣服穿搭</span>
@@ -384,7 +398,6 @@
   </div>
 </div>
 
-<!-- 高清 Modal -->
 <div id="imageModal" class="modal">
   <div class="modal-viewport" id="modalViewport">
     <div class="modal-img-container" id="modalImgContainer">
@@ -410,16 +423,12 @@
   };
 
   let activePageId = "p_1";
-  let personCount = 0, outfitCount = 0;
-  let timelineData = {};
+  let personCount = 0, keepsakeCount = 0, outfitCount = 0;
+  let fileDataStore = {}; // 儲存檔案 Base64 與檔名/類型
   let majorEvents = [];
   let personalityList = [];
   let keywordsList = [];
-  let currentProgress = 0;
   let selectedSiblingCharIds = [];
-
-  // 各角色當前選擇的進度歲數記憶 (charId -> age)
-  let charAgeMemory = {};
 
   // HSV 變數 (H: 0-360, S: 0-1, V: 0-1)
   let currentH = 210, currentS = 1, currentV = 1;
@@ -440,7 +449,7 @@
     });
   };
 
-  /* ---------------- 樹狀選單 ---------------- */
+  /* ---------------- 左側樹狀選單 ---------------- */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
   function renderTree() {
@@ -595,7 +604,7 @@
     else { keywordsList.splice(idx, 1); renderTags('keyword'); }
   }
 
-  /* ---------------- 專業 HSV 固定倒三角色輪 ---------------- */
+  /* ---------------- HSV 色輪 ---------------- */
   function toggleColorPicker(e) {
     e.stopPropagation();
     const popover = document.getElementById('color-popover');
@@ -613,7 +622,6 @@
       const y = e.clientY - rect.top - 110;
       const dist = Math.sqrt(x*x + y*y);
 
-      // 1. 點擊外色環 (半徑 80~105)
       if (dist >= 80 && dist <= 105) {
         let angle = Math.atan2(y, x) * (180 / Math.PI);
         if (angle < 0) angle += 360;
@@ -622,17 +630,12 @@
         return;
       }
 
-      // 2. 點擊固定倒三角形區域
-      // 倒三角形三個頂點 (相對中心 110,110): P1(左上:-55,-40), P2(右上:55,-40), P3(下:0,60)
       if (y >= -45 && y <= 60 && Math.abs(x) <= 60) {
-        // 排除最下方的黑色極值區域 (y > 45)
         if (y > 45) return;
-
-        let s = (x + 55) / 110;  // 從左到右 S 0 -> 1
-        let v = 1 - ((y + 40) / 95); // 從上到下 V 1 -> 0
-
+        let s = (x + 55) / 110;
+        let v = 1 - ((y + 40) / 95);
         currentS = Math.min(Math.max(s, 0), 1);
-        currentV = Math.min(Math.max(v, 0.15), 1); // 限制最低 V 不為 0 (不純黑)
+        currentV = Math.min(Math.max(v, 0.15), 1);
         updateColorFromHSV();
       }
     }
@@ -649,7 +652,6 @@
 
     const cx = 110, cy = 110, outerR = 105, innerR = 82;
 
-    // 1. 繪製外色環
     for (let angle = 0; angle < 360; angle += 1) {
       const startRad = (angle - 1) * Math.PI / 180;
       const endRad = (angle + 1) * Math.PI / 180;
@@ -661,16 +663,14 @@
       ctx.fill();
     }
 
-    // 外環選中點
     const hRad = currentH * Math.PI / 180;
     ctx.beginPath();
     ctx.arc(cx + Math.cos(hRad)*93.5, cy + Math.sin(hRad)*93.5, 5, 0, Math.PI*2);
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
 
-    // 2. 繪製內部固定倒三角形 (P1:左上白, P2:右上純色, P3:下黑)
-    const p1 = { x: cx - 55, y: cy - 40 }; // 白
-    const p2 = { x: cx + 55, y: cy - 40 }; // 純色
-    const p3 = { x: cx, y: cy + 60 };      // 黑
+    const p1 = { x: cx - 55, y: cy - 40 };
+    const p2 = { x: cx + 55, y: cy - 40 };
+    const p3 = { x: cx, y: cy + 60 };
 
     ctx.save();
     ctx.beginPath();
@@ -678,24 +678,16 @@
     ctx.closePath();
     ctx.fillStyle = `hsl(${currentH}, 100%, 50%)`; ctx.fill();
 
-    // 梯度 1: 白色漸層 (從左至右)
     const gWhite = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
     gWhite.addColorStop(0, 'rgba(255,255,255,1)');
     gWhite.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = gWhite; ctx.fill();
 
-    // 梯度 2: 黑色漸層 (從上至下)
     const gBlack = ctx.createLinearGradient(cx, p1.y, cx, p3.y);
     gBlack.addColorStop(0, 'rgba(0,0,0,0)');
     gBlack.addColorStop(1, 'rgba(0,0,0,1)');
     ctx.fillStyle = gBlack; ctx.fill();
 
-    // 標註不可選黑色區域線段
-    ctx.beginPath();
-    ctx.moveTo(cx - 10, cy + 45); ctx.lineTo(cx + 10, cy + 45);
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1; ctx.stroke();
-
-    // 3. 三角形選中指示點
     const curTx = cx - 55 + currentS * 110;
     const curTy = cy - 40 + (1 - currentV) * 95;
     ctx.beginPath(); ctx.arc(curTx, curTy, 4, 0, Math.PI * 2);
@@ -729,8 +721,8 @@
       if (!res.node.data) res.node.data = {};
       res.node.data.color = hex;
       renderTree();
-      renderMultiProgressBars();
       renderEvents();
+      updateLineTimeline();
     }
   }
 
@@ -765,7 +757,6 @@
     return { h: h * 360, s, v };
   }
 
-  // 自動判斷顏色深淺，回傳黑/白文字
   function getContrastYIQ(hexcolor){
     hexcolor = hexcolor.replace("#", "");
     if(hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c+c).join('');
@@ -776,88 +767,137 @@
     return (yiq >= 128) ? '#000000' : '#ffffff';
   }
 
-  /* ---------------- 多角色長方形條時間軸 ---------------- */
-  function updateSliderMax(maxVal) {
-    maxVal = parseInt(maxVal) || 100;
-    renderMultiProgressBars();
+  /* ---------------- 多格式檔案處理 (PDF, PNG, JPEG, PSD, GIF) ---------------- */
+  function handleFileUpload(input, id) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileData = {
+          name: file.name,
+          type: file.type || file.name.split('.').pop().toLowerCase(),
+          data: e.target.result
+        };
+        fileDataStore[id] = fileData;
+        renderFilePreview(id, fileData);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  function jumpToTimeline(val, targetCharId = null) {
-    val = parseInt(val) || 0;
-    
-    if (!targetCharId || targetCharId === activePageId) {
-      saveTimelineNote();
-      currentProgress = val;
-      document.getElementById('jumpInput').value = val;
-      document.getElementById('timelineNote').value = timelineData[val] || '';
-      charAgeMemory[activePageId] = val;
+  function renderFilePreview(id, fileData) {
+    const img = document.getElementById(id + '-preview');
+    const fallback = document.getElementById(id + '-fallback');
+    const text = document.getElementById(id + '-text');
+    const overlay = document.getElementById(id + '-overlay');
+
+    if (!fileData || !fileData.data) return;
+
+    const isImage = fileData.data.startsWith('data:image/') && !fileData.name.toLowerCase().endsWith('.psd');
+
+    if (isImage) {
+      img.src = fileData.data; img.style.display = 'block';
+      if (fallback) fallback.style.display = 'none';
     } else {
-      charAgeMemory[targetCharId] = val;
+      img.style.display = 'none';
+      if (fallback) {
+        fallback.innerHTML = `📄<br>${fileData.name}`;
+        fallback.style.display = 'block';
+      }
     }
 
-    renderMultiProgressBars();
+    if (text) text.style.display = 'none';
+    if (overlay) overlay.style.display = 'flex';
   }
 
-  function renderMultiProgressBars() {
-    const container = document.getElementById('multi-progress-container');
+  function triggerInitialUpload(id) {
+    if (!fileDataStore[id]) triggerUpload(id);
+  }
+  function triggerUpload(id) { document.getElementById(id + '-input').click(); }
+
+  function openFileView(id) {
+    const fileData = fileDataStore[id];
+    if (!fileData) return;
+
+    const isImage = fileData.data.startsWith('data:image/') && !fileData.name.toLowerCase().endsWith('.psd');
+    if (isImage) {
+      openModalBySrc(fileData.data);
+    } else {
+      // 檔案下載或在新分頁開啟 (如 PDF / PSD)
+      const a = document.createElement('a');
+      a.href = fileData.data;
+      a.download = fileData.name;
+      a.click();
+    }
+  }
+
+  /* ---------------- 直線年份時間軸與重大事件 × 標記 ---------------- */
+  function updateLineTimeline() {
+    const startYr = parseInt(document.getElementById('startYearInput').value) || 2000;
+    const endYr = parseInt(document.getElementById('endYearInput').value) || 2030;
+    
+    // 計算總年數
+    const totalYears = Math.max(0, endYr - startYr);
+    document.getElementById('totalYearsSpan').innerText = `（共 ${totalYears} 年）`;
+    document.getElementById('timeline-start-label').innerText = `${startYr}年`;
+    document.getElementById('timeline-end-label').innerText = `${endYr}年`;
+
+    renderTimelineMarks(startYr, endYr);
+  }
+
+  function renderTimelineMarks(startYr, endYr) {
+    const container = document.getElementById('timeline-marks-container');
     container.innerHTML = '';
 
-    // 1. 當前頁面角色的進度條 (預設最上方)
-    const selfName = document.getElementById('field-name').value || '未命名角色';
-    const selfColor = document.getElementById('field-color-hex').value || '#007bff';
-    const selfMax = parseInt(document.getElementById('maxLimitInput').value) || 100;
-    const selfAge = charAgeMemory[activePageId] !== undefined ? charAgeMemory[activePageId] : currentProgress;
-    const selfPct = Math.min(Math.max((selfAge / selfMax) * 100, 0), 100);
+    const range = endYr - startYr;
+    if (range <= 0) return;
 
-    container.appendChild(createProgressBarEl(activePageId, selfName, selfColor, selfAge, selfMax, selfPct));
+    // 收集當前角色 + 勾選角色的所有事件
+    let allEvents = [];
+    
+    // 1. 本角色的事件
+    majorEvents.forEach((evt, idx) => {
+      allEvents.push({ ...evt, isSelf: true, eventIdx: idx });
+    });
 
-    // 2. 已勾選的同資料夾其他角色進度條
+    // 2. 勾選的其他角色事件
     selectedSiblingCharIds.forEach(charId => {
       const res = findNodeAndParent(charId);
-      if (res && res.node.data) {
-        const d = res.node.data;
-        const cName = d.name || res.node.name;
-        const cColor = d.color || '#6c757d';
-        const cMax = parseInt(d.maxLimit) || 100;
-        const cAge = charAgeMemory[charId] !== undefined ? charAgeMemory[charId] : 0;
-        const cPct = Math.min(Math.max((cAge / cMax) * 100, 0), 100);
+      if (res && res.node.data && res.node.data.majorEvents) {
+        res.node.data.majorEvents.forEach(evt => {
+          allEvents.push({ ...evt, isSelf: false, charId, charName: res.node.data.name || res.node.name });
+        });
+      }
+    });
 
-        container.appendChild(createProgressBarEl(charId, cName, cColor, cAge, cMax, cPct));
+    // 在時間軸繪製 × 標記
+    allEvents.forEach(evt => {
+      if (evt.year >= startYr && evt.year <= endYr) {
+        const pct = ((evt.year - startYr) / range) * 100;
+        const mark = document.createElement('div');
+        mark.className = 'timeline-mark-x';
+        mark.style.left = `${pct}%`;
+        mark.setAttribute('data-label', `${evt.year}年 ${evt.name}`);
+        mark.innerText = '×';
+        mark.onclick = () => scrollToAndHighlightEvent(evt);
+        container.appendChild(mark);
       }
     });
   }
 
-  function createProgressBarEl(charId, name, color, age, max, pct) {
-    const div = document.createElement('div');
-    div.className = 'progress-item-bar';
-    div.innerHTML = `
-      <span class="progress-char-name" title="${name}">${name}</span>
-      <div class="bar-outer">
-        <div class="bar-inner" style="width: ${pct}%; background-color: ${color};"></div>
-      </div>
-      <span class="bar-text">${age} / ${max} 歲</span>
-    `;
-    return div;
+  function scrollToAndHighlightEvent(evt) {
+    renderEvents();
+    const eventChips = document.querySelectorAll('.event-chip');
+    eventChips.forEach(chip => {
+      if (chip.innerText.includes(evt.name) && chip.innerText.includes(`${evt.year}年`)) {
+        chip.classList.add('highlight');
+        chip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => chip.classList.remove('highlight'), 2000);
+      }
+    });
   }
 
-  function onNoteInput() {
-    saveTimelineNote();
-    updateMaxProgressTag();
-  }
-
-  function saveTimelineNote() {
-    const note = document.getElementById('timelineNote').value;
-    if (note.trim() !== '') timelineData[currentProgress] = note;
-    else delete timelineData[currentProgress];
-  }
-
-  function updateMaxProgressTag() {
-    const charName = document.getElementById('field-name').value.trim() || "未命名角色";
-    document.getElementById('charNameDisplay').innerText = charName;
-    renderMultiProgressBars();
-  }
-
-  /* ---------------- 重大事件 & 勾選多角色 ---------------- */
+  /* ---------------- 重大事件 & 顯示角色 ---------------- */
   function renderCharCheckboxes() {
     const container = document.getElementById('char-checkbox-list'); container.innerHTML = '';
     const res = findNodeAndParent(activePageId);
@@ -889,7 +929,7 @@
       selectedSiblingCharIds.push(charId);
     }
     renderEvents();
-    renderMultiProgressBars();
+    updateLineTimeline();
   }
 
   function renderEvents() {
@@ -897,21 +937,21 @@
     const selfColor = document.getElementById('field-color-hex').value || '#007bff';
     const selfTextColor = getContrastYIQ(selfColor);
 
-    // 當前角色的重大事件標籤
+    // 本角色重大事件標籤
     majorEvents.forEach((evt, idx) => {
       const chip = document.createElement('div');
       chip.className = 'event-chip';
       chip.style.backgroundColor = selfColor;
       chip.style.color = selfTextColor;
       chip.innerHTML = `
-        <span onclick="jumpToTimeline(${evt.age}, '${activePageId}')">${evt.name} (${evt.age}歲)</span>
+        <span>${evt.name} (${evt.year}年${evt.age ? ' / ' + evt.age + '歲' : ''})</span>
         <button type="button" onclick="editEvent(${idx})" title="修改">✏️</button>
         <button type="button" onclick="deleteEvent(${idx})" title="刪除">✕</button>
       `;
       list.appendChild(chip);
     });
 
-    // 已勾選同資料夾角色的重大事件標籤
+    // 勾選角色的重大事件標籤
     selectedSiblingCharIds.forEach(charId => {
       const siblingRes = findNodeAndParent(charId);
       if (siblingRes && siblingRes.node.data) {
@@ -927,7 +967,7 @@
           chip.style.color = sTextColor;
           chip.title = `角色：${sName}`;
           chip.innerHTML = `
-            <span onclick="jumpToTimeline(${evt.age}, '${charId}')">[${sName}] ${evt.name} (${evt.age}歲)</span>
+            <span>[${sName}] ${evt.name} (${evt.year}年${evt.age ? ' / ' + evt.age + '歲' : ''})</span>
           `;
           list.appendChild(chip);
         });
@@ -938,272 +978,40 @@
   function promptAddEvent() {
     const name = prompt("請輸入重大事件名稱：");
     if (!name) return;
-    const age = prompt("請輸入發生的歲數：", currentProgress);
-    if (age !== null) {
-      majorEvents.push({ id: Date.now(), name, age: parseInt(age) || 0 });
-      renderEvents();
-    }
+    const year = prompt("請輸入發生年份（西元）：", new Date().getFullYear());
+    if (year === null) return;
+    const age = prompt("請輸入當時歲數（可留空）：", "");
+
+    majorEvents.push({ id: Date.now(), name, year: parseInt(year) || 0, age: age ? parseInt(age) : '' });
+    renderEvents();
+    updateLineTimeline();
   }
 
   function editEvent(idx) {
     const evt = majorEvents[idx];
     const newName = prompt("修改重大事件名稱：", evt.name);
     if (!newName) return;
-    const newAge = prompt("修改發生的歲數：", evt.age);
-    if (newAge !== null) {
-      majorEvents[idx].name = newName;
-      majorEvents[idx].age = parseInt(newAge) || 0;
-      renderEvents();
-    }
-  }
+    const newYear = prompt("修改發生年份：", evt.year);
+    if (newYear === null) return;
+    const newAge = prompt("修改當時歲數：", evt.age || '');
 
-  function deleteEvent(idx) { majorEvents.splice(idx, 1); renderEvents(); }
-
-  /* ---------------- 圖片轉 Base64 上傳 ---------------- */
-  function uploadImageBase64(input, id) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) { setImgSrc(id, e.target.result); };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function triggerInitialUpload(id) {
-    const img = document.getElementById(id + '-preview');
-    if (!img.src || img.style.display === 'none') triggerUpload(id);
-  }
-  function triggerUpload(id) { document.getElementById(id + '-input').click(); }
-
-  function setImgSrc(id, src) {
-    const img = document.getElementById(id + '-preview');
-    const text = document.getElementById(id + '-text');
-    const overlay = document.getElementById(id + '-overlay');
-    img.src = src; img.style.display = 'block';
-    if(text) text.style.display = 'none';
-    if(overlay) overlay.style.display = 'flex';
-  }
-
-  /* ---------------- 頁面保存與載入 ---------------- */
-  function saveCurrentPageData() {
-    saveTimelineNote();
-
-    const pageData = {
-      name: document.getElementById('field-name').value,
-      alias: document.getElementById('field-alias').value,
-      dob: document.getElementById('field-dob').value,
-      identity: document.getElementById('field-identity').value,
-      ability: document.getElementById('field-ability').value,
-      age: document.getElementById('field-age').value,
-      race: document.getElementById('field-race').value,
-      personality: personalityList,
-      stat: document.getElementById('field-stat').value,
-      like: document.getElementById('field-like').value,
-      dislike: document.getElementById('field-dislike').value,
-      keywords: keywordsList,
-      color: document.getElementById('field-color-hex').value,
-      avatar1: document.getElementById('avatar1-preview').src,
-      avatar2: document.getElementById('avatar2-preview').src,
-      maxLimit: document.getElementById('maxLimitInput').value,
-      timeline: timelineData,
-      majorEvents: majorEvents,
-      persons: [], outfits: []
-    };
-
-    document.querySelectorAll('#person-grid .card-item').forEach(card => {
-      const img = card.querySelector('img').src;
-      const val = card.querySelector('input[type="text"]').value;
-      pageData.persons.push({ img, val });
-    });
-
-    document.querySelectorAll('#outfit-grid .card-item').forEach(card => {
-      const img = card.querySelector('img').src;
-      const val = card.querySelector('input[type="text"]').value;
-      pageData.outfits.push({ img, val });
-    });
-
-    const res = findNodeAndParent(activePageId);
-    if (res) {
-      res.node.data = pageData;
-      if (pageData.name) res.node.name = pageData.name;
-    }
-
-    saveToLocalStorage();
-    renderTree();
-    alert("當前頁面已保存！");
-  }
-
-  function loadPageData(pageId) {
-    const res = findNodeAndParent(pageId);
-    if (!res || !res.node.data) { resetForm(); return; }
-
-    const d = res.node.data;
-    document.getElementById('field-name').value = d.name || '';
-    document.getElementById('field-alias').value = d.alias || '';
-    document.getElementById('field-dob').value = d.dob || '';
-    document.getElementById('field-identity').value = d.identity || '';
-    document.getElementById('field-ability').value = d.ability || '';
-    document.getElementById('field-age').value = d.age || '';
-    document.getElementById('field-race').value = d.race || '';
-    document.getElementById('field-stat').value = d.stat || '';
-    document.getElementById('field-like').value = d.like || '';
-    document.getElementById('field-dislike').value = d.dislike || '';
-
-    const colorVal = d.color || '#007bff';
-    document.getElementById('field-color-hex').value = colorVal;
-    document.getElementById('color-swatch').style.backgroundColor = colorVal;
-    manualColorInput(colorVal);
-
-    personalityList = Array.isArray(d.personality) ? d.personality : [];
-    renderTags('personality');
-
-    keywordsList = Array.isArray(d.keywords) ? d.keywords : [];
-    renderTags('keyword');
-
-    if (d.avatar1) setImgSrc('avatar1', d.avatar1);
-    if (d.avatar2) setImgSrc('avatar2', d.avatar2);
-
-    timelineData = d.timeline || {};
-    majorEvents = d.majorEvents || [];
-
-    const maxLimit = d.maxLimit || 100;
-    document.getElementById('maxLimitInput').value = maxLimit;
-
-    renderCharCheckboxes();
+    majorEvents[idx].name = newName;
+    majorEvents[idx].year = parseInt(newYear) || 0;
+    majorEvents[idx].age = newAge ? parseInt(newAge) : '';
     renderEvents();
-
-    updateMaxProgressTag();
-    jumpToTimeline(0);
-
-    document.getElementById('person-grid').innerHTML = '';
-    document.getElementById('outfit-grid').innerHTML = '';
-    personCount = 0; outfitCount = 0;
-
-    if (d.persons && d.persons.length) {
-      d.persons.forEach(p => addPersonCard(p.img, p.val));
-    } else { for(let i=0; i<3; i++) addPersonCard(); }
-
-    if (d.outfits && d.outfits.length) {
-      d.outfits.forEach(o => addOutfitCard(o.img, o.val));
-    } else { for(let i=0; i<3; i++) addOutfitCard(); }
+    updateLineTimeline();
   }
 
-  function resetForm() {
-    document.getElementById('ocForm').reset();
-    document.getElementById('person-grid').innerHTML = '';
-    document.getElementById('outfit-grid').innerHTML = '';
-    personalityList = []; renderTags('personality');
-    keywordsList = []; renderTags('keyword');
-    personCount = 0; outfitCount = 0;
-    majorEvents = [];
-    selectedSiblingCharIds = [];
-    renderCharCheckboxes();
+  function deleteEvent(idx) {
+    majorEvents.splice(idx, 1);
     renderEvents();
-    renderMultiProgressBars();
-    for(let i=0; i<3; i++) { addPersonCard(); addOutfitCard(); }
+    updateLineTimeline();
   }
 
-  /* ---------------- 動態卡片 ---------------- */
-  function addPersonCard(imgSrc = "", val = "") {
+  /* ---------------- 動態卡片 (重要的人 / 重要信物 / 服裝) ---------------- */
+  function addPersonCard(fileKey = "", val = "") {
     personCount++; const id = `p${personCount}`;
-    const cardHtml = `
-      <div class="card-item" id="${id}-card">
-        ${personCount > 1 ? `<button type="button" class="delete-card-btn" onclick="document.getElementById('${id}-card').remove()">✕</button>` : ''}
-        <div class="image-uploader-wrapper">
-          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
-            <img id="${id}-preview" src="${imgSrc}" style="${imgSrc ? 'display:block' : 'display:none'}">
-            <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 上傳照片</span>
-          </div>
-          <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視</button>
-            <button type="button" class="overlay-btn" onclick="triggerUpload('${id}')">🔄 更換</button>
-          </div>
-        </div>
-        <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" placeholder="名字 / 關係" value="${val}">
-      </div>`;
-    document.getElementById('person-grid').insertAdjacentHTML('beforeend', cardHtml);
+    createDynamicCard('person-grid', id, personCount, fileKey, val, "名字 / 關係", "人物照片");
   }
 
-  function addOutfitCard(imgSrc = "", val = "") {
-    outfitCount++; const id = `c${outfitCount}`;
-    const cardHtml = `
-      <div class="card-item" id="${id}-card">
-        ${outfitCount > 1 ? `<button type="button" class="delete-card-btn" onclick="document.getElementById('${id}-card').remove()">✕</button>` : ''}
-        <div class="image-uploader-wrapper">
-          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
-            <img id="${id}-preview" src="${imgSrc}" style="${imgSrc ? 'display:block' : 'display:none'}">
-            <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 套裝 ${outfitCount}</span>
-          </div>
-          <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視</button>
-            <button type="button" class="overlay-btn" onclick="triggerUpload('${id}')">🔄 更換</button>
-          </div>
-        </div>
-        <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" placeholder="服裝描述" value="${val}">
-      </div>`;
-    document.getElementById('outfit-grid').insertAdjacentHTML('beforeend', cardHtml);
-  }
-
-  /* ---------------- 本地備份與 JSON 匯出匯入 ---------------- */
-  function exportDataJson() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `OC_Backup_${new Date().toISOString().slice(0,10)}.json`);
-    dlAnchorElem.click();
-  }
-
-  function importDataJson(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          appData = JSON.parse(e.target.result);
-          saveToLocalStorage(); renderTree(); loadPageData(activePageId);
-          alert("資料檔匯入成功！");
-        } catch(err) { alert("格式錯誤，無法讀取檔案！"); }
-      };
-      reader.readAsText(input.files[0]);
-    }
-  }
-
-  function saveToLocalStorage() { localStorage.setItem('oc_app_promax', JSON.stringify(appData)); }
-  function loadFromLocalStorage() {
-    const local = localStorage.getItem('oc_app_promax');
-    if (local) appData = JSON.parse(local);
-  }
-
-  /* ---------------- Modal 手勢與縮放 ---------------- */
-  let currentScale = 1, translateX = 0, translateY = 0, isDragging = false, startX = 0, startY = 0;
-  function openModalById(imgId) {
-    const src = document.getElementById(imgId).src;
-    if (src) {
-      document.getElementById('modalImg').src = src;
-      document.getElementById('imageModal').style.display = 'flex';
-      resetZoom();
-    }
-  }
-  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
-
-  function setupZoomAndPan() {
-    const viewport = document.getElementById('modalViewport');
-    viewport.addEventListener('wheel', (e) => { e.preventDefault(); adjustZoom(e.deltaY < 0 ? 0.15 : -0.15); });
-    viewport.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; });
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform();
-    });
-    window.addEventListener('mouseup', () => isDragging = false);
-  }
-
-  function adjustZoom(delta) { currentScale = Math.min(Math.max(0.5, currentScale + delta), 5); updateTransform(); }
-  function resetZoom() { currentScale = 1; translateX = 0; translateY = 0; updateTransform(); }
-  function updateTransform() {
-    document.getElementById('modalImgContainer').style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
-  }
-</script>
-
-</body>
-</html>
+  function addKeepsakeCard(fileKey = "", val = "") {

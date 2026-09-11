@@ -25,25 +25,18 @@
 
     /* ---------------- 左側選單 ---------------- */
     .sidebar {
-      width: var(--sidebar-width);
-      background: #2c3e50;
-      color: #ecf0f1;
-      display: flex; flex-direction: column;
-      transition: transform 0.3s ease;
-      z-index: 100;
-      position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-width); background: #2c3e50; color: #ecf0f1;
+      display: flex; flex-direction: column; transition: transform 0.3s ease;
+      z-index: 100; position: absolute; left: 0; top: 0; bottom: 0;
     }
     .sidebar.closed { transform: translateX(-100%); }
 
     .sidebar-header {
-      padding: 15px; background: #1a252f;
-      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center;
     }
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
 
-    .sidebar-tools {
-      padding: 10px; background: #34495e; display: flex; gap: 5px; flex-wrap: wrap;
-    }
+    .sidebar-tools { padding: 10px; background: #34495e; display: flex; gap: 5px; flex-wrap: wrap; }
     .sidebar-tools button {
       flex: 1; padding: 6px; font-size: 0.8em; background: #16a085; color: white;
       border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;
@@ -51,25 +44,12 @@
 
     .folder-container { flex: 1; overflow-y: auto; padding: 10px; }
     
-    .tree-item {
-      margin-bottom: 6px; border-radius: 4px; background: #34495e;
-      transition: background 0.2s;
-    }
+    .tree-item { margin-bottom: 6px; border-radius: 4px; background: #34495e; transition: background 0.2s; }
     .tree-item.dragging { opacity: 0.5; background: #16a085; }
 
-    .item-header {
-      padding: 8px; display: flex; align-items: center; justify-content: space-between;
-      gap: 4px; cursor: pointer;
-    }
-    .drag-handle {
-      cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em;
-      user-select: none;
-    }
-    .drag-handle:active { cursor: grabbing; color: #fff; }
-
-    .toggle-icon {
-      cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none;
-    }
+    .item-header { padding: 8px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; }
+    .drag-handle { cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em; user-select: none; }
+    .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
 
     .color-dot {
       width: 12px; height: 12px; border-radius: 50%; display: inline-block;
@@ -79,9 +59,7 @@
     .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; }
 
     .item-btns { display: flex; gap: 2px; }
-    .item-btns button {
-      background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px;
-    }
+    .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
 
     .sub-tree { list-style: none; padding-left: 18px; margin: 0; }
@@ -108,16 +86,9 @@
     }
 
     .grid-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
-    .section-box {
-      border: 2px solid var(--border-color); border-radius: 8px;
-      padding: 12px; background: var(--bg-color); position: relative;
-    }
+    .section-box { border: 2px solid var(--border-color); border-radius: 8px; padding: 12px; background: var(--bg-color); position: relative; }
     
-    /* 大頭照區四周留 0.75cm (~28px) 空隙 */
-    .avatar-right {
-      padding: 0.75cm !important;
-      display: flex; flex-direction: column;
-    }
+    .avatar-right { padding: 0.75cm !important; display: flex; flex-direction: column; gap: 10px; }
 
     .section-title {
       font-weight: bold; margin-bottom: 10px; font-size: 1.05em;
@@ -140,17 +111,14 @@
       background: #e1f0ff; color: #0056b3; border: 1px solid #b8daff;
       border-radius: 4px; padding: 2px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;
     }
-    .custom-tag button {
-      background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px;
-    }
+    .custom-tag button { background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px; }
 
     /* 代表色選擇視窗 */
     .color-picker-group { display: flex; align-items: center; gap: 10px; position: relative; }
     .color-swatch {
       width: 32px; height: 32px; border: 2px solid #555; border-radius: 6px; cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.1s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
     }
-    .color-swatch:active { transform: scale(0.95); }
 
     .color-picker-popover {
       display: none; position: absolute; top: 40px; left: 0; z-index: 500;
@@ -159,15 +127,16 @@
     }
     .color-picker-popover.active { display: block; }
 
-    /* 圖片上傳區 */
-    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 220px; }
+    /* 雙證件照區 */
+    .id-photos-grid { display: flex; gap: 10px; flex: 1; }
+    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 200px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       cursor: pointer; background: #fff; overflow: hidden; position: relative;
     }
     .image-uploader img { width: 100%; height: 100%; object-fit: cover; }
-    .image-uploader span { font-size: 0.85em; color: #666; text-align: center; }
+    .image-uploader span { font-size: 0.8em; color: #666; text-align: center; }
 
     .image-overlay {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -175,18 +144,23 @@
       justify-content: center; align-items: center; gap: 8px; opacity: 0; transition: 0.2s;
     }
     .image-uploader-wrapper:hover .image-overlay { opacity: 1; }
-    @media (hover: none) { .image-overlay { opacity: 0.9; background: rgba(0,0,0,0.3); } }
 
-    .overlay-btn {
-      background: #fff; border: none; padding: 6px 12px; border-radius: 4px;
-      font-size: 0.8em; font-weight: bold; cursor: pointer;
+    .overlay-btn { background: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
+
+    /* 多角色長方形條時間軸 */
+    .multi-progress-container { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+    .progress-item-bar { display: flex; align-items: center; gap: 8px; }
+    .progress-char-name { font-size: 0.85em; font-weight: bold; width: 80px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-outer {
+      flex: 1; height: 14px; border: 2px solid #000; background: #e9ecef;
+      border-radius: 2px; position: relative; overflow: hidden;
     }
+    .bar-inner { height: 100%; width: 0%; transition: width 0.3s ease; }
+    .bar-text { font-size: 0.8em; width: 50px; font-weight: bold; }
 
+    /* 廣義卡片 */
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    .card-item {
-      display: flex; flex-direction: column; gap: 6px; background: #fff;
-      padding: 8px; border: 1px solid #ddd; border-radius: 8px; position: relative;
-    }
+    .card-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 8px; border: 1px solid #ddd; border-radius: 8px; position: relative; }
     .card-item input { height: 36px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 6px; }
 
     .delete-card-btn {
@@ -195,74 +169,45 @@
       z-index: 10; display: flex; align-items: center; justify-content: center;
     }
 
-    .add-btn {
-      background: var(--accent-color); color: white; border: none;
-      padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer;
-    }
+    .add-btn { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer; }
 
-    /* 時間軸控制欄 */
-    .timeline-control-bar {
-      display: flex; align-items: center; gap: 10px; background: #fff; padding: 8px 12px;
-      border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; flex-wrap: wrap;
-    }
-    .timeline-control-bar input[type="number"] {
-      width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;
-    }
+    /* 時間軸控制與重大事件 */
+    .timeline-control-bar { display: flex; align-items: center; gap: 10px; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; flex-wrap: wrap; }
+    .timeline-control-bar input[type="number"] { width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; }
     .max-progress-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; }
 
-    /* 重大事件快捷鍵區 */
-    .events-bar {
-      margin-top: 10px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9;
-    }
+    .events-bar { margin-top: 10px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9; }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
-    .char-filter-box {
-      margin-bottom: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid #ddd;
-      font-size: 0.82em; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-    }
+    .char-filter-box { margin-bottom: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid #ddd; font-size: 0.82em; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .char-filter-box label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
 
     .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    
+    /* 重大事件純色標籤 (文字根據背景動態切換黑/白) */
     .event-chip {
-      background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 16px;
-      padding: 4px 10px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
+      border-radius: 16px; padding: 4px 12px; font-size: 0.85em;
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
     }
-    .event-chip:hover { background: #007bff; color: white; }
-    .event-chip button {
-      background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.9em;
-    }
+    .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
+    .event-chip button:hover { opacity: 1; }
 
     /* Modal 高清檢視 */
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); justify-content: center; align-items: center;
-      z-index: 2000; overflow: hidden;
-    }
-    .modal-viewport {
-      width: 100%; height: 100%; display: flex; justify-content: center;
-      align-items: center; overflow: hidden; cursor: grab; position: relative;
-    }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
+    .modal-viewport { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: grab; position: relative; }
     .modal-img-container { transform-origin: center center; transition: transform 0.05s linear; }
     .modal-img-container img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
 
-    .zoom-controls {
-      position: absolute; bottom: 20px; display: flex; gap: 10px; z-index: 2100;
-      background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px);
-    }
-    .zoom-controls button {
-      background: white; border: none; border-radius: 50%; width: 36px; height: 36px;
-      font-weight: bold; cursor: pointer; font-size: 1.1em;
-    }
+    .zoom-controls { position: absolute; bottom: 20px; display: flex; gap: 10px; z-index: 2100; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px); }
+    .zoom-controls button { background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
 
-    .submit-btn {
-      width: 100%; background: var(--primary-color); color: white; border: none;
-      padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer;
-    }
+    .submit-btn { width: 100%; background: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer; }
 
     @media (min-width: 600px) {
       .grid-row { flex-direction: row; }
       .info-left { flex: 1.2; }
-      .avatar-right { flex: 0.9; }
+      .avatar-right { flex: 1; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
       .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
@@ -292,7 +237,7 @@
 <div class="main-wrapper">
   <div class="card-container">
     <form id="ocForm">
-      <!-- 基本資料與大頭照 -->
+      <!-- 基本資料與證件照 -->
       <div class="grid-row">
         <div class="section-box info-left">
           <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateMaxProgressTag()"></div>
@@ -303,7 +248,7 @@
           <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
           <div class="form-group"><label>種族：</label><input type="text" id="field-race"></div>
           
-          <!-- 性格 (標籤化，僅 Enter) -->
+          <!-- 性格 (標籤化) -->
           <div class="form-group vertical">
             <label>性格：</label>
             <div class="tag-wrapper">
@@ -316,7 +261,7 @@
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           
-          <!-- 關鍵詞 (標籤化，僅 Enter) -->
+          <!-- 關鍵詞 (標籤化) -->
           <div class="form-group vertical">
             <label>關鍵詞：</label>
             <div class="tag-wrapper">
@@ -325,38 +270,53 @@
             </div>
           </div>
 
-          <!-- 代表色 Picker (圓環+三角形 HSV 色輪) -->
+          <!-- 代表色 Picker (固定倒三角 HSV 色輪) -->
           <div class="form-group">
             <label>代表色：</label>
             <div class="color-picker-group">
               <div class="color-swatch" id="color-swatch" style="background-color: #007bff;" onclick="toggleColorPicker(event)"></div>
               <input type="text" id="field-color-hex" style="width: 100px;" value="#007bff" onchange="manualColorInput(this.value)">
 
-              <!-- 色環面板 -->
               <div class="color-picker-popover" id="color-popover" onclick="event.stopPropagation()">
                 <canvas id="color-wheel-canvas" width="220" height="220" style="cursor:crosshair; display:block; margin:0 auto;"></canvas>
                 <div style="font-size:0.8em; margin-top:8px; text-align:center; color:#ccc;">
-                  外環：色相 (H) | 三角：明暗與飽和度
+                  外環：色相 | 倒三角：白(左上) 飽和(右上) 黑(下)<br>(黑色極值不可選)
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 大頭照（0.75cm約28px留白） -->
+        <!-- 證件照 (2 個欄位，0.75cm 留白) -->
         <div class="section-box avatar-right">
-          <div class="section-title">大頭照</div>
-          <div class="image-uploader-wrapper">
-            <div class="image-uploader" onclick="triggerInitialUpload('avatar')">
-              <img id="avatar-preview" src="" style="display:none;">
-              <span id="avatar-text">📷 點擊上傳大頭照</span>
+          <div class="section-title">證件照</div>
+          <div class="id-photos-grid">
+            <!-- 證件照 1 -->
+            <div class="image-uploader-wrapper">
+              <div class="image-uploader" onclick="triggerInitialUpload('avatar1')">
+                <img id="avatar1-preview" src="" style="display:none;">
+                <span id="avatar1-text">📷 證件照 1</span>
+              </div>
+              <div class="image-overlay" id="avatar1-overlay" style="display:none;">
+                <button type="button" class="overlay-btn" onclick="openModalById('avatar1-preview')">🔍 檢視</button>
+                <button type="button" class="overlay-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
+              </div>
             </div>
-            <div class="image-overlay" id="avatar-overlay" style="display:none;">
-              <button type="button" class="overlay-btn" onclick="openModalById('avatar-preview')">🔍 檢視/縮放</button>
-              <button type="button" class="overlay-btn" onclick="triggerUpload('avatar')">🔄 更換</button>
+            <input type="file" id="avatar1-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar1')">
+
+            <!-- 證件照 2 -->
+            <div class="image-uploader-wrapper">
+              <div class="image-uploader" onclick="triggerInitialUpload('avatar2')">
+                <img id="avatar2-preview" src="" style="display:none;">
+                <span id="avatar2-text">📷 證件照 2</span>
+              </div>
+              <div class="image-overlay" id="avatar2-overlay" style="display:none;">
+                <button type="button" class="overlay-btn" onclick="openModalById('avatar2-preview')">🔍 檢視</button>
+                <button type="button" class="overlay-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
+              </div>
             </div>
+            <input type="file" id="avatar2-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar2')">
           </div>
-          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar')">
         </div>
       </div>
 
@@ -381,17 +341,13 @@
           </div>
         </div>
 
-        <!-- 跳轉 -->
+        <!-- 跳轉歲數 -->
         <div class="timeline-control-bar">
           <span>跳轉至 <input type="number" id="jumpInput" value="0" min="0" onchange="jumpToTimeline(this.value)"> 歲時</span>
         </div>
 
-        <!-- 動態滑桿 -->
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <span>0</span>
-          <input type="range" id="timelineSlider" style="flex:1;" min="0" max="100" value="0" oninput="jumpToTimeline(this.value)">
-          <span id="sliderMaxLabel">100</span>
-        </div>
+        <!-- 多角色細長方形進度條區域 -->
+        <div class="multi-progress-container" id="multi-progress-container"></div>
 
         <!-- 重大事件 -->
         <div class="events-bar">
@@ -402,7 +358,7 @@
           
           <!-- 同資料夾角色勾選清單 -->
           <div class="char-filter-box" id="char-filter-box">
-            <span style="font-weight:bold;">顯示角色：</span>
+            <span style="font-weight:bold;">顯示角色進度條：</span>
             <div id="char-checkbox-list" style="display:inline-flex; flex-wrap:wrap; gap:8px;"></div>
           </div>
 
@@ -462,7 +418,10 @@
   let currentProgress = 0;
   let selectedSiblingCharIds = [];
 
-  // HSV 色輪變數
+  // 各角色當前選擇的進度歲數記憶 (charId -> age)
+  let charAgeMemory = {};
+
+  // HSV 變數 (H: 0-360, S: 0-1, V: 0-1)
   let currentH = 210, currentS = 1, currentV = 1;
 
   window.onload = function() {
@@ -494,15 +453,10 @@
     nodes.forEach((node) => {
       const itemEl = document.createElement('div');
       itemEl.className = `tree-item ${node.type === 'page' ? 'page-node' : ''} ${node.id === activePageId ? 'active' : ''}`;
-      itemEl.draggable = true;
-      itemEl.dataset.id = node.id;
+      itemEl.draggable = true; itemEl.dataset.id = node.id;
 
-      itemEl.addEventListener('dragstart', (e) => {
-        e.stopPropagation(); itemEl.classList.add('dragging'); e.dataTransfer.setData('text/plain', node.id);
-      });
-      itemEl.addEventListener('dragend', (e) => {
-        e.stopPropagation(); itemEl.classList.remove('dragging');
-      });
+      itemEl.addEventListener('dragstart', (e) => { e.stopPropagation(); itemEl.classList.add('dragging'); e.dataTransfer.setData('text/plain', node.id); });
+      itemEl.addEventListener('dragend', (e) => { e.stopPropagation(); itemEl.classList.remove('dragging'); });
       itemEl.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
       itemEl.addEventListener('drop', (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -510,23 +464,17 @@
         if (draggedId !== node.id) handleDrop(draggedId, node.id);
       });
 
-      const header = document.createElement('div');
-      header.className = 'item-header';
-      header.onclick = (e) => {
-        e.stopPropagation(); if (node.type === 'page') switchPage(node.id);
-      };
+      const header = document.createElement('div'); header.className = 'item-header';
+      header.onclick = (e) => { e.stopPropagation(); if (node.type === 'page') switchPage(node.id); };
 
       const toggleBtnHtml = node.type === 'folder' 
-        ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` 
-        : '';
+        ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` : '';
 
       const colorDotHtml = node.type === 'page' && node.data && node.data.color
-        ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>`
-        : '';
+        ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
 
       header.innerHTML = `
-        <span class="drag-handle">☰</span>
-        ${toggleBtnHtml}
+        <span class="drag-handle">☰</span> ${toggleBtnHtml}
         <span class="item-title">${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
         <div class="item-btns">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
@@ -537,23 +485,19 @@
       `;
 
       itemEl.appendChild(header);
-
       if (node.type === 'folder' && node.children) {
         const subTree = document.createElement('div');
         subTree.className = `sub-tree ${node.collapsed ? 'collapsed' : ''}`;
         renderNodes(node.children, subTree);
         itemEl.appendChild(subTree);
       }
-
       container.appendChild(itemEl);
     });
   }
 
   function toggleFolderCollapse(folderId) {
     const res = findNodeAndParent(folderId);
-    if (res && res.node.type === 'folder') {
-      res.node.collapsed = !res.node.collapsed; saveToLocalStorage(); renderTree();
-    }
+    if (res && res.node.type === 'folder') { res.node.collapsed = !res.node.collapsed; saveToLocalStorage(); renderTree(); }
   }
 
   function findNodeAndParent(id, nodes = appData.tree, parent = null) {
@@ -569,18 +513,12 @@
 
   function renameNode(id) {
     const res = findNodeAndParent(id);
-    if (res) {
-      const newName = prompt("請輸入新名稱：", res.node.name);
-      if (newName) { res.node.name = newName; saveToLocalStorage(); renderTree(); }
-    }
+    if (res) { const newName = prompt("請輸入新名稱：", res.node.name); if (newName) { res.node.name = newName; saveToLocalStorage(); renderTree(); } }
   }
 
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
-    if (name) {
-      appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
-      saveToLocalStorage(); renderTree();
-    }
+    if (name) { appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] }); saveToLocalStorage(); renderTree(); }
   }
 
   function promptAddSubFolder(parentId) {
@@ -618,26 +556,20 @@
     const targetRes = findNodeAndParent(targetId);
     if (draggedRes && targetRes) {
       draggedRes.list.splice(draggedRes.index, 1);
-      if (targetRes.node.type === 'folder') {
-        targetRes.node.children.push(draggedRes.node);
-      } else {
-        targetRes.list.splice(targetRes.index, 0, draggedRes.node);
-      }
+      if (targetRes.node.type === 'folder') targetRes.node.children.push(draggedRes.node);
+      else targetRes.list.splice(targetRes.index, 0, draggedRes.node);
       saveToLocalStorage(); renderTree();
     }
   }
 
-  function switchPage(pageId) {
-    activePageId = pageId; renderTree(); loadPageData(pageId);
-  }
+  function switchPage(pageId) { activePageId = pageId; renderTree(); loadPageData(pageId); }
 
-  /* ---------------- 性格與關鍵詞標籤化 (僅限 Enter) ---------------- */
+  /* ---------------- 標籤化 (僅 Enter 觸發) ---------------- */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
       e.preventDefault();
       const val = e.target.value.trim();
       if (!val) return;
-
       if (type === 'personality') {
         if (!personalityList.includes(val)) { personalityList.push(val); renderTags('personality'); }
       } else if (type === 'keyword') {
@@ -648,29 +580,22 @@
   }
 
   function renderTags(type) {
-    if (type === 'personality') {
-      const container = document.getElementById('personality-tags'); container.innerHTML = '';
-      personalityList.forEach((item, idx) => {
-        const tag = document.createElement('div'); tag.className = 'custom-tag';
-        tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, 'personality')">✕</button>`;
-        container.appendChild(tag);
-      });
-    } else if (type === 'keyword') {
-      const container = document.getElementById('keyword-tags'); container.innerHTML = '';
-      keywordsList.forEach((item, idx) => {
-        const tag = document.createElement('div'); tag.className = 'custom-tag';
-        tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, 'keyword')">✕</button>`;
-        container.appendChild(tag);
-      });
-    }
+    const container = document.getElementById(type === 'personality' ? 'personality-tags' : 'keyword-tags');
+    const list = type === 'personality' ? personalityList : keywordsList;
+    container.innerHTML = '';
+    list.forEach((item, idx) => {
+      const tag = document.createElement('div'); tag.className = 'custom-tag';
+      tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, '${type}')">✕</button>`;
+      container.appendChild(tag);
+    });
   }
 
   function removeTag(idx, type) {
     if (type === 'personality') { personalityList.splice(idx, 1); renderTags('personality'); }
-    else if (type === 'keyword') { keywordsList.splice(idx, 1); renderTags('keyword'); }
+    else { keywordsList.splice(idx, 1); renderTags('keyword'); }
   }
 
-  /* ---------------- 圖2專業 HSV 色輪 (Canvas繪製) ---------------- */
+  /* ---------------- 專業 HSV 固定倒三角色輪 ---------------- */
   function toggleColorPicker(e) {
     e.stopPropagation();
     const popover = document.getElementById('color-popover');
@@ -680,7 +605,7 @@
 
   function initColorWheel() {
     const canvas = document.getElementById('color-wheel-canvas');
-    let isDraggingWheel = false, isDraggingTriangle = false;
+    let isDragging = false;
 
     function handlePointer(e) {
       const rect = canvas.getBoundingClientRect();
@@ -688,33 +613,33 @@
       const y = e.clientY - rect.top - 110;
       const dist = Math.sqrt(x*x + y*y);
 
-      if (isDraggingWheel || (!isDraggingTriangle && dist >= 80 && dist <= 105)) {
-        isDraggingWheel = true;
+      // 1. 點擊外色環 (半徑 80~105)
+      if (dist >= 80 && dist <= 105) {
         let angle = Math.atan2(y, x) * (180 / Math.PI);
         if (angle < 0) angle += 360;
         currentH = angle;
         updateColorFromHSV();
-      } else {
-        isDraggingTriangle = true;
-        // 三角形內部選擇 (簡化為 S, V)
-        const rad = currentH * Math.PI / 180;
-        // 將點旋轉至標準 0 度角分析
-        const rx = x * Math.cos(-rad) - y * Math.sin(-rad);
-        const ry = x * Math.sin(-rad) + y * Math.cos(-rad);
-        
-        let s = (rx + 40) / 115;
-        let v = (ry + 65) / 130;
+        return;
+      }
+
+      // 2. 點擊固定倒三角形區域
+      // 倒三角形三個頂點 (相對中心 110,110): P1(左上:-55,-40), P2(右上:55,-40), P3(下:0,60)
+      if (y >= -45 && y <= 60 && Math.abs(x) <= 60) {
+        // 排除最下方的黑色極值區域 (y > 45)
+        if (y > 45) return;
+
+        let s = (x + 55) / 110;  // 從左到右 S 0 -> 1
+        let v = 1 - ((y + 40) / 95); // 從上到下 V 1 -> 0
+
         currentS = Math.min(Math.max(s, 0), 1);
-        currentV = Math.min(Math.max(v, 0), 1);
+        currentV = Math.min(Math.max(v, 0.15), 1); // 限制最低 V 不為 0 (不純黑)
         updateColorFromHSV();
       }
     }
 
-    canvas.addEventListener('mousedown', (e) => { handlePointer(e); });
-    window.addEventListener('mousemove', (e) => {
-      if (isDraggingWheel || isDraggingTriangle) handlePointer(e);
-    });
-    window.addEventListener('mouseup', () => { isDraggingWheel = false; isDraggingTriangle = false; });
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; handlePointer(e); });
+    window.addEventListener('mousemove', (e) => { if (isDragging) handlePointer(e); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
   }
 
   function drawColorWheel() {
@@ -736,43 +661,44 @@
       ctx.fill();
     }
 
-    // 2. 外環選中指示器
+    // 外環選中點
     const hRad = currentH * Math.PI / 180;
-    const hx = cx + Math.cos(hRad) * 93.5;
-    const hy = cy + Math.sin(hRad) * 93.5;
     ctx.beginPath();
-    ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+    ctx.arc(cx + Math.cos(hRad)*93.5, cy + Math.sin(hRad)*93.5, 5, 0, Math.PI*2);
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
 
-    // 3. 繪製內三角形 (以 currentH 角度旋轉)
+    // 2. 繪製內部固定倒三角形 (P1:左上白, P2:右上純色, P3:下黑)
+    const p1 = { x: cx - 55, y: cy - 40 }; // 白
+    const p2 = { x: cx + 55, y: cy - 40 }; // 純色
+    const p3 = { x: cx, y: cy + 60 };      // 黑
+
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(hRad);
-
-    const p1 = { x: 75, y: 0 };       // 純色點
-    const p2 = { x: -40, y: -65 };    // 白色點
-    const p3 = { x: -40, y: 65 };     // 黑色點
-
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
     ctx.closePath();
     ctx.fillStyle = `hsl(${currentH}, 100%, 50%)`; ctx.fill();
 
-    // 白色與黑色漸層覆蓋
-    const gradWhite = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-    gradWhite.addColorStop(0, 'rgba(255,255,255,0)');
-    gradWhite.addColorStop(1, 'rgba(255,255,255,1)');
-    ctx.fillStyle = gradWhite; ctx.fill();
+    // 梯度 1: 白色漸層 (從左至右)
+    const gWhite = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+    gWhite.addColorStop(0, 'rgba(255,255,255,1)');
+    gWhite.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gWhite; ctx.fill();
 
-    const gradBlack = ctx.createLinearGradient((p1.x+p2.x)/2, (p1.y+p2.y)/2, p3.x, p3.y);
-    gradBlack.addColorStop(0, 'rgba(0,0,0,0)');
-    gradBlack.addColorStop(1, 'rgba(0,0,0,1)');
-    ctx.fillStyle = gradBlack; ctx.fill();
+    // 梯度 2: 黑色漸層 (從上至下)
+    const gBlack = ctx.createLinearGradient(cx, p1.y, cx, p3.y);
+    gBlack.addColorStop(0, 'rgba(0,0,0,0)');
+    gBlack.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = gBlack; ctx.fill();
 
-    // 4. 三角形選中指示點
-    const tx = -40 + currentS * 115;
-    const ty = -65 + currentV * 130;
-    ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI * 2);
+    // 標註不可選黑色區域線段
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, cy + 45); ctx.lineTo(cx + 10, cy + 45);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+
+    // 3. 三角形選中指示點
+    const curTx = cx - 55 + currentS * 110;
+    const curTy = cy - 40 + (1 - currentV) * 95;
+    ctx.beginPath(); ctx.arc(curTx, curTy, 4, 0, Math.PI * 2);
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
 
     ctx.restore();
@@ -790,7 +716,7 @@
     if (/^#[0-9A-F]{6}$/i.test(hex)) {
       document.getElementById('color-swatch').style.backgroundColor = hex;
       const hsv = hexToHsv(hex);
-      currentH = hsv.h; currentS = hsv.s; currentV = hsv.v;
+      currentH = hsv.h; currentS = hsv.s; currentV = Math.max(hsv.v, 0.15);
       drawColorWheel();
       saveColorToActivePage();
     }
@@ -803,13 +729,13 @@
       if (!res.node.data) res.node.data = {};
       res.node.data.color = hex;
       renderTree();
+      renderMultiProgressBars();
+      renderEvents();
     }
   }
 
   function hsvToHex(h, s, v) {
-    let r, g, b;
-    let i = Math.floor((h / 60) % 6);
-    let f = (h / 60) - i;
+    let r, g, b, i = Math.floor((h / 60) % 6), f = (h / 60) - i;
     let p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
     switch (i) {
       case 0: r = v; g = t; b = p; break;
@@ -839,26 +765,79 @@
     return { h: h * 360, s, v };
   }
 
-  /* ---------------- 時間軸控制 ---------------- */
-  function updateSliderMax(maxVal) {
-    maxVal = parseInt(maxVal) || 100;
-    const slider = document.getElementById('timelineSlider');
-    slider.max = maxVal;
-    document.getElementById('sliderMaxLabel').innerText = maxVal;
-    if (parseInt(slider.value) > maxVal) jumpToTimeline(maxVal);
+  // 自動判斷顏色深淺，回傳黑/白文字
+  function getContrastYIQ(hexcolor){
+    hexcolor = hexcolor.replace("#", "");
+    if(hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c+c).join('');
+    var r = parseInt(hexcolor.substr(0,2),16);
+    var g = parseInt(hexcolor.substr(2,2),16);
+    var b = parseInt(hexcolor.substr(4,2),16);
+    var yiq = ((r*299)+(g*587)+(b*114))/1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
   }
 
-  function jumpToTimeline(val) {
+  /* ---------------- 多角色長方形條時間軸 ---------------- */
+  function updateSliderMax(maxVal) {
+    maxVal = parseInt(maxVal) || 100;
+    renderMultiProgressBars();
+  }
+
+  function jumpToTimeline(val, targetCharId = null) {
     val = parseInt(val) || 0;
-    saveTimelineNote();
-    currentProgress = val;
+    
+    if (!targetCharId || targetCharId === activePageId) {
+      saveTimelineNote();
+      currentProgress = val;
+      document.getElementById('jumpInput').value = val;
+      document.getElementById('timelineNote').value = timelineData[val] || '';
+      charAgeMemory[activePageId] = val;
+    } else {
+      charAgeMemory[targetCharId] = val;
+    }
 
-    const slider = document.getElementById('timelineSlider');
-    if (val > parseInt(slider.max)) updateSliderMax(val);
+    renderMultiProgressBars();
+  }
 
-    slider.value = val;
-    document.getElementById('jumpInput').value = val;
-    document.getElementById('timelineNote').value = timelineData[val] || '';
+  function renderMultiProgressBars() {
+    const container = document.getElementById('multi-progress-container');
+    container.innerHTML = '';
+
+    // 1. 當前頁面角色的進度條 (預設最上方)
+    const selfName = document.getElementById('field-name').value || '未命名角色';
+    const selfColor = document.getElementById('field-color-hex').value || '#007bff';
+    const selfMax = parseInt(document.getElementById('maxLimitInput').value) || 100;
+    const selfAge = charAgeMemory[activePageId] !== undefined ? charAgeMemory[activePageId] : currentProgress;
+    const selfPct = Math.min(Math.max((selfAge / selfMax) * 100, 0), 100);
+
+    container.appendChild(createProgressBarEl(activePageId, selfName, selfColor, selfAge, selfMax, selfPct));
+
+    // 2. 已勾選的同資料夾其他角色進度條
+    selectedSiblingCharIds.forEach(charId => {
+      const res = findNodeAndParent(charId);
+      if (res && res.node.data) {
+        const d = res.node.data;
+        const cName = d.name || res.node.name;
+        const cColor = d.color || '#6c757d';
+        const cMax = parseInt(d.maxLimit) || 100;
+        const cAge = charAgeMemory[charId] !== undefined ? charAgeMemory[charId] : 0;
+        const cPct = Math.min(Math.max((cAge / cMax) * 100, 0), 100);
+
+        container.appendChild(createProgressBarEl(charId, cName, cColor, cAge, cMax, cPct));
+      }
+    });
+  }
+
+  function createProgressBarEl(charId, name, color, age, max, pct) {
+    const div = document.createElement('div');
+    div.className = 'progress-item-bar';
+    div.innerHTML = `
+      <span class="progress-char-name" title="${name}">${name}</span>
+      <div class="bar-outer">
+        <div class="bar-inner" style="width: ${pct}%; background-color: ${color};"></div>
+      </div>
+      <span class="bar-text">${age} / ${max} 歲</span>
+    `;
+    return div;
   }
 
   function onNoteInput() {
@@ -875,9 +854,10 @@
   function updateMaxProgressTag() {
     const charName = document.getElementById('field-name').value.trim() || "未命名角色";
     document.getElementById('charNameDisplay').innerText = charName;
+    renderMultiProgressBars();
   }
 
-  /* ---------------- 重大事件跨角色聯動 ---------------- */
+  /* ---------------- 重大事件 & 勾選多角色 ---------------- */
   function renderCharCheckboxes() {
     const container = document.getElementById('char-checkbox-list'); container.innerHTML = '';
     const res = findNodeAndParent(activePageId);
@@ -909,39 +889,45 @@
       selectedSiblingCharIds.push(charId);
     }
     renderEvents();
+    renderMultiProgressBars();
   }
 
   function renderEvents() {
     const list = document.getElementById('events-list'); list.innerHTML = '';
     const selfColor = document.getElementById('field-color-hex').value || '#007bff';
-    const selfName = document.getElementById('field-name').value || '當前角色';
+    const selfTextColor = getContrastYIQ(selfColor);
 
+    // 當前角色的重大事件標籤
     majorEvents.forEach((evt, idx) => {
       const chip = document.createElement('div');
-      chip.className = 'event-chip'; chip.title = selfName;
-      chip.style.borderColor = selfColor; chip.style.color = selfColor;
+      chip.className = 'event-chip';
+      chip.style.backgroundColor = selfColor;
+      chip.style.color = selfTextColor;
       chip.innerHTML = `
-        <span class="color-dot" style="background-color: ${selfColor}"></span>
-        <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
+        <span onclick="jumpToTimeline(${evt.age}, '${activePageId}')">${evt.name} (${evt.age}歲)</span>
         <button type="button" onclick="editEvent(${idx})" title="修改">✏️</button>
         <button type="button" onclick="deleteEvent(${idx})" title="刪除">✕</button>
       `;
       list.appendChild(chip);
     });
 
+    // 已勾選同資料夾角色的重大事件標籤
     selectedSiblingCharIds.forEach(charId => {
       const siblingRes = findNodeAndParent(charId);
       if (siblingRes && siblingRes.node.data) {
         const sData = siblingRes.node.data;
         const sColor = sData.color || '#6c757d';
+        const sTextColor = getContrastYIQ(sColor);
         const sName = sData.name || siblingRes.node.name;
+
         (sData.majorEvents || []).forEach(evt => {
           const chip = document.createElement('div');
-          chip.className = 'event-chip'; chip.title = `角色：${sName}`;
-          chip.style.borderColor = sColor; chip.style.color = sColor;
+          chip.className = 'event-chip';
+          chip.style.backgroundColor = sColor;
+          chip.style.color = sTextColor;
+          chip.title = `角色：${sName}`;
           chip.innerHTML = `
-            <span class="color-dot" style="background-color: ${sColor}"></span>
-            <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
+            <span onclick="jumpToTimeline(${evt.age}, '${charId}')">[${sName}] ${evt.name} (${evt.age}歲)</span>
           `;
           list.appendChild(chip);
         });
@@ -1016,7 +1002,8 @@
       dislike: document.getElementById('field-dislike').value,
       keywords: keywordsList,
       color: document.getElementById('field-color-hex').value,
-      avatar: document.getElementById('avatar-preview').src,
+      avatar1: document.getElementById('avatar1-preview').src,
+      avatar2: document.getElementById('avatar2-preview').src,
       maxLimit: document.getElementById('maxLimitInput').value,
       timeline: timelineData,
       majorEvents: majorEvents,
@@ -1073,17 +1060,17 @@
     keywordsList = Array.isArray(d.keywords) ? d.keywords : [];
     renderTags('keyword');
 
-    if (d.avatar) setImgSrc('avatar', d.avatar);
+    if (d.avatar1) setImgSrc('avatar1', d.avatar1);
+    if (d.avatar2) setImgSrc('avatar2', d.avatar2);
 
     timelineData = d.timeline || {};
     majorEvents = d.majorEvents || [];
 
-    renderCharCheckboxes();
-    renderEvents();
-
     const maxLimit = d.maxLimit || 100;
     document.getElementById('maxLimitInput').value = maxLimit;
-    updateSliderMax(maxLimit);
+
+    renderCharCheckboxes();
+    renderEvents();
 
     updateMaxProgressTag();
     jumpToTimeline(0);
@@ -1112,6 +1099,7 @@
     selectedSiblingCharIds = [];
     renderCharCheckboxes();
     renderEvents();
+    renderMultiProgressBars();
     for(let i=0; i<3; i++) { addPersonCard(); addOutfitCard(); }
   }
 
@@ -1127,7 +1115,7 @@
             <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 上傳照片</span>
           </div>
           <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視/縮放</button>
+            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視</button>
             <button type="button" class="overlay-btn" onclick="triggerUpload('${id}')">🔄 更換</button>
           </div>
         </div>
@@ -1148,7 +1136,7 @@
             <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 套裝 ${outfitCount}</span>
           </div>
           <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視/縮放</button>
+            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視</button>
             <button type="button" class="overlay-btn" onclick="triggerUpload('${id}')">🔄 更換</button>
           </div>
         </div>
@@ -1201,12 +1189,8 @@
 
   function setupZoomAndPan() {
     const viewport = document.getElementById('modalViewport');
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault(); adjustZoom(e.deltaY < 0 ? 0.15 : -0.15);
-    });
-    viewport.addEventListener('mousedown', (e) => {
-      isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY;
-    });
+    viewport.addEventListener('wheel', (e) => { e.preventDefault(); adjustZoom(e.deltaY < 0 ? 0.15 : -0.15); });
+    viewport.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; });
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform();
@@ -1214,9 +1198,7 @@
     window.addEventListener('mouseup', () => isDragging = false);
   }
 
-  function adjustZoom(delta) {
-    currentScale = Math.min(Math.max(0.5, currentScale + delta), 5); updateTransform();
-  }
+  function adjustZoom(delta) { currentScale = Math.min(Math.max(0.5, currentScale + delta), 5); updateTransform(); }
   function resetZoom() { currentScale = 1; translateX = 0; translateY = 0; updateTransform(); }
   function updateTransform() {
     document.getElementById('modalImgContainer').style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;

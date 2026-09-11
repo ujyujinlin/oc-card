@@ -143,7 +143,7 @@
        ========================================================================== */
     .avatar-right { padding: 0.75cm !important; display: flex; flex-direction: column; gap: 10px; }
     .id-photos-vertical { display: flex; flex-direction: column; gap: 12px; flex: 1; }
-    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 160px; }
+    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 140px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -165,27 +165,28 @@
        6. 動態多卡片網格 (Cards Grid: 人物、信物、穿搭)
        ========================================================================== */
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    .card-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 8px; border: 1px solid #ddd; border-radius: 8px; position: relative; }
-    .card-item input { height: 36px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 6px; }
+    .card-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; position: relative; }
+    .card-item input, .card-item textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9em; }
 
     .delete-card-btn {
       position: absolute; top: -8px; right: -8px; background: #ff4d4f; color: white;
       border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
-      z-index: 10; display: flex; align-items: center; justify-content: center;
+      z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: bold;
     }
     .add-btn { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer; }
 
     /* ==========================================================================
        7. 時間軸與事件欄目 (Timeline & Events)
        ========================================================================== */
-    .line-timeline-wrapper { margin: 25px 10px 15px 10px; position: relative; }
+    .line-timeline-wrapper { margin: 30px 10px 20px 10px; position: relative; }
     .line-timeline-track { height: 4px; background: #333; width: 100%; position: relative; border-radius: 2px; }
     .line-mark-x {
       position: absolute; top: -10px; transform: translateX(-50%);
       font-weight: bold; font-size: 16px; cursor: pointer; line-height: 1;
       user-select: none; transition: transform 0.1s;
+      text-shadow: 0 0 3px #fff;
     }
-    .line-mark-x:hover { transform: translateX(-50%) scale(1.4); }
+    .line-mark-x:hover { transform: translateX(-50%) scale(1.5); }
 
     .timeline-range-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .timeline-range-tag input[type="number"] { width: 60px; text-align: center; border: none; border-radius: 4px; font-weight: bold; padding: 2px; }
@@ -198,7 +199,7 @@
     .event-chip {
       border-radius: 16px; padding: 4px 12px; font-size: 0.85em;
       display: flex; align-items: center; gap: 6px; cursor: pointer;
-      font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); color: #fff;
     }
     .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
     .event-chip button:hover { opacity: 1; }
@@ -229,6 +230,7 @@
 
 <button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">☰ 選單</button>
 
+<!-- 左側目錄選單 -->
 <div class="sidebar closed" id="sidebar">
   <div class="sidebar-header">
     <span class="sidebar-title">📁 角色卡系統</span>
@@ -243,10 +245,12 @@
   <div class="folder-container" id="tree-root"></div>
 </div>
 
+<!-- 主內容卡片區 -->
 <div class="main-wrapper">
   <div class="card-container">
     <form id="ocForm">
       <div class="grid-row">
+        <!-- 基本資訊 -->
         <div class="section-box info-left">
           <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateTimeRangeTag()"></div>
           <div class="form-group"><label>別稱：</label><input type="text" id="field-alias"></div>
@@ -292,6 +296,7 @@
           </div>
         </div>
 
+        <!-- 證件照區域 -->
         <div class="section-box avatar-right">
           <div class="section-title">證件照</div>
           <div class="id-photos-vertical">
@@ -324,6 +329,7 @@
         </div>
       </div>
 
+      <!-- 重要的人 -->
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>重要的人</span>
@@ -332,6 +338,7 @@
         <div class="cards-grid" id="person-grid"></div>
       </div>
 
+      <!-- 重要信物 -->
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>重要信物</span>
@@ -340,6 +347,7 @@
         <div class="cards-grid" id="keep-grid"></div>
       </div>
 
+      <!-- 成長時間線 -->
       <div class="section-box timeline-container" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>成長時間線</span>
@@ -348,7 +356,7 @@
             <input type="number" id="startYearInput" value="2000" onchange="updateTimeRangeTag()">
             <span>至</span>
             <input type="number" id="endYearInput" value="2026" onchange="updateTimeRangeTag()">
-            <span>年（計算總共 <strong id="totalYearsDisplay">26</strong> 年）</span>
+            <span>年（歷經 <strong id="totalYearsDisplay">27</strong> 年）</span>
           </div>
         </div>
 
@@ -358,7 +366,7 @@
 
         <div class="events-bar">
           <div class="events-title">
-            <span>重大事件</span>
+            <span>重大事件（同資料夾跨角色聯通）</span>
             <button type="button" class="add-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增重大事件</button>
           </div>
           
@@ -371,13 +379,16 @@
         </div>
 
         <div style="margin-top: 10px;">
-          <div style="font-size:0.85em; font-weight:bold; margin-bottom:4px;">
-            目前編輯年份：<span id="currentYearDisplay" style="color:var(--accent-color); font-size:1.1em;">2000</span> 年備忘
+          <div style="font-size:0.85em; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <span>目前年份：</span>
+            <input type="number" id="currentYearInput" value="2000" style="width:75px; text-align:center; font-weight:bold; font-size:1em; padding:2px 4px; border:1px solid #007bff; border-radius:4px; color:#007bff;" onchange="onYearInputChange(this.value)">
+            <span>年</span>
           </div>
           <textarea id="timelineNote" style="width:100%; border:1px solid #ccc; border-radius:6px; padding:8px; min-height:75px;" placeholder="輸入該年份的備忘說明..." oninput="onNoteInput()"></textarea>
         </div>
       </div>
 
+      <!-- 衣服穿搭 -->
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>衣服穿搭</span>
@@ -391,6 +402,7 @@
   </div>
 </div>
 
+<!-- Modal 預覽檢視器 -->
 <div id="imageModal" class="modal">
   <div class="modal-viewport" id="modalViewport">
     <div class="modal-img-container" id="modalImgContainer">
@@ -426,6 +438,7 @@
   let keywordsList = [];
   let currentYear = 2000;
   let uploadedFilesStore = {}; 
+  let visibleCharMap = {}; // 跨角色時間線過濾盒狀態
 
   // HSV 顏色預設
   let currentH = 210, currentS = 1, currentV = 1;
@@ -742,6 +755,8 @@
       if (!res.node.data) res.node.data = {};
       res.node.data.color = hex;
       renderTree();
+      renderLineTimeline();
+      renderMajorEvents();
     }
   }
 
@@ -889,8 +904,18 @@
   }
 
   /* ==========================================================================
-     6. 時間線與動態卡片邏輯 (Timeline & Dynamic Cards)
+     6. 同資料夾跨角色時間線聯通與事件 (Folder Multi-Character Timeline)
      ========================================================================== */
+  function getSiblingPagesOfActivePage() {
+    const res = findNodeAndParent(activePageId);
+    if (!res) return [];
+    if (res.parent && res.parent.type === 'folder') {
+      return res.parent.children.filter(n => n.type === 'page');
+    }
+    // 若在根目錄
+    return appData.tree.filter(n => n.type === 'page');
+  }
+
   function updateTimeRangeTag() {
     const startYear = parseInt(document.getElementById('startYearInput').value) || 2000;
     const endYear = parseInt(document.getElementById('endYearInput').value) || 2026;
@@ -906,25 +931,41 @@
     const endYear = parseInt(document.getElementById('endYearInput').value) || 2026;
     const totalYears = Math.max(1, endYear - startYear);
 
-    for (let yr in timelineData) {
-      const yNum = parseInt(yr);
-      if (yNum >= startYear && yNum <= endYear) {
-        const percent = ((yNum - startYear) / totalYears) * 100;
-        const mark = document.createElement('div');
-        mark.className = 'line-mark-x';
-        mark.style.left = `${percent}%`;
-        mark.innerText = '✕';
-        mark.title = `${yNum}年 備忘`;
-        mark.onclick = () => selectTimelineYear(yNum);
-        track.appendChild(mark);
-      }
-    }
+    const siblingPages = getSiblingPagesOfActivePage();
+
+    siblingPages.forEach(p => {
+      if (visibleCharMap[p.id] === false) return; // 被過濾掉不顯示
+
+      const pageData = (p.id === activePageId) ? { color: document.getElementById('field-color-hex').value, timelineData, majorEvents } : (p.data || {});
+      const pColor = pageData.color || '#007bff';
+      const pEvents = pageData.majorEvents || [];
+
+      pEvents.forEach(ev => {
+        const yNum = parseInt(ev.year);
+        if (yNum >= startYear && yNum <= endYear) {
+          const percent = ((yNum - startYear) / totalYears) * 100;
+          const mark = document.createElement('div');
+          mark.className = 'line-mark-x';
+          mark.style.left = `${percent}%`;
+          mark.style.color = pColor;
+          mark.innerText = '✕';
+          mark.title = `[${p.name}] ${yNum}年 (${ev.age || '?'}歲): ${ev.name}`;
+          mark.onclick = () => selectTimelineYear(yNum);
+          track.appendChild(mark);
+        }
+      });
+    });
   }
 
   function selectTimelineYear(yr) {
     currentYear = yr;
-    document.getElementById('currentYearDisplay').innerText = yr;
+    document.getElementById('currentYearInput').value = yr;
     document.getElementById('timelineNote').value = timelineData[yr] || '';
+  }
+
+  function onYearInputChange(val) {
+    const yr = parseInt(val) || 2000;
+    selectTimelineYear(yr);
   }
 
   function onNoteInput() {
@@ -934,76 +975,159 @@
     } else {
       delete timelineData[currentYear];
     }
-    renderLineTimeline();
   }
 
   function promptAddEvent() {
     const name = prompt("請輸入重大事件名稱：");
-    if (name) {
-      const year = prompt("請輸入發生的年份：", currentYear);
-      if (year) {
-        majorEvents.push({ id: "ev_" + Date.now(), name, year: parseInt(year) || currentYear });
-        renderMajorEvents();
-      }
-    }
+    if (!name) return;
+    const year = prompt("請輸入發生的年份：", currentYear);
+    if (!year) return;
+    const age = prompt("請輸入當時角色年齡：", document.getElementById('field-age').value || "");
+    
+    majorEvents.push({ 
+      id: "ev_" + Date.now(), 
+      name, 
+      year: parseInt(year) || currentYear,
+      age: age || ''
+    });
+    renderMajorEvents();
+    renderLineTimeline();
   }
 
   function renderMajorEvents() {
+    const filterContainer = document.getElementById('char-checkbox-list');
+    filterContainer.innerHTML = '';
+    const siblingPages = getSiblingPagesOfActivePage();
+
+    siblingPages.forEach(p => {
+      if (visibleCharMap[p.id] === undefined) visibleCharMap[p.id] = true;
+      const lbl = document.createElement('label');
+      lbl.style.display = 'inline-flex'; lbl.style.alignItems = 'center'; lbl.style.gap = '3px'; lbl.style.cursor = 'pointer';
+      lbl.innerHTML = `<input type="checkbox" ${visibleCharMap[p.id] ? 'checked' : ''} onchange="toggleCharVisibility('${p.id}', this.checked)"> ${p.name}`;
+      filterContainer.appendChild(lbl);
+    });
+
     const list = document.getElementById('events-list');
     list.innerHTML = '';
-    majorEvents.forEach((ev, idx) => {
-      const chip = document.createElement('div');
-      chip.className = 'event-chip';
-      chip.style.backgroundColor = '#007bff';
-      chip.style.color = '#fff';
-      chip.innerHTML = `<span>${ev.year}年: ${ev.name}</span><button type="button" onclick="removeEvent(${idx})">✕</button>`;
-      list.appendChild(chip);
+
+    siblingPages.forEach(p => {
+      if (!visibleCharMap[p.id]) return;
+
+      const pageData = (p.id === activePageId) ? { color: document.getElementById('field-color-hex').value, majorEvents } : (p.data || {});
+      const pColor = pageData.color || '#007bff';
+      const pEvents = pageData.majorEvents || [];
+
+      pEvents.forEach((ev, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'event-chip';
+        chip.style.backgroundColor = pColor;
+        
+        const isCurrentPage = (p.id === activePageId);
+        const ageText = ev.age ? ` (${ev.age}歲)` : '';
+        const deleteBtn = isCurrentPage ? `<button type="button" onclick="removeEvent(${idx})">✕</button>` : '';
+
+        chip.innerHTML = `<span onclick="selectTimelineYear(${ev.year})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
+        list.appendChild(chip);
+      });
     });
+  }
+
+  function toggleCharVisibility(pageId, isChecked) {
+    visibleCharMap[pageId] = isChecked;
+    renderLineTimeline();
+    renderMajorEvents();
   }
 
   function removeEvent(idx) {
     majorEvents.splice(idx, 1);
     renderMajorEvents();
+    renderLineTimeline();
+  }
+
+  /* ==========================================================================
+     7. 動態卡片與圖片上傳邏輯 (Dynamic Cards with Image Upload)
+     ========================================================================== */
+  function createCardUploaderHtml(cardId) {
+    return `
+      <div class="image-uploader-wrapper" style="min-height: 100px;">
+        <div class="image-uploader" onclick="triggerInitialUpload('${cardId}')">
+          <img id="${cardId}-preview" src="" style="display:none;">
+          <div id="${cardId}-fileinfo" class="file-info" style="display:none;"></div>
+          <span id="${cardId}-text">📷 上傳圖片/檔案</span>
+        </div>
+        <div class="image-overlay" id="${cardId}-overlay" style="display:none;">
+          <button type="button" class="overlay-btn" onclick="openModalById('${cardId}')">🔍 檢視</button>
+          <button type="button" class="overlay-btn" onclick="triggerUpload('${cardId}')">🔄 更換</button>
+        </div>
+      </div>
+      <input type="file" id="${cardId}-input" accept=".pdf,.png,.jpeg,.jpg,.psd,.gif" style="display:none" onchange="handleFileUpload(this, '${cardId}')">
+    `;
   }
 
   function addPersonCard(data = {}) {
     const grid = document.getElementById('person-grid');
-    const id = "pcard_" + Date.now() + Math.random().toString(36).substr(2,4);
+    const id = "pcard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
+    
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      ${createCardUploaderHtml(id)}
       <input type="text" class="card-name" placeholder="名字" value="${data.name || ''}">
-      <input type="text" class="card-rel" placeholder="關係" value="${data.rel || ''}">
+      <input type="text" class="card-rel" placeholder="關係敘述" value="${data.rel || ''}">
     `;
     grid.appendChild(div);
+
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+      displayUploadedFile(id);
+    }
   }
 
   function addKeepCard(data = {}) {
     const grid = document.getElementById('keep-grid');
-    const id = "kcard_" + Date.now() + Math.random().toString(36).substr(2,4);
+    const id = "kcard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
+    
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      ${createCardUploaderHtml(id)}
       <input type="text" class="card-title" placeholder="信物名稱" value="${data.title || ''}">
-      <input type="text" class="card-desc" placeholder="說明描述" value="${data.desc || ''}">
+      <textarea class="card-desc" rows="2" placeholder="說明描述">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
+
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+      displayUploadedFile(id);
+    }
   }
 
   function addOutfitCard(data = {}) {
     const grid = document.getElementById('outfit-grid');
-    const id = "ocard_" + Date.now() + Math.random().toString(36).substr(2,4);
+    const id = "ocard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
+    
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      ${createCardUploaderHtml(id)}
       <input type="text" class="card-title" placeholder="穿搭名稱" value="${data.title || ''}">
-      <input type="text" class="card-desc" placeholder="風格/場合" value="${data.desc || ''}">
+      <textarea class="card-desc" rows="3" placeholder="文字敘述說明...">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
+
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+      displayUploadedFile(id);
+    }
+  }
+
+  function removeCardItem(cardId) {
+    document.getElementById(cardId).remove();
+    delete uploadedFilesStore[cardId];
   }
 
   /* ==========================================================================
-     7. 資料儲存、加載與匯入匯出 (Save, Load & Storage)
+     8. 資料儲存、加載與匯入匯出 (Save, Load & Storage)
      ========================================================================== */
   function saveCurrentPageData() {
     const res = findNodeAndParent(activePageId);
@@ -1044,7 +1168,7 @@
     const cards = container.getElementsByClassName('card-item');
     const list = [];
     Array.from(cards).forEach(card => {
-      let obj = {};
+      let obj = { imgId: card.id };
       selectors.forEach((sel, idx) => {
         const inp = card.querySelector(sel);
         obj[keys[idx]] = inp ? inp.value : '';

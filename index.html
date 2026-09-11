@@ -72,8 +72,8 @@
     }
 
     .color-dot {
-      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
-      margin-right: 4px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.5);
+      width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+      margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6);
     }
 
     .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; }
@@ -112,6 +112,13 @@
       border: 2px solid var(--border-color); border-radius: 8px;
       padding: 12px; background: var(--bg-color); position: relative;
     }
+    
+    /* 大頭照區四周留 0.75cm (~28px) 空隙 */
+    .avatar-right {
+      padding: 0.75cm !important;
+      display: flex; flex-direction: column;
+    }
+
     .section-title {
       font-weight: bold; margin-bottom: 10px; font-size: 1.05em;
       border-bottom: 2px solid #ddd; padding-bottom: 6px;
@@ -126,28 +133,34 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
-    /* 關鍵詞標籤區 */
-    .keyword-wrapper { display: flex; flex-direction: column; width: 100%; gap: 6px; }
-    .keyword-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
-    .keyword-tag {
+    /* 標籤化輸入區 */
+    .tag-wrapper { display: flex; flex-direction: column; width: 100%; gap: 6px; }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+    .custom-tag {
       background: #e1f0ff; color: #0056b3; border: 1px solid #b8daff;
       border-radius: 4px; padding: 2px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;
     }
-    .keyword-tag button {
+    .custom-tag button {
       background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px;
     }
 
-    /* 代表色選擇器 */
-    .color-picker-group { display: flex; align-items: center; gap: 10px; }
-    .color-picker-box {
-      width: 36px; height: 36px; border: 2px solid #ccc; border-radius: 6px; cursor: pointer;
-      padding: 0; background: none; -webkit-appearance: none;
+    /* 代表色選擇視窗 */
+    .color-picker-group { display: flex; align-items: center; gap: 10px; position: relative; }
+    .color-swatch {
+      width: 32px; height: 32px; border: 2px solid #555; border-radius: 6px; cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.1s;
     }
-    .color-picker-box::-webkit-color-swatch-wrapper { padding: 0; }
-    .color-picker-box::-webkit-color-swatch { border: none; border-radius: 4px; }
+    .color-swatch:active { transform: scale(0.95); }
+
+    .color-picker-popover {
+      display: none; position: absolute; top: 40px; left: 0; z-index: 500;
+      background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 8px;
+      padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); width: 250px;
+    }
+    .color-picker-popover.active { display: block; }
 
     /* 圖片上傳區 */
-    .image-uploader-wrapper { position: relative; width: 100%; height: 180px; }
+    .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 220px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -189,13 +202,13 @@
 
     /* 時間軸控制欄 */
     .timeline-control-bar {
-      display: flex; align-items: center; gap: 10px; background: #fff; padding: 10px;
+      display: flex; align-items: center; gap: 10px; background: #fff; padding: 8px 12px;
       border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; flex-wrap: wrap;
     }
     .timeline-control-bar input[type="number"] {
-      width: 65px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;
+      width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;
     }
-    .max-progress-tag { background: #16a085; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
+    .max-progress-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; }
 
     /* 重大事件快捷鍵區 */
     .events-bar {
@@ -251,7 +264,6 @@
       .info-left { flex: 1.2; }
       .avatar-right { flex: 0.9; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
-      .image-uploader-wrapper { height: 160px; }
       .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
     }
@@ -280,7 +292,7 @@
 <div class="main-wrapper">
   <div class="card-container">
     <form id="ocForm">
-      <!-- 基本資料 -->
+      <!-- 基本資料與大頭照 -->
       <div class="grid-row">
         <div class="section-box info-left">
           <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateMaxProgressTag()"></div>
@@ -290,41 +302,54 @@
           <div class="form-group"><label>能力：</label><input type="text" id="field-ability"></div>
           <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
           <div class="form-group"><label>種族：</label><input type="text" id="field-race"></div>
-          <div class="form-group"><label>性格：</label><input type="text" id="field-personality"></div>
+          
+          <!-- 性格 (標籤化，僅 Enter) -->
+          <div class="form-group vertical">
+            <label>性格：</label>
+            <div class="tag-wrapper">
+              <input type="text" id="personality-input" placeholder="按下 Enter 新增標籤" onkeydown="handleTagInput(event, 'personality')">
+              <div class="tag-container" id="personality-tags"></div>
+            </div>
+          </div>
+
           <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat"></div>
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           
-          <!-- 關鍵詞 (標籤化) -->
+          <!-- 關鍵詞 (標籤化，僅 Enter) -->
           <div class="form-group vertical">
             <label>關鍵詞：</label>
-            <div class="keyword-wrapper">
-              <input type="text" id="keyword-input" placeholder="按空格或 Enter 新增關鍵詞" onkeydown="handleKeywordInput(event)">
-              <div class="keyword-tags-container" id="keyword-tags"></div>
+            <div class="tag-wrapper">
+              <input type="text" id="keyword-input" placeholder="按下 Enter 新增關鍵詞" onkeydown="handleTagInput(event, 'keyword')">
+              <div class="tag-container" id="keyword-tags"></div>
             </div>
           </div>
 
-          <div class="form-group vertical">
-            <label>代表性的一句話：</label>
-            <textarea id="field-quote" rows="2"></textarea>
-          </div>
-
-          <!-- 代表色 Picker -->
+          <!-- 代表色 Picker (圓環+三角形 HSV 色輪) -->
           <div class="form-group">
             <label>代表色：</label>
             <div class="color-picker-group">
-              <input type="color" id="field-color" class="color-picker-box" value="#007bff" onchange="autoSaveColor()">
-              <input type="text" id="field-color-hex" style="width: 100px;" value="#007bff" onchange="syncColorInput(this.value)">
+              <div class="color-swatch" id="color-swatch" style="background-color: #007bff;" onclick="toggleColorPicker(event)"></div>
+              <input type="text" id="field-color-hex" style="width: 100px;" value="#007bff" onchange="manualColorInput(this.value)">
+
+              <!-- 色環面板 -->
+              <div class="color-picker-popover" id="color-popover" onclick="event.stopPropagation()">
+                <canvas id="color-wheel-canvas" width="220" height="220" style="cursor:crosshair; display:block; margin:0 auto;"></canvas>
+                <div style="font-size:0.8em; margin-top:8px; text-align:center; color:#ccc;">
+                  外環：色相 (H) | 三角：明暗與飽和度
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- 大頭照（0.75cm約28px留白） -->
         <div class="section-box avatar-right">
           <div class="section-title">大頭照</div>
           <div class="image-uploader-wrapper">
             <div class="image-uploader" onclick="triggerInitialUpload('avatar')">
               <img id="avatar-preview" src="" style="display:none;">
-              <span id="avatar-text">📷 點擊上傳圖片</span>
+              <span id="avatar-text">📷 點擊上傳大頭照</span>
             </div>
             <div class="image-overlay" id="avatar-overlay" style="display:none;">
               <button type="button" class="overlay-btn" onclick="openModalById('avatar-preview')">🔍 檢視/縮放</button>
@@ -348,19 +373,21 @@
       <div class="section-box timeline-container" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>成長時間線</span>
-          <div>
-            <span class="max-progress-tag" id="maxProgressTag">記錄至 未命名角色 0 歲時</span>
+          <div class="max-progress-tag">
+            <span>記錄至</span>
+            <span id="charNameDisplay">未命名角色</span>
+            <input type="number" id="maxLimitInput" value="100" min="1" style="width:55px; text-align:center; border:none; border-radius:4px; font-weight:bold;" onchange="updateSliderMax(this.value)">
+            <span>歲時</span>
           </div>
         </div>
 
-        <!-- 跳轉與上限輸入 -->
+        <!-- 跳轉 -->
         <div class="timeline-control-bar">
           <span>跳轉至 <input type="number" id="jumpInput" value="0" min="0" onchange="jumpToTimeline(this.value)"> 歲時</span>
-          <span style="margin-left: auto;">設定上限歲數：<input type="number" id="maxLimitInput" value="100" min="1" onchange="updateSliderMax(this.value)"></span>
         </div>
 
         <!-- 動態滑桿 -->
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
           <span>0</span>
           <input type="range" id="timelineSlider" style="flex:1;" min="0" max="100" value="0" oninput="jumpToTimeline(this.value)">
           <span id="sliderMaxLabel">100</span>
@@ -420,31 +447,38 @@
   let appData = {
     tree: [
       {
-        id: "f_1",
-        name: "預設資料夾",
-        type: "folder",
-        collapsed: false,
-        children: [
-          { id: "p_1", name: "未命名 OC", type: "page", data: {} }
-        ]
+        id: "f_1", name: "預設資料夾", type: "folder", collapsed: false,
+        children: [{ id: "p_1", name: "未命名 OC", type: "page", data: {} }]
       }
     ]
   };
 
   let activePageId = "p_1";
-  let personCount = 0;
-  let outfitCount = 0;
+  let personCount = 0, outfitCount = 0;
   let timelineData = {};
   let majorEvents = [];
+  let personalityList = [];
   let keywordsList = [];
   let currentProgress = 0;
   let selectedSiblingCharIds = [];
+
+  // HSV 色輪變數
+  let currentH = 210, currentS = 1, currentV = 1;
 
   window.onload = function() {
     loadFromLocalStorage();
     renderTree();
     loadPageData(activePageId);
     setupZoomAndPan();
+    initColorWheel();
+
+    document.addEventListener('click', () => {
+      const pop = document.getElementById('color-popover');
+      if (pop.classList.contains('active')) {
+        pop.classList.remove('active');
+        saveColorToActivePage();
+      }
+    });
   };
 
   /* ---------------- 樹狀選單 ---------------- */
@@ -464,13 +498,10 @@
       itemEl.dataset.id = node.id;
 
       itemEl.addEventListener('dragstart', (e) => {
-        e.stopPropagation();
-        itemEl.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', node.id);
+        e.stopPropagation(); itemEl.classList.add('dragging'); e.dataTransfer.setData('text/plain', node.id);
       });
       itemEl.addEventListener('dragend', (e) => {
-        e.stopPropagation();
-        itemEl.classList.remove('dragging');
+        e.stopPropagation(); itemEl.classList.remove('dragging');
       });
       itemEl.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
       itemEl.addEventListener('drop', (e) => {
@@ -482,8 +513,7 @@
       const header = document.createElement('div');
       header.className = 'item-header';
       header.onclick = (e) => {
-        e.stopPropagation();
-        if (node.type === 'page') switchPage(node.id);
+        e.stopPropagation(); if (node.type === 'page') switchPage(node.id);
       };
 
       const toggleBtnHtml = node.type === 'folder' 
@@ -522,9 +552,7 @@
   function toggleFolderCollapse(folderId) {
     const res = findNodeAndParent(folderId);
     if (res && res.node.type === 'folder') {
-      res.node.collapsed = !res.node.collapsed;
-      saveToLocalStorage();
-      renderTree();
+      res.node.collapsed = !res.node.collapsed; saveToLocalStorage(); renderTree();
     }
   }
 
@@ -543,11 +571,7 @@
     const res = findNodeAndParent(id);
     if (res) {
       const newName = prompt("請輸入新名稱：", res.node.name);
-      if (newName) {
-        res.node.name = newName;
-        saveToLocalStorage();
-        renderTree();
-      }
+      if (newName) { res.node.name = newName; saveToLocalStorage(); renderTree(); }
     }
   }
 
@@ -565,8 +589,7 @@
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
         res.node.children.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
-        res.node.collapsed = false;
-        saveToLocalStorage(); renderTree();
+        res.node.collapsed = false; saveToLocalStorage(); renderTree();
       }
     }
   }
@@ -578,8 +601,7 @@
       if (res && res.node.type === 'folder') {
         const newId = "p_" + Date.now();
         res.node.children.push({ id: newId, name, type: "page", data: {} });
-        res.node.collapsed = false;
-        saveToLocalStorage(); switchPage(newId);
+        res.node.collapsed = false; saveToLocalStorage(); switchPage(newId);
       }
     }
   }
@@ -587,17 +609,13 @@
   function deleteNode(id) {
     if (confirm("確定要刪除？此操作不可逆！")) {
       const res = findNodeAndParent(id);
-      if (res) {
-        res.list.splice(res.index, 1);
-        saveToLocalStorage(); renderTree();
-      }
+      if (res) { res.list.splice(res.index, 1); saveToLocalStorage(); renderTree(); }
     }
   }
 
   function handleDrop(draggedId, targetId) {
     const draggedRes = findNodeAndParent(draggedId);
     const targetRes = findNodeAndParent(targetId);
-
     if (draggedRes && targetRes) {
       draggedRes.list.splice(draggedRes.index, 1);
       if (targetRes.node.type === 'folder') {
@@ -610,57 +628,215 @@
   }
 
   function switchPage(pageId) {
-    activePageId = pageId;
-    renderTree();
-    loadPageData(pageId);
+    activePageId = pageId; renderTree(); loadPageData(pageId);
   }
 
-  /* ---------------- 關鍵詞標籤化 ---------------- */
-  function handleKeywordInput(e) {
-    if (e.key === ' ' || e.key === 'Enter') {
+  /* ---------------- 性格與關鍵詞標籤化 (僅限 Enter) ---------------- */
+  function handleTagInput(e, type) {
+    if (e.key === 'Enter') {
       e.preventDefault();
       const val = e.target.value.trim();
-      if (val && !keywordsList.includes(val)) {
-        keywordsList.push(val);
-        renderKeywords();
+      if (!val) return;
+
+      if (type === 'personality') {
+        if (!personalityList.includes(val)) { personalityList.push(val); renderTags('personality'); }
+      } else if (type === 'keyword') {
+        if (!keywordsList.includes(val)) { keywordsList.push(val); renderTags('keyword'); }
       }
       e.target.value = '';
     }
   }
 
-  function renderKeywords() {
-    const container = document.getElementById('keyword-tags');
-    container.innerHTML = '';
-    keywordsList.forEach((kw, idx) => {
-      const tag = document.createElement('div');
-      tag.className = 'keyword-tag';
-      tag.innerHTML = `<span>${kw}</span><button type="button" onclick="removeKeyword(${idx})">✕</button>`;
-      container.appendChild(tag);
+  function renderTags(type) {
+    if (type === 'personality') {
+      const container = document.getElementById('personality-tags'); container.innerHTML = '';
+      personalityList.forEach((item, idx) => {
+        const tag = document.createElement('div'); tag.className = 'custom-tag';
+        tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, 'personality')">✕</button>`;
+        container.appendChild(tag);
+      });
+    } else if (type === 'keyword') {
+      const container = document.getElementById('keyword-tags'); container.innerHTML = '';
+      keywordsList.forEach((item, idx) => {
+        const tag = document.createElement('div'); tag.className = 'custom-tag';
+        tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, 'keyword')">✕</button>`;
+        container.appendChild(tag);
+      });
+    }
+  }
+
+  function removeTag(idx, type) {
+    if (type === 'personality') { personalityList.splice(idx, 1); renderTags('personality'); }
+    else if (type === 'keyword') { keywordsList.splice(idx, 1); renderTags('keyword'); }
+  }
+
+  /* ---------------- 圖2專業 HSV 色輪 (Canvas繪製) ---------------- */
+  function toggleColorPicker(e) {
+    e.stopPropagation();
+    const popover = document.getElementById('color-popover');
+    popover.classList.toggle('active');
+    if (popover.classList.contains('active')) drawColorWheel();
+  }
+
+  function initColorWheel() {
+    const canvas = document.getElementById('color-wheel-canvas');
+    let isDraggingWheel = false, isDraggingTriangle = false;
+
+    function handlePointer(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left - 110;
+      const y = e.clientY - rect.top - 110;
+      const dist = Math.sqrt(x*x + y*y);
+
+      if (isDraggingWheel || (!isDraggingTriangle && dist >= 80 && dist <= 105)) {
+        isDraggingWheel = true;
+        let angle = Math.atan2(y, x) * (180 / Math.PI);
+        if (angle < 0) angle += 360;
+        currentH = angle;
+        updateColorFromHSV();
+      } else {
+        isDraggingTriangle = true;
+        // 三角形內部選擇 (簡化為 S, V)
+        const rad = currentH * Math.PI / 180;
+        // 將點旋轉至標準 0 度角分析
+        const rx = x * Math.cos(-rad) - y * Math.sin(-rad);
+        const ry = x * Math.sin(-rad) + y * Math.cos(-rad);
+        
+        let s = (rx + 40) / 115;
+        let v = (ry + 65) / 130;
+        currentS = Math.min(Math.max(s, 0), 1);
+        currentV = Math.min(Math.max(v, 0), 1);
+        updateColorFromHSV();
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => { handlePointer(e); });
+    window.addEventListener('mousemove', (e) => {
+      if (isDraggingWheel || isDraggingTriangle) handlePointer(e);
     });
+    window.addEventListener('mouseup', () => { isDraggingWheel = false; isDraggingTriangle = false; });
   }
 
-  function removeKeyword(idx) {
-    keywordsList.splice(idx, 1);
-    renderKeywords();
+  function drawColorWheel() {
+    const canvas = document.getElementById('color-wheel-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 220, 220);
+
+    const cx = 110, cy = 110, outerR = 105, innerR = 82;
+
+    // 1. 繪製外色環
+    for (let angle = 0; angle < 360; angle += 1) {
+      const startRad = (angle - 1) * Math.PI / 180;
+      const endRad = (angle + 1) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, startRad, endRad);
+      ctx.arc(cx, cy, innerR, endRad, startRad, true);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${angle}, 100%, 50%)`;
+      ctx.fill();
+    }
+
+    // 2. 外環選中指示器
+    const hRad = currentH * Math.PI / 180;
+    const hx = cx + Math.cos(hRad) * 93.5;
+    const hy = cy + Math.sin(hRad) * 93.5;
+    ctx.beginPath();
+    ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+
+    // 3. 繪製內三角形 (以 currentH 角度旋轉)
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(hRad);
+
+    const p1 = { x: 75, y: 0 };       // 純色點
+    const p2 = { x: -40, y: -65 };    // 白色點
+    const p3 = { x: -40, y: 65 };     // 黑色點
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(${currentH}, 100%, 50%)`; ctx.fill();
+
+    // 白色與黑色漸層覆蓋
+    const gradWhite = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+    gradWhite.addColorStop(0, 'rgba(255,255,255,0)');
+    gradWhite.addColorStop(1, 'rgba(255,255,255,1)');
+    ctx.fillStyle = gradWhite; ctx.fill();
+
+    const gradBlack = ctx.createLinearGradient((p1.x+p2.x)/2, (p1.y+p2.y)/2, p3.x, p3.y);
+    gradBlack.addColorStop(0, 'rgba(0,0,0,0)');
+    gradBlack.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = gradBlack; ctx.fill();
+
+    // 4. 三角形選中指示點
+    const tx = -40 + currentS * 115;
+    const ty = -65 + currentV * 130;
+    ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+
+    ctx.restore();
   }
 
-  /* ---------------- 代表色 Picker ---------------- */
-  function syncColorInput(val) {
-    document.getElementById('field-color').value = val;
-    autoSaveColor();
+  function updateColorFromHSV() {
+    const hex = hsvToHex(currentH, currentS, currentV);
+    document.getElementById('color-swatch').style.backgroundColor = hex;
+    document.getElementById('field-color-hex').value = hex;
+    drawColorWheel();
+    saveColorToActivePage();
   }
 
-  function autoSaveColor() {
-    const colorVal = document.getElementById('field-color').value;
-    document.getElementById('field-color-hex').value = colorVal;
-    
-    // 更新樹狀圖代表色
+  function manualColorInput(hex) {
+    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+      document.getElementById('color-swatch').style.backgroundColor = hex;
+      const hsv = hexToHsv(hex);
+      currentH = hsv.h; currentS = hsv.s; currentV = hsv.v;
+      drawColorWheel();
+      saveColorToActivePage();
+    }
+  }
+
+  function saveColorToActivePage() {
+    const hex = document.getElementById('field-color-hex').value;
     const res = findNodeAndParent(activePageId);
     if (res) {
       if (!res.node.data) res.node.data = {};
-      res.node.data.color = colorVal;
+      res.node.data.color = hex;
       renderTree();
     }
+  }
+
+  function hsvToHex(h, s, v) {
+    let r, g, b;
+    let i = Math.floor((h / 60) % 6);
+    let f = (h / 60) - i;
+    let p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+    switch (i) {
+      case 0: r = v; g = t; b = p; break;
+      case 1: r = q; g = v; b = p; break;
+      case 2: r = p; g = v; b = t; break;
+      case 3: r = p; g = q; b = v; break;
+      case 4: r = t; g = p; b = v; break;
+      case 5: r = v; g = p; b = q; break;
+    }
+    const toHex = x => ('0' + Math.round(x * 255).toString(16)).slice(-2);
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  function hexToHsv(hex) {
+    let r = parseInt(hex.slice(1,3), 16)/255, g = parseInt(hex.slice(3,5), 16)/255, b = parseInt(hex.slice(5,7), 16)/255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h, s = (max === 0 ? 0 : d / max), v = max;
+    if (max === min) h = 0;
+    else {
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s, v };
   }
 
   /* ---------------- 時間軸控制 ---------------- */
@@ -682,7 +858,6 @@
 
     slider.value = val;
     document.getElementById('jumpInput').value = val;
-
     document.getElementById('timelineNote').value = timelineData[val] || '';
   }
 
@@ -693,37 +868,29 @@
 
   function saveTimelineNote() {
     const note = document.getElementById('timelineNote').value;
-    if (note.trim() !== '') {
-      timelineData[currentProgress] = note;
-    } else {
-      delete timelineData[currentProgress];
-    }
+    if (note.trim() !== '') timelineData[currentProgress] = note;
+    else delete timelineData[currentProgress];
   }
 
   function updateMaxProgressTag() {
-    const keys = Object.keys(timelineData).map(Number).filter(n => !isNaN(n));
-    const maxVal = keys.length > 0 ? Math.max(...keys) : 0;
     const charName = document.getElementById('field-name').value.trim() || "未命名角色";
-    document.getElementById('maxProgressTag').innerText = `記錄至 ${charName} ${maxVal} 歲時`;
+    document.getElementById('charNameDisplay').innerText = charName;
   }
 
   /* ---------------- 重大事件跨角色聯動 ---------------- */
   function renderCharCheckboxes() {
-    const container = document.getElementById('char-checkbox-list');
-    container.innerHTML = '';
-
+    const container = document.getElementById('char-checkbox-list'); container.innerHTML = '';
     const res = findNodeAndParent(activePageId);
     if (!res || !res.parent) return;
 
     const siblings = res.parent.children.filter(n => n.type === 'page');
-    
     siblings.forEach(node => {
       const charName = (node.data && node.data.name) ? node.data.name : node.name;
       const charColor = (node.data && node.data.color) ? node.data.color : '#007bff';
       const isSelf = node.id === activePageId;
 
       const label = document.createElement('label');
-      label.style.display = isSelf ? 'none' : 'inline-flex'; // 隱藏自己（預設必定顯示）
+      label.style.display = isSelf ? 'none' : 'inline-flex';
 
       const isChecked = selectedSiblingCharIds.includes(node.id);
       label.innerHTML = `
@@ -745,19 +912,14 @@
   }
 
   function renderEvents() {
-    const list = document.getElementById('events-list');
-    list.innerHTML = '';
-
-    // 1. 本角色的重大事件
-    const selfColor = document.getElementById('field-color').value || '#007bff';
+    const list = document.getElementById('events-list'); list.innerHTML = '';
+    const selfColor = document.getElementById('field-color-hex').value || '#007bff';
     const selfName = document.getElementById('field-name').value || '當前角色';
 
     majorEvents.forEach((evt, idx) => {
       const chip = document.createElement('div');
-      chip.className = 'event-chip';
-      chip.title = selfName;
-      chip.style.borderColor = selfColor;
-      chip.style.color = selfColor;
+      chip.className = 'event-chip'; chip.title = selfName;
+      chip.style.borderColor = selfColor; chip.style.color = selfColor;
       chip.innerHTML = `
         <span class="color-dot" style="background-color: ${selfColor}"></span>
         <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
@@ -767,21 +929,16 @@
       list.appendChild(chip);
     });
 
-    // 2. 勾選的其他角色事件
     selectedSiblingCharIds.forEach(charId => {
       const siblingRes = findNodeAndParent(charId);
       if (siblingRes && siblingRes.node.data) {
         const sData = siblingRes.node.data;
         const sColor = sData.color || '#6c757d';
         const sName = sData.name || siblingRes.node.name;
-        const sEvents = sData.majorEvents || [];
-
-        sEvents.forEach(evt => {
+        (sData.majorEvents || []).forEach(evt => {
           const chip = document.createElement('div');
-          chip.className = 'event-chip';
-          chip.title = `角色：${sName}`;
-          chip.style.borderColor = sColor;
-          chip.style.color = sColor;
+          chip.className = 'event-chip'; chip.title = `角色：${sName}`;
+          chip.style.borderColor = sColor; chip.style.color = sColor;
           chip.innerHTML = `
             <span class="color-dot" style="background-color: ${sColor}"></span>
             <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
@@ -814,19 +971,14 @@
     }
   }
 
-  function deleteEvent(idx) {
-    majorEvents.splice(idx, 1);
-    renderEvents();
-  }
+  function deleteEvent(idx) { majorEvents.splice(idx, 1); renderEvents(); }
 
   /* ---------------- 圖片轉 Base64 上傳 ---------------- */
   function uploadImageBase64(input, id) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       const reader = new FileReader();
-      reader.onload = function(e) {
-        setImgSrc(id, e.target.result);
-      };
+      reader.onload = function(e) { setImgSrc(id, e.target.result); };
       reader.readAsDataURL(file);
     }
   }
@@ -858,13 +1010,12 @@
       ability: document.getElementById('field-ability').value,
       age: document.getElementById('field-age').value,
       race: document.getElementById('field-race').value,
-      personality: document.getElementById('field-personality').value,
+      personality: personalityList,
       stat: document.getElementById('field-stat').value,
       like: document.getElementById('field-like').value,
       dislike: document.getElementById('field-dislike').value,
       keywords: keywordsList,
-      quote: document.getElementById('field-quote').value,
-      color: document.getElementById('field-color').value,
+      color: document.getElementById('field-color-hex').value,
       avatar: document.getElementById('avatar-preview').src,
       maxLimit: document.getElementById('maxLimitInput').value,
       timeline: timelineData,
@@ -907,18 +1058,20 @@
     document.getElementById('field-ability').value = d.ability || '';
     document.getElementById('field-age').value = d.age || '';
     document.getElementById('field-race').value = d.race || '';
-    document.getElementById('field-personality').value = d.personality || '';
     document.getElementById('field-stat').value = d.stat || '';
     document.getElementById('field-like').value = d.like || '';
     document.getElementById('field-dislike').value = d.dislike || '';
-    document.getElementById('field-quote').value = d.quote || '';
 
     const colorVal = d.color || '#007bff';
-    document.getElementById('field-color').value = colorVal;
     document.getElementById('field-color-hex').value = colorVal;
+    document.getElementById('color-swatch').style.backgroundColor = colorVal;
+    manualColorInput(colorVal);
+
+    personalityList = Array.isArray(d.personality) ? d.personality : [];
+    renderTags('personality');
 
     keywordsList = Array.isArray(d.keywords) ? d.keywords : [];
-    renderKeywords();
+    renderTags('keyword');
 
     if (d.avatar) setImgSrc('avatar', d.avatar);
 
@@ -952,8 +1105,8 @@
     document.getElementById('ocForm').reset();
     document.getElementById('person-grid').innerHTML = '';
     document.getElementById('outfit-grid').innerHTML = '';
-    keywordsList = [];
-    renderKeywords();
+    personalityList = []; renderTags('personality');
+    keywordsList = []; renderTags('keyword');
     personCount = 0; outfitCount = 0;
     majorEvents = [];
     selectedSiblingCharIds = [];
@@ -1020,13 +1173,9 @@
       reader.onload = function(e) {
         try {
           appData = JSON.parse(e.target.result);
-          saveToLocalStorage();
-          renderTree();
-          loadPageData(activePageId);
+          saveToLocalStorage(); renderTree(); loadPageData(activePageId);
           alert("資料檔匯入成功！");
-        } catch(err) {
-          alert("格式錯誤，無法讀取檔案！");
-        }
+        } catch(err) { alert("格式錯誤，無法讀取檔案！"); }
       };
       reader.readAsText(input.files[0]);
     }
@@ -1068,9 +1217,7 @@
   function adjustZoom(delta) {
     currentScale = Math.min(Math.max(0.5, currentScale + delta), 5); updateTransform();
   }
-  function resetZoom() {
-    currentScale = 1; translateX = 0; translateY = 0; updateTransform();
-  }
+  function resetZoom() { currentScale = 1; translateX = 0; translateY = 0; updateTransform(); }
   function updateTransform() {
     document.getElementById('modalImgContainer').style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
   }

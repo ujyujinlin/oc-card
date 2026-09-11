@@ -1015,3 +1015,225 @@
   }
 
   function addKeepsakeCard(fileKey = "", val = "") {
+    keepsakeCount++; const id = `k${keepsakeCount}`;
+    createDynamicCard('keepsake-grid', id, keepsakeCount, fileKey, val, "信物名稱 / 描述", "信物照片");
+  }
+
+  function addOutfitCard(fileKey = "", val = "") {
+    outfitCount++; const id = `c${outfitCount}`;
+    createDynamicCard('outfit-grid', id, outfitCount, fileKey, val, "服裝描述", `套裝 ${outfitCount}`);
+  }
+
+  function createDynamicCard(containerId, id, count, fileKey, val, inputPlaceholder, defaultLabel) {
+    if (fileKey && typeof fileKey === 'object') {
+      fileDataStore[id] = fileKey;
+    }
+
+    const cardHtml = `
+      <div class="card-item" id="${id}-card">
+        ${count > 1 ? `<button type="button" class="delete-card-btn" onclick="document.getElementById('${id}-card').remove()">✕</button>` : ''}
+        <div class="image-uploader-wrapper">
+          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
+            <img id="${id}-preview" src="" style="display:none;">
+            <div id="${id}-fallback" class="file-fallback-info" style="display:none;"></div>
+            <span id="${id}-text">📁 ${defaultLabel}<br>(.png, .jpeg, .pdf, .psd, .gif)</span>
+          </div>
+          <div class="image-overlay" id="${id}-overlay" style="display:none;">
+            <button type="button" class="overlay-btn" onclick="openFileView('${id}')">🔍 檢視/下載</button>
+            <button type="button" class="overlay-btn" onclick="triggerUpload('${id}')">🔄 更換</button>
+          </div>
+        </div>
+        <input type="file" id="${id}-input" accept=".png,.jpg,.jpeg,.gif,.pdf,.psd" style="display:none" onchange="handleFileUpload(this, '${id}')">
+        <input type="text" placeholder="${inputPlaceholder}" value="${val}">
+      </div>`;
+    document.getElementById(containerId).insertAdjacentHTML('beforeend', cardHtml);
+
+    if (fileDataStore[id]) {
+      renderFilePreview(id, fileDataStore[id]);
+    }
+  }
+
+  /* ---------------- 頁面保存與載入 ---------------- */
+  function saveCurrentPageData() {
+    const pageData = {
+      name: document.getElementById('field-name').value,
+      alias: document.getElementById('field-alias').value,
+      dob: document.getElementById('field-dob').value,
+      identity: document.getElementById('field-identity').value,
+      ability: document.getElementById('field-ability').value,
+      age: document.getElementById('field-age').value,
+      race: document.getElementById('field-race').value,
+      personality: personalityList,
+      stat: document.getElementById('field-stat').value,
+      like: document.getElementById('field-like').value,
+      dislike: document.getElementById('field-dislike').value,
+      keywords: keywordsList,
+      color: document.getElementById('field-color-hex').value,
+      avatar1: fileDataStore['avatar1'] || null,
+      avatar2: fileDataStore['avatar2'] || null,
+      startYear: document.getElementById('startYearInput').value,
+      endYear: document.getElementById('endYearInput').value,
+      majorEvents: majorEvents,
+      persons: [], keepsakes: [], outfits: []
+    };
+
+    document.querySelectorAll('#person-grid .card-item').forEach(card => {
+      const cid = card.id.replace('-card', '');
+      const val = card.querySelector('input[type="text"]').value;
+      pageData.persons.push({ file: fileDataStore[cid] || null, val });
+    });
+
+    document.querySelectorAll('#keepsake-grid .card-item').forEach(card => {
+      const cid = card.id.replace('-card', '');
+      const val = card.querySelector('input[type="text"]').value;
+      pageData.keepsakes.push({ file: fileDataStore[cid] || null, val });
+    });
+
+    document.querySelectorAll('#outfit-grid .card-item').forEach(card => {
+      const cid = card.id.replace('-card', '');
+      const val = card.querySelector('input[type="text"]').value;
+      pageData.outfits.push({ file: fileDataStore[cid] || null, val });
+    });
+
+    const res = findNodeAndParent(activePageId);
+    if (res) {
+      res.node.data = pageData;
+      if (pageData.name) res.node.name = pageData.name;
+    }
+
+    saveToLocalStorage();
+    renderTree();
+    alert("當前頁面已保存！");
+  }
+
+  function loadPageData(pageId) {
+    const res = findNodeAndParent(pageId);
+    if (!res || !res.node.data) { resetForm(); return; }
+
+    const d = res.node.data;
+    document.getElementById('field-name').value = d.name || '';
+    document.getElementById('field-alias').value = d.alias || '';
+    document.getElementById('field-dob').value = d.dob || '';
+    document.getElementById('field-identity').value = d.identity || '';
+    document.getElementById('field-ability').value = d.ability || '';
+    document.getElementById('field-age').value = d.age || '';
+    document.getElementById('field-race').value = d.race || '';
+    document.getElementById('field-stat').value = d.stat || '';
+    document.getElementById('field-like').value = d.like || '';
+    document.getElementById('field-dislike').value = d.dislike || '';
+
+    const colorVal = d.color || '#007bff';
+    document.getElementById('field-color-hex').value = colorVal;
+    document.getElementById('color-swatch').style.backgroundColor = colorVal;
+    manualColorInput(colorVal);
+
+    personalityList = Array.isArray(d.personality) ? d.personality : [];
+    renderTags('personality');
+
+    keywordsList = Array.isArray(d.keywords) ? d.keywords : [];
+    renderTags('keyword');
+
+    fileDataStore = {};
+    if (d.avatar1) { fileDataStore['avatar1'] = d.avatar1; renderFilePreview('avatar1', d.avatar1); }
+    if (d.avatar2) { fileDataStore['avatar2'] = d.avatar2; renderFilePreview('avatar2', d.avatar2); }
+
+    document.getElementById('startYearInput').value = d.startYear || 2000;
+    document.getElementById('endYearInput').value = d.endYear || 2030;
+    majorEvents = d.majorEvents || [];
+
+    renderCharCheckboxes();
+    renderEvents();
+    updateLineTimeline();
+
+    document.getElementById('person-grid').innerHTML = '';
+    document.getElementById('keepsake-grid').innerHTML = '';
+    document.getElementById('outfit-grid').innerHTML = '';
+    personCount = 0; keepsakeCount = 0; outfitCount = 0;
+
+    if (d.persons && d.persons.length) {
+      d.persons.forEach(p => addPersonCard(p.file, p.val));
+    } else { for(let i=0; i<2; i++) addPersonCard(); }
+
+    if (d.keepsakes && d.keepsakes.length) {
+      d.keepsakes.forEach(k => addKeepsakeCard(k.file, k.val));
+    } else { for(let i=0; i<2; i++) addKeepsakeCard(); }
+
+    if (d.outfits && d.outfits.length) {
+      d.outfits.forEach(o => addOutfitCard(o.file, o.val));
+    } else { for(let i=0; i<2; i++) addOutfitCard(); }
+  }
+
+  function resetForm() {
+    document.getElementById('ocForm').reset();
+    document.getElementById('person-grid').innerHTML = '';
+    document.getElementById('keepsake-grid').innerHTML = '';
+    document.getElementById('outfit-grid').innerHTML = '';
+    personalityList = []; renderTags('personality');
+    keywordsList = []; renderTags('keyword');
+    fileDataStore = {};
+    personCount = 0; keepsakeCount = 0; outfitCount = 0;
+    majorEvents = []; selectedSiblingCharIds = [];
+    renderCharCheckboxes(); renderEvents(); updateLineTimeline();
+    for(let i=0; i<2; i++) { addPersonCard(); addKeepsakeCard(); addOutfitCard(); }
+  }
+
+  /* ---------------- 本地備份與 JSON 匯出匯入 ---------------- */
+  function exportDataJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `OC_Backup_${new Date().toISOString().slice(0,10)}.json`);
+    dlAnchorElem.click();
+  }
+
+  function importDataJson(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          appData = JSON.parse(e.target.result);
+          saveToLocalStorage(); renderTree(); loadPageData(activePageId);
+          alert("資料檔匯入成功！");
+        } catch(err) { alert("格式錯誤，無法讀取檔案！"); }
+      };
+      reader.readAsText(input.files[0]);
+    }
+  }
+
+  function saveToLocalStorage() { localStorage.setItem('oc_app_promax', JSON.stringify(appData)); }
+  function loadFromLocalStorage() {
+    const local = localStorage.getItem('oc_app_promax');
+    if (local) appData = JSON.parse(local);
+  }
+
+  /* ---------------- Modal 圖片檢視與縮放 ---------------- */
+  let currentScale = 1, translateX = 0, translateY = 0, isDragging = false, startX = 0, startY = 0;
+  function openModalBySrc(src) {
+    if (src) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('imageModal').style.display = 'flex';
+      resetZoom();
+    }
+  }
+  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+
+  function setupZoomAndPan() {
+    const viewport = document.getElementById('modalViewport');
+    viewport.addEventListener('wheel', (e) => { e.preventDefault(); adjustZoom(e.deltaY < 0 ? 0.15 : -0.15); });
+    viewport.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform();
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+  }
+
+  function adjustZoom(delta) { currentScale = Math.min(Math.max(0.5, currentScale + delta), 5); updateTransform(); }
+  function resetZoom() { currentScale = 1; translateX = 0; translateY = 0; updateTransform(); }
+  function updateTransform() {
+    document.getElementById('modalImgContainer').style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+  }
+</script>
+
+</body>
+</html>

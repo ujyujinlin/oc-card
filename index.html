@@ -59,13 +59,17 @@
 
     .item-header {
       padding: 8px; display: flex; align-items: center; justify-content: space-between;
-      gap: 4px; cursor: pointer;
+      gap: 6px; cursor: pointer;
     }
     .drag-handle {
-      cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em;
+      cursor: grab; padding: 0 2px; color: #95a5a6; font-weight: bold; font-size: 1.1em;
       user-select: none;
     }
-    .drag-handle:active { cursor: grabbing; color: #fff; }
+
+    .color-dot {
+      width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.8);
+      display: inline-block; flex-shrink: 0; background-color: #007bff;
+    }
 
     .toggle-icon {
       cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none;
@@ -121,6 +125,24 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
+    /* 關鍵詞 Tag 區塊 */
+    .keyword-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; width: 100%; }
+    .keyword-tag {
+      background: #e1f0ff; color: #0056b3; border: 1px solid #b8daff;
+      border-radius: 12px; padding: 2px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;
+    }
+    .keyword-tag button { background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0; }
+
+    /* 代表色選擇器 */
+    .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
+    .color-square {
+      width: 32px; height: 32px; border-radius: 6px; border: 2px solid #ccc;
+      cursor: pointer; position: relative; overflow: hidden; padding: 0; background: none;
+    }
+    .color-square input[type="color"] {
+      position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; cursor: pointer; border: none;
+    }
+
     /* 圖片上傳區 */
     .image-uploader-wrapper { position: relative; width: 100%; height: 180px; }
     .image-uploader {
@@ -137,7 +159,6 @@
       justify-content: center; align-items: center; gap: 8px; opacity: 0; transition: 0.2s;
     }
     .image-uploader-wrapper:hover .image-overlay { opacity: 1; }
-    @media (hover: none) { .image-overlay { opacity: 0.9; background: rgba(0,0,0,0.3); } }
 
     .overlay-btn {
       background: #fff; border: none; padding: 6px 12px; border-radius: 4px;
@@ -170,23 +191,30 @@
     .timeline-control-bar input[type="number"] {
       width: 65px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;
     }
-    .slider-val-tag { background: #333; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
     .max-progress-tag { background: #16a085; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
 
-    /* 重大事件快捷鍵區 */
+    /* 重大事件 */
     .events-bar {
       margin-top: 10px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9;
     }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .role-checkbox-group {
+      display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0; margin-bottom: 8px; border-bottom: 1px solid #d0dbe5; font-size: 0.85em;
+    }
+    .role-checkbox-label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
     .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
     .event-chip {
-      background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 16px;
-      padding: 4px 10px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
+      border-radius: 16px; padding: 4px 10px; font-size: 0.85em;
+      display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
+      color: white; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.3); position: relative;
     }
-    .event-chip:hover { background: #007bff; color: white; }
     .event-chip button {
-      background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.9em;
+      background: rgba(255,255,255,0.3); border: none; color: white; border-radius: 50%;
+      cursor: pointer; padding: 0 4px; font-size: 0.8em; margin-left: 2px;
     }
+    .event-chip button:hover { background: rgba(0,0,0,0.4); }
 
     /* Modal 高清檢視 */
     .modal {
@@ -253,6 +281,8 @@
       <div class="grid-row">
         <div class="section-box info-left">
           <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateMaxProgressTag()"></div>
+          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias"></div>
+          <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" placeholder="DD/MM/YY"></div>
           <div class="form-group"><label>身份：</label><input type="text" id="field-identity"></div>
           <div class="form-group"><label>能力：</label><input type="text" id="field-ability"></div>
           <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
@@ -261,10 +291,29 @@
           <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat"></div>
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
-          <div class="form-group"><label>關鍵詞：</label><input type="text" id="field-keywords"></div>
+          
+          <!-- 關鍵詞 (Tag) -->
+          <div class="form-group vertical">
+            <label>關鍵詞（按空格/回車生成標籤）：</label>
+            <input type="text" id="field-keywords-input" onkeydown="handleKeywordKeyDown(event)">
+            <div class="keyword-container" id="keywords-tags"></div>
+          </div>
+
           <div class="form-group vertical">
             <label>代表性的一句話：</label>
             <textarea id="field-quote" rows="2"></textarea>
+          </div>
+
+          <!-- 代表色 -->
+          <div class="form-group vertical">
+            <label>代表色：</label>
+            <div class="color-picker-wrapper">
+              <div class="color-square">
+                <input type="color" id="field-color-picker" value="#007bff" onchange="autoSaveColor()" onblur="autoSaveColor()">
+              </div>
+              <span>HEX: <input type="text" id="field-color-hex" value="#007bff" style="width: 80px; padding: 4px;" onchange="syncColorFromHex(this.value)"></span>
+              <span>RGB: <input type="text" id="field-color-rgb" value="rgb(0, 123, 255)" style="width: 130px; padding: 4px;" onchange="syncColorFromRgb(this.value)"></span>
+            </div>
           </div>
         </div>
 
@@ -298,7 +347,6 @@
         <div class="section-title">
           <span>成長時間線</span>
           <div>
-            <span class="slider-val-tag" id="currentAgeTag">0 歲時</span>
             <span class="max-progress-tag" id="maxProgressTag">記錄至 未命名角色 0 歲時</span>
           </div>
         </div>
@@ -321,6 +369,9 @@
           <div class="events-title">
             <span>重大事件</span>
             <button type="button" class="add-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增重大事件</button>
+          </div>
+          <div class="role-checkbox-group" id="role-checkbox-group">
+            <!-- 動態生成同資料夾角色勾選按鈕 -->
           </div>
           <div class="events-list" id="events-list"></div>
         </div>
@@ -379,6 +430,8 @@
   let outfitCount = 0;
   let timelineData = {};
   let majorEvents = [];
+  let keywordTags = [];
+  let checkedRoleIds = new Set();
   let currentProgress = 0;
 
   window.onload = function() {
@@ -388,7 +441,7 @@
     setupZoomAndPan();
   };
 
-  /* ---------------- 樹狀選單 ---------------- */
+  /* ---------------- 左側選單 ---------------- */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
   function renderTree() {
@@ -431,9 +484,14 @@
         ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` 
         : '';
 
+      const colorDotHtml = node.type === 'page'
+        ? `<span class="color-dot" style="background-color: ${node.data?.color || '#007bff'}"></span>`
+        : '';
+
       header.innerHTML = `
         <span class="drag-handle">☰</span>
         ${toggleBtnHtml}
+        ${colorDotHtml}
         <span class="item-title">${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
         <div class="item-btns">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
@@ -552,6 +610,75 @@
     loadPageData(pageId);
   }
 
+  /* ---------------- 關鍵詞 Tag 處理 ---------------- */
+  function handleKeywordKeyDown(e) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if (val && !keywordTags.includes(val)) {
+        keywordTags.push(val);
+        renderKeywordTags();
+      }
+      e.target.value = '';
+    }
+  }
+
+  function renderKeywordTags() {
+    const container = document.getElementById('keywords-tags');
+    container.innerHTML = '';
+    keywordTags.forEach((tag, idx) => {
+      const tagEl = document.createElement('div');
+      tagEl.className = 'keyword-tag';
+      tagEl.innerHTML = `<span>${tag}</span><button type="button" onclick="removeKeywordTag(${idx})">✕</button>`;
+      container.appendChild(tagEl);
+    });
+  }
+
+  function removeKeywordTag(idx) {
+    keywordTags.splice(idx, 1);
+    renderKeywordTags();
+  }
+
+  /* ---------------- 代表色選擇與同步 ---------------- */
+  function autoSaveColor() {
+    const picker = document.getElementById('field-color-picker');
+    const hexVal = picker.value;
+    document.getElementById('field-color-hex').value = hexVal;
+    document.getElementById('field-color-rgb').value = hexToRgb(hexVal);
+
+    // 同步左側選單顏色標註
+    const res = findNodeAndParent(activePageId);
+    if (res) {
+      if (!res.node.data) res.node.data = {};
+      res.node.data.color = hexVal;
+      renderTree();
+    }
+  }
+
+  function syncColorFromHex(hex) {
+    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+      document.getElementById('field-color-picker').value = hex;
+      autoSaveColor();
+    }
+  }
+
+  function syncColorFromRgb(rgbStr) {
+    const match = rgbStr.match(/\d+/g);
+    if (match && match.length >= 3) {
+      const hex = "#" + ((1 << 24) + (parseInt(match[0]) << 16) + (parseInt(match[1]) << 8) + parseInt(match[2])).toString(16).slice(1);
+      document.getElementById('field-color-picker').value = hex;
+      autoSaveColor();
+    }
+  }
+
+  function hexToRgb(hex) {
+    const bigint = parseInt(hex.replace('#', ''), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
   /* ---------------- 時間軸與重大事件控制 ---------------- */
   function updateSliderMax(maxVal) {
     maxVal = parseInt(maxVal) || 100;
@@ -571,7 +698,6 @@
 
     slider.value = val;
     document.getElementById('jumpInput').value = val;
-    document.getElementById('currentAgeTag').innerText = `${val} 歲時`;
 
     document.getElementById('timelineNote').value = timelineData[val] || '';
   }
@@ -597,19 +723,76 @@
     document.getElementById('maxProgressTag').innerText = `記錄至 ${charName} ${maxVal} 歲時`;
   }
 
-  /* ---------------- 重大事件 ---------------- */
-  function renderEvents() {
+  /* ---------------- 同資料夾角色跨角色重大事件 ---------------- */
+  function renderRoleCheckboxesAndEvents() {
+    const checkboxGroup = document.getElementById('role-checkbox-group');
+    checkboxGroup.innerHTML = '';
+
+    const currentRes = findNodeAndParent(activePageId);
+    if (!currentRes || !currentRes.parent) return;
+
+    // 取得同一資料夾內的所有角色頁面
+    const siblingPages = currentRes.parent.children.filter(n => n.type === 'page');
+
+    siblingPages.forEach(page => {
+      const isCurrent = (page.id === activePageId);
+      const label = document.createElement('label');
+      label.className = 'role-checkbox-label';
+      label.innerHTML = `
+        <input type="checkbox" value="${page.id}" ${isCurrent || checkedRoleIds.has(page.id) ? 'checked' : ''} ${isCurrent ? 'disabled' : ''} onchange="toggleRoleEvents('${page.id}', this.checked)">
+        <span style="color:${page.data?.color || '#007bff'}; font-weight:bold;">●</span> ${page.name}
+      `;
+      checkboxGroup.appendChild(label);
+    });
+
+    renderEvents(siblingPages);
+  }
+
+  function toggleRoleEvents(roleId, isChecked) {
+    if (isChecked) checkedRoleIds.add(roleId);
+    else checkedRoleIds.delete(roleId);
+    const currentRes = findNodeAndParent(activePageId);
+    if (currentRes && currentRes.parent) {
+      renderEvents(currentRes.parent.children.filter(n => n.type === 'page'));
+    }
+  }
+
+  function renderEvents(siblingPages = []) {
     const list = document.getElementById('events-list');
     list.innerHTML = '';
+
+    // 1. 本角色的重大事件
+    const currentColor = document.getElementById('field-color-picker').value || '#007bff';
+    const currentName = document.getElementById('field-name').value || '本角色';
+
     majorEvents.forEach((evt, idx) => {
       const chip = document.createElement('div');
       chip.className = 'event-chip';
+      chip.style.backgroundColor = currentColor;
+      chip.title = currentName;
       chip.innerHTML = `
         <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
         <button type="button" onclick="editEvent(${idx})" title="修改">✏️</button>
         <button type="button" onclick="deleteEvent(${idx})" title="刪除">✕</button>
       `;
       list.appendChild(chip);
+    });
+
+    // 2. 勾選的其他角色的重大事件
+    siblingPages.forEach(page => {
+      if (page.id !== activePageId && checkedRoleIds.has(page.id) && page.data?.majorEvents) {
+        const pColor = page.data.color || '#6c757d';
+        const pName = page.name || '其他角色';
+
+        page.data.majorEvents.forEach(evt => {
+          const chip = document.createElement('div');
+          chip.className = 'event-chip';
+          chip.style.backgroundColor = pColor;
+          chip.title = `${pName} 的重大事件`;
+          chip.innerHTML = `<span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>`;
+          list.appendChild(chip);
+        });
+      }
     });
   }
 
@@ -619,7 +802,7 @@
     const age = prompt("請輸入發生的歲數：", currentProgress);
     if (age !== null) {
       majorEvents.push({ id: Date.now(), name, age: parseInt(age) || 0 });
-      renderEvents();
+      renderRoleCheckboxesAndEvents();
     }
   }
 
@@ -631,16 +814,16 @@
     if (newAge !== null) {
       majorEvents[idx].name = newName;
       majorEvents[idx].age = parseInt(newAge) || 0;
-      renderEvents();
+      renderRoleCheckboxesAndEvents();
     }
   }
 
   function deleteEvent(idx) {
     majorEvents.splice(idx, 1);
-    renderEvents();
+    renderRoleCheckboxesAndEvents();
   }
 
-  /* ---------------- 圖片轉 Base64 上傳（穩定持久化） ---------------- */
+  /* ---------------- 圖片轉 Base64 上傳 ---------------- */
   function uploadImageBase64(input, id) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
@@ -673,6 +856,8 @@
 
     const pageData = {
       name: document.getElementById('field-name').value,
+      alias: document.getElementById('field-alias').value,
+      dob: document.getElementById('field-dob').value,
       identity: document.getElementById('field-identity').value,
       ability: document.getElementById('field-ability').value,
       age: document.getElementById('field-age').value,
@@ -681,8 +866,9 @@
       stat: document.getElementById('field-stat').value,
       like: document.getElementById('field-like').value,
       dislike: document.getElementById('field-dislike').value,
-      keywords: document.getElementById('field-keywords').value,
+      keywords: keywordTags,
       quote: document.getElementById('field-quote').value,
+      color: document.getElementById('field-color-picker').value,
       avatar: document.getElementById('avatar-preview').src,
       maxLimit: document.getElementById('maxLimitInput').value,
       timeline: timelineData,
@@ -719,6 +905,8 @@
 
     const d = res.node.data;
     document.getElementById('field-name').value = d.name || '';
+    document.getElementById('field-alias').value = d.alias || '';
+    document.getElementById('field-dob').value = d.dob || '';
     document.getElementById('field-identity').value = d.identity || '';
     document.getElementById('field-ability').value = d.ability || '';
     document.getElementById('field-age').value = d.age || '';
@@ -727,14 +915,21 @@
     document.getElementById('field-stat').value = d.stat || '';
     document.getElementById('field-like').value = d.like || '';
     document.getElementById('field-dislike').value = d.dislike || '';
-    document.getElementById('field-keywords').value = d.keywords || '';
+    
+    keywordTags = d.keywords || [];
+    renderKeywordTags();
+
     document.getElementById('field-quote').value = d.quote || '';
+    
+    const colorHex = d.color || '#007bff';
+    document.getElementById('field-color-picker').value = colorHex;
+    autoSaveColor();
 
     if (d.avatar) setImgSrc('avatar', d.avatar);
 
     timelineData = d.timeline || {};
     majorEvents = d.majorEvents || [];
-    renderEvents();
+    renderRoleCheckboxesAndEvents();
 
     const maxLimit = d.maxLimit || 100;
     document.getElementById('maxLimitInput').value = maxLimit;
@@ -762,7 +957,9 @@
     document.getElementById('outfit-grid').innerHTML = '';
     personCount = 0; outfitCount = 0;
     majorEvents = [];
-    renderEvents();
+    keywordTags = [];
+    renderKeywordTags();
+    renderRoleCheckboxesAndEvents();
     for(let i=0; i<3; i++) { addPersonCard(); addOutfitCard(); }
   }
 

@@ -59,23 +59,24 @@
 
     .item-header {
       padding: 8px; display: flex; align-items: center; justify-content: space-between;
-      gap: 6px; cursor: pointer;
+      gap: 4px; cursor: pointer;
     }
     .drag-handle {
-      cursor: grab; padding: 0 2px; color: #95a5a6; font-weight: bold; font-size: 1.1em;
+      cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em;
       user-select: none;
     }
-
-    .color-dot {
-      width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.8);
-      display: inline-block; flex-shrink: 0; background-color: #007bff;
-    }
+    .drag-handle:active { cursor: grabbing; color: #fff; }
 
     .toggle-icon {
       cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none;
     }
 
-    .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; }
+    .color-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+      margin-right: 4px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; }
 
     .item-btns { display: flex; gap: 2px; }
     .item-btns button {
@@ -125,23 +126,25 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
-    /* 關鍵詞 Tag 區塊 */
-    .keyword-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; width: 100%; }
+    /* 關鍵詞標籤區 */
+    .keyword-wrapper { display: flex; flex-direction: column; width: 100%; gap: 6px; }
+    .keyword-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
     .keyword-tag {
       background: #e1f0ff; color: #0056b3; border: 1px solid #b8daff;
-      border-radius: 12px; padding: 2px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;
+      border-radius: 4px; padding: 2px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 4px;
     }
-    .keyword-tag button { background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0; }
+    .keyword-tag button {
+      background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px;
+    }
 
     /* 代表色選擇器 */
-    .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
-    .color-square {
-      width: 32px; height: 32px; border-radius: 6px; border: 2px solid #ccc;
-      cursor: pointer; position: relative; overflow: hidden; padding: 0; background: none;
+    .color-picker-group { display: flex; align-items: center; gap: 10px; }
+    .color-picker-box {
+      width: 36px; height: 36px; border: 2px solid #ccc; border-radius: 6px; cursor: pointer;
+      padding: 0; background: none; -webkit-appearance: none;
     }
-    .color-square input[type="color"] {
-      position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; cursor: pointer; border: none;
-    }
+    .color-picker-box::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker-box::-webkit-color-swatch { border: none; border-radius: 4px; }
 
     /* 圖片上傳區 */
     .image-uploader-wrapper { position: relative; width: 100%; height: 180px; }
@@ -159,6 +162,7 @@
       justify-content: center; align-items: center; gap: 8px; opacity: 0; transition: 0.2s;
     }
     .image-uploader-wrapper:hover .image-overlay { opacity: 1; }
+    @media (hover: none) { .image-overlay { opacity: 0.9; background: rgba(0,0,0,0.3); } }
 
     .overlay-btn {
       background: #fff; border: none; padding: 6px 12px; border-radius: 4px;
@@ -193,28 +197,27 @@
     }
     .max-progress-tag { background: #16a085; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
 
-    /* 重大事件 */
+    /* 重大事件快捷鍵區 */
     .events-bar {
       margin-top: 10px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9;
     }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
-    .role-checkbox-group {
-      display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0; margin-bottom: 8px; border-bottom: 1px solid #d0dbe5; font-size: 0.85em;
+    .char-filter-box {
+      margin-bottom: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid #ddd;
+      font-size: 0.82em; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     }
-    .role-checkbox-label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    .char-filter-box label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
 
     .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
     .event-chip {
-      border-radius: 16px; padding: 4px 10px; font-size: 0.85em;
-      display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
-      color: white; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.3); position: relative;
+      background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 16px;
+      padding: 4px 10px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
     }
+    .event-chip:hover { background: #007bff; color: white; }
     .event-chip button {
-      background: rgba(255,255,255,0.3); border: none; color: white; border-radius: 50%;
-      cursor: pointer; padding: 0 4px; font-size: 0.8em; margin-left: 2px;
+      background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.9em;
     }
-    .event-chip button:hover { background: rgba(0,0,0,0.4); }
 
     /* Modal 高清檢視 */
     .modal {
@@ -292,11 +295,13 @@
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           
-          <!-- 關鍵詞 (Tag) -->
+          <!-- 關鍵詞 (標籤化) -->
           <div class="form-group vertical">
-            <label>關鍵詞（按空格/回車生成標籤）：</label>
-            <input type="text" id="field-keywords-input" onkeydown="handleKeywordKeyDown(event)">
-            <div class="keyword-container" id="keywords-tags"></div>
+            <label>關鍵詞：</label>
+            <div class="keyword-wrapper">
+              <input type="text" id="keyword-input" placeholder="按空格或 Enter 新增關鍵詞" onkeydown="handleKeywordInput(event)">
+              <div class="keyword-tags-container" id="keyword-tags"></div>
+            </div>
           </div>
 
           <div class="form-group vertical">
@@ -304,15 +309,12 @@
             <textarea id="field-quote" rows="2"></textarea>
           </div>
 
-          <!-- 代表色 -->
-          <div class="form-group vertical">
+          <!-- 代表色 Picker -->
+          <div class="form-group">
             <label>代表色：</label>
-            <div class="color-picker-wrapper">
-              <div class="color-square">
-                <input type="color" id="field-color-picker" value="#007bff" onchange="autoSaveColor()" onblur="autoSaveColor()">
-              </div>
-              <span>HEX: <input type="text" id="field-color-hex" value="#007bff" style="width: 80px; padding: 4px;" onchange="syncColorFromHex(this.value)"></span>
-              <span>RGB: <input type="text" id="field-color-rgb" value="rgb(0, 123, 255)" style="width: 130px; padding: 4px;" onchange="syncColorFromRgb(this.value)"></span>
+            <div class="color-picker-group">
+              <input type="color" id="field-color" class="color-picker-box" value="#007bff" onchange="autoSaveColor()">
+              <input type="text" id="field-color-hex" style="width: 100px;" value="#007bff" onchange="syncColorInput(this.value)">
             </div>
           </div>
         </div>
@@ -370,9 +372,13 @@
             <span>重大事件</span>
             <button type="button" class="add-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增重大事件</button>
           </div>
-          <div class="role-checkbox-group" id="role-checkbox-group">
-            <!-- 動態生成同資料夾角色勾選按鈕 -->
+          
+          <!-- 同資料夾角色勾選清單 -->
+          <div class="char-filter-box" id="char-filter-box">
+            <span style="font-weight:bold;">顯示角色：</span>
+            <div id="char-checkbox-list" style="display:inline-flex; flex-wrap:wrap; gap:8px;"></div>
           </div>
+
           <div class="events-list" id="events-list"></div>
         </div>
 
@@ -430,9 +436,9 @@
   let outfitCount = 0;
   let timelineData = {};
   let majorEvents = [];
-  let keywordTags = [];
-  let checkedRoleIds = new Set();
+  let keywordsList = [];
   let currentProgress = 0;
+  let selectedSiblingCharIds = [];
 
   window.onload = function() {
     loadFromLocalStorage();
@@ -441,7 +447,7 @@
     setupZoomAndPan();
   };
 
-  /* ---------------- 左側選單 ---------------- */
+  /* ---------------- 樹狀選單 ---------------- */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
   function renderTree() {
@@ -484,15 +490,14 @@
         ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` 
         : '';
 
-      const colorDotHtml = node.type === 'page'
-        ? `<span class="color-dot" style="background-color: ${node.data?.color || '#007bff'}"></span>`
+      const colorDotHtml = node.type === 'page' && node.data && node.data.color
+        ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>`
         : '';
 
       header.innerHTML = `
         <span class="drag-handle">☰</span>
         ${toggleBtnHtml}
-        ${colorDotHtml}
-        <span class="item-title">${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
+        <span class="item-title">${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
         <div class="item-btns">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
           ${node.type === 'folder' ? `<button title="新增子資料夾" onclick="event.stopPropagation(); promptAddSubFolder('${node.id}')">📁+</button>` : ''}
@@ -610,76 +615,55 @@
     loadPageData(pageId);
   }
 
-  /* ---------------- 關鍵詞 Tag 處理 ---------------- */
-  function handleKeywordKeyDown(e) {
+  /* ---------------- 關鍵詞標籤化 ---------------- */
+  function handleKeywordInput(e) {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       const val = e.target.value.trim();
-      if (val && !keywordTags.includes(val)) {
-        keywordTags.push(val);
-        renderKeywordTags();
+      if (val && !keywordsList.includes(val)) {
+        keywordsList.push(val);
+        renderKeywords();
       }
       e.target.value = '';
     }
   }
 
-  function renderKeywordTags() {
-    const container = document.getElementById('keywords-tags');
+  function renderKeywords() {
+    const container = document.getElementById('keyword-tags');
     container.innerHTML = '';
-    keywordTags.forEach((tag, idx) => {
-      const tagEl = document.createElement('div');
-      tagEl.className = 'keyword-tag';
-      tagEl.innerHTML = `<span>${tag}</span><button type="button" onclick="removeKeywordTag(${idx})">✕</button>`;
-      container.appendChild(tagEl);
+    keywordsList.forEach((kw, idx) => {
+      const tag = document.createElement('div');
+      tag.className = 'keyword-tag';
+      tag.innerHTML = `<span>${kw}</span><button type="button" onclick="removeKeyword(${idx})">✕</button>`;
+      container.appendChild(tag);
     });
   }
 
-  function removeKeywordTag(idx) {
-    keywordTags.splice(idx, 1);
-    renderKeywordTags();
+  function removeKeyword(idx) {
+    keywordsList.splice(idx, 1);
+    renderKeywords();
   }
 
-  /* ---------------- 代表色選擇與同步 ---------------- */
-  function autoSaveColor() {
-    const picker = document.getElementById('field-color-picker');
-    const hexVal = picker.value;
-    document.getElementById('field-color-hex').value = hexVal;
-    document.getElementById('field-color-rgb').value = hexToRgb(hexVal);
+  /* ---------------- 代表色 Picker ---------------- */
+  function syncColorInput(val) {
+    document.getElementById('field-color').value = val;
+    autoSaveColor();
+  }
 
-    // 同步左側選單顏色標註
+  function autoSaveColor() {
+    const colorVal = document.getElementById('field-color').value;
+    document.getElementById('field-color-hex').value = colorVal;
+    
+    // 更新樹狀圖代表色
     const res = findNodeAndParent(activePageId);
     if (res) {
       if (!res.node.data) res.node.data = {};
-      res.node.data.color = hexVal;
+      res.node.data.color = colorVal;
       renderTree();
     }
   }
 
-  function syncColorFromHex(hex) {
-    if (/^#[0-9A-F]{6}$/i.test(hex)) {
-      document.getElementById('field-color-picker').value = hex;
-      autoSaveColor();
-    }
-  }
-
-  function syncColorFromRgb(rgbStr) {
-    const match = rgbStr.match(/\d+/g);
-    if (match && match.length >= 3) {
-      const hex = "#" + ((1 << 24) + (parseInt(match[0]) << 16) + (parseInt(match[1]) << 8) + parseInt(match[2])).toString(16).slice(1);
-      document.getElementById('field-color-picker').value = hex;
-      autoSaveColor();
-    }
-  }
-
-  function hexToRgb(hex) {
-    const bigint = parseInt(hex.replace('#', ''), 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  /* ---------------- 時間軸與重大事件控制 ---------------- */
+  /* ---------------- 時間軸控制 ---------------- */
   function updateSliderMax(maxVal) {
     maxVal = parseInt(maxVal) || 100;
     const slider = document.getElementById('timelineSlider');
@@ -723,54 +707,59 @@
     document.getElementById('maxProgressTag').innerText = `記錄至 ${charName} ${maxVal} 歲時`;
   }
 
-  /* ---------------- 同資料夾角色跨角色重大事件 ---------------- */
-  function renderRoleCheckboxesAndEvents() {
-    const checkboxGroup = document.getElementById('role-checkbox-group');
-    checkboxGroup.innerHTML = '';
+  /* ---------------- 重大事件跨角色聯動 ---------------- */
+  function renderCharCheckboxes() {
+    const container = document.getElementById('char-checkbox-list');
+    container.innerHTML = '';
 
-    const currentRes = findNodeAndParent(activePageId);
-    if (!currentRes || !currentRes.parent) return;
+    const res = findNodeAndParent(activePageId);
+    if (!res || !res.parent) return;
 
-    // 取得同一資料夾內的所有角色頁面
-    const siblingPages = currentRes.parent.children.filter(n => n.type === 'page');
+    const siblings = res.parent.children.filter(n => n.type === 'page');
+    
+    siblings.forEach(node => {
+      const charName = (node.data && node.data.name) ? node.data.name : node.name;
+      const charColor = (node.data && node.data.color) ? node.data.color : '#007bff';
+      const isSelf = node.id === activePageId;
 
-    siblingPages.forEach(page => {
-      const isCurrent = (page.id === activePageId);
       const label = document.createElement('label');
-      label.className = 'role-checkbox-label';
+      label.style.display = isSelf ? 'none' : 'inline-flex'; // 隱藏自己（預設必定顯示）
+
+      const isChecked = selectedSiblingCharIds.includes(node.id);
       label.innerHTML = `
-        <input type="checkbox" value="${page.id}" ${isCurrent || checkedRoleIds.has(page.id) ? 'checked' : ''} ${isCurrent ? 'disabled' : ''} onchange="toggleRoleEvents('${page.id}', this.checked)">
-        <span style="color:${page.data?.color || '#007bff'}; font-weight:bold;">●</span> ${page.name}
+        <input type="checkbox" value="${node.id}" ${isChecked ? 'checked' : ''} onchange="toggleSiblingFilter('${node.id}')">
+        <span class="color-dot" style="background-color: ${charColor};"></span>
+        <span>${charName}</span>
       `;
-      checkboxGroup.appendChild(label);
+      container.appendChild(label);
     });
-
-    renderEvents(siblingPages);
   }
 
-  function toggleRoleEvents(roleId, isChecked) {
-    if (isChecked) checkedRoleIds.add(roleId);
-    else checkedRoleIds.delete(roleId);
-    const currentRes = findNodeAndParent(activePageId);
-    if (currentRes && currentRes.parent) {
-      renderEvents(currentRes.parent.children.filter(n => n.type === 'page'));
+  function toggleSiblingFilter(charId) {
+    if (selectedSiblingCharIds.includes(charId)) {
+      selectedSiblingCharIds = selectedSiblingCharIds.filter(id => id !== charId);
+    } else {
+      selectedSiblingCharIds.push(charId);
     }
+    renderEvents();
   }
 
-  function renderEvents(siblingPages = []) {
+  function renderEvents() {
     const list = document.getElementById('events-list');
     list.innerHTML = '';
 
     // 1. 本角色的重大事件
-    const currentColor = document.getElementById('field-color-picker').value || '#007bff';
-    const currentName = document.getElementById('field-name').value || '本角色';
+    const selfColor = document.getElementById('field-color').value || '#007bff';
+    const selfName = document.getElementById('field-name').value || '當前角色';
 
     majorEvents.forEach((evt, idx) => {
       const chip = document.createElement('div');
       chip.className = 'event-chip';
-      chip.style.backgroundColor = currentColor;
-      chip.title = currentName;
+      chip.title = selfName;
+      chip.style.borderColor = selfColor;
+      chip.style.color = selfColor;
       chip.innerHTML = `
+        <span class="color-dot" style="background-color: ${selfColor}"></span>
         <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
         <button type="button" onclick="editEvent(${idx})" title="修改">✏️</button>
         <button type="button" onclick="deleteEvent(${idx})" title="刪除">✕</button>
@@ -778,18 +767,25 @@
       list.appendChild(chip);
     });
 
-    // 2. 勾選的其他角色的重大事件
-    siblingPages.forEach(page => {
-      if (page.id !== activePageId && checkedRoleIds.has(page.id) && page.data?.majorEvents) {
-        const pColor = page.data.color || '#6c757d';
-        const pName = page.name || '其他角色';
+    // 2. 勾選的其他角色事件
+    selectedSiblingCharIds.forEach(charId => {
+      const siblingRes = findNodeAndParent(charId);
+      if (siblingRes && siblingRes.node.data) {
+        const sData = siblingRes.node.data;
+        const sColor = sData.color || '#6c757d';
+        const sName = sData.name || siblingRes.node.name;
+        const sEvents = sData.majorEvents || [];
 
-        page.data.majorEvents.forEach(evt => {
+        sEvents.forEach(evt => {
           const chip = document.createElement('div');
           chip.className = 'event-chip';
-          chip.style.backgroundColor = pColor;
-          chip.title = `${pName} 的重大事件`;
-          chip.innerHTML = `<span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>`;
+          chip.title = `角色：${sName}`;
+          chip.style.borderColor = sColor;
+          chip.style.color = sColor;
+          chip.innerHTML = `
+            <span class="color-dot" style="background-color: ${sColor}"></span>
+            <span onclick="jumpToTimeline(${evt.age})">📌 ${evt.name} (${evt.age}歲)</span>
+          `;
           list.appendChild(chip);
         });
       }
@@ -802,7 +798,7 @@
     const age = prompt("請輸入發生的歲數：", currentProgress);
     if (age !== null) {
       majorEvents.push({ id: Date.now(), name, age: parseInt(age) || 0 });
-      renderRoleCheckboxesAndEvents();
+      renderEvents();
     }
   }
 
@@ -814,13 +810,13 @@
     if (newAge !== null) {
       majorEvents[idx].name = newName;
       majorEvents[idx].age = parseInt(newAge) || 0;
-      renderRoleCheckboxesAndEvents();
+      renderEvents();
     }
   }
 
   function deleteEvent(idx) {
     majorEvents.splice(idx, 1);
-    renderRoleCheckboxesAndEvents();
+    renderEvents();
   }
 
   /* ---------------- 圖片轉 Base64 上傳 ---------------- */
@@ -866,9 +862,9 @@
       stat: document.getElementById('field-stat').value,
       like: document.getElementById('field-like').value,
       dislike: document.getElementById('field-dislike').value,
-      keywords: keywordTags,
+      keywords: keywordsList,
       quote: document.getElementById('field-quote').value,
-      color: document.getElementById('field-color-picker').value,
+      color: document.getElementById('field-color').value,
       avatar: document.getElementById('avatar-preview').src,
       maxLimit: document.getElementById('maxLimitInput').value,
       timeline: timelineData,
@@ -915,21 +911,22 @@
     document.getElementById('field-stat').value = d.stat || '';
     document.getElementById('field-like').value = d.like || '';
     document.getElementById('field-dislike').value = d.dislike || '';
-    
-    keywordTags = d.keywords || [];
-    renderKeywordTags();
-
     document.getElementById('field-quote').value = d.quote || '';
-    
-    const colorHex = d.color || '#007bff';
-    document.getElementById('field-color-picker').value = colorHex;
-    autoSaveColor();
+
+    const colorVal = d.color || '#007bff';
+    document.getElementById('field-color').value = colorVal;
+    document.getElementById('field-color-hex').value = colorVal;
+
+    keywordsList = Array.isArray(d.keywords) ? d.keywords : [];
+    renderKeywords();
 
     if (d.avatar) setImgSrc('avatar', d.avatar);
 
     timelineData = d.timeline || {};
     majorEvents = d.majorEvents || [];
-    renderRoleCheckboxesAndEvents();
+
+    renderCharCheckboxes();
+    renderEvents();
 
     const maxLimit = d.maxLimit || 100;
     document.getElementById('maxLimitInput').value = maxLimit;
@@ -955,11 +952,13 @@
     document.getElementById('ocForm').reset();
     document.getElementById('person-grid').innerHTML = '';
     document.getElementById('outfit-grid').innerHTML = '';
+    keywordsList = [];
+    renderKeywords();
     personCount = 0; outfitCount = 0;
     majorEvents = [];
-    keywordTags = [];
-    renderKeywordTags();
-    renderRoleCheckboxesAndEvents();
+    selectedSiblingCharIds = [];
+    renderCharCheckboxes();
+    renderEvents();
     for(let i=0; i<3; i++) { addPersonCard(); addOutfitCard(); }
   }
 

@@ -143,7 +143,22 @@
     .sidebar-resizer:hover, .sidebar-resizer.resizing { background: #3498db; }
 
     .sidebar-header { padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center; }
-    .sidebar-user-info { padding: 10px 15px; background: #243342; font-size: 0.85em; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #34495e; }
+    
+    .sidebar-user-info { 
+      padding: 10px 15px; background: #243342; font-size: 0.85em; 
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #34495e; 
+    }
+    .sidebar-user-btns { display: flex; gap: 6px; align-items: center; }
+    .mailbox-btn {
+      position: relative; background: #34495e; color: white; border: none; 
+      padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em;
+    }
+    .mailbox-badge {
+      position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
+      border-radius: 50%; width: 15px; height: 15px; font-size: 10px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+    }
+
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
     .sidebar-tools { padding: 10px; background: #34495e; display: flex; gap: 5px; flex-wrap: wrap; }
     .sidebar-tools button { flex: 1; padding: 6px; font-size: 0.8em; background: #16a085; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
@@ -162,7 +177,12 @@
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
 
-    .share-member-count { font-size: 0.75em; background: #16a085; color: white; padding: 1px 5px; border-radius: 10px; flex-shrink: 0; }
+    .share-member-count { 
+      font-size: 0.75em; background: #16a085; color: white; padding: 1px 6px; 
+      border-radius: 10px; flex-shrink: 0; cursor: pointer; position: relative;
+    }
+    .share-member-count:hover { background: #1abc9c; }
+
     .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; flex-shrink: 0; }
 
     .sub-tree { list-style: none; padding-left: 14px; margin: 0; }
@@ -302,13 +322,26 @@
     }
     .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
 
-    /* Modal 燈箱 */
+    /* Modal 燈箱與對話框 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .modal-viewport { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: grab; position: relative; }
     .modal-img-container { transform-origin: center center; transition: transform 0.05s linear; }
     .modal-img-container img, .modal-img-container iframe { max-width: 90vw; max-height: 85vh; object-fit: contain; }
     .zoom-controls { position: absolute; bottom: 20px; display: flex; gap: 10px; z-index: 2100; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px); }
     .zoom-controls button { background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
+
+    /* 信箱與成員管理 Modal 樣式 */
+    .dialog-box {
+      background: #ffffff; padding: 24px; border-radius: 10px; width: 90%; max-width: 450px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #333; position: relative; max-height: 85vh; overflow-y: auto;
+    }
+    .dialog-box h3 { margin-top: 0; font-size: 1.25em; border-bottom: 2px solid #eee; padding-bottom: 8px; color: #2c3e50; }
+    .dialog-close { position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 1.2em; cursor: pointer; color: #777; }
+    .invite-item, .member-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 0.9em;
+    }
+    .invite-item-btns { display: flex; gap: 6px; }
 
     @media (min-width: 600px) {
       .grid-row { flex-direction: row; }
@@ -376,7 +409,12 @@
     </div>
     <div class="sidebar-user-info">
       <span>👤 <strong id="sidebarNickname">訪客</strong></span>
-      <button style="background:#e74c3c; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;" onclick="handleLogout()">登出</button>
+      <div class="sidebar-user-btns">
+        <button class="mailbox-btn" onclick="openMailboxModal()" title="收件匣邀請">
+          ✉️ 信箱 <span class="mailbox-badge" id="mailboxBadge" style="display:none;">0</span>
+        </button>
+        <button style="background:#e74c3c; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;" onclick="handleLogout()">登出</button>
+      </div>
     </div>
     <div class="sidebar-tools">
       <button onclick="promptAddFolder()">+ 新增根資料夾</button>
@@ -415,8 +453,8 @@
 
     <!-- 頂部功能按鈕與背景長線 -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-      <h2 style="margin: 5px 0; display:flex; align-items:center; flex-wrap:wrap;">
-        角色資料頁 
+      <h2 style="margin: 5px 0; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span id="pageTitleText">角色資料頁</span>
         <span class="draft-badge" id="draftBadge">⚠️ 載入未保存草稿 (24H暫存)</span>
       </h2>
       
@@ -602,11 +640,37 @@
   </div>
 </div>
 
+<!-- ✉️ 信箱 Modal 彈窗 -->
+<div id="mailboxModal" class="modal">
+  <div class="dialog-box">
+    <button class="dialog-close" onclick="closeMailboxModal()">✕</button>
+    <h3>✉️ 系統收件匣 (共享資料夾邀請)</h3>
+    <div id="mailboxList"></div>
+  </div>
+</div>
+
+<!-- 👥 成員名單 Modal 彈窗 -->
+<div id="membersModal" class="modal">
+  <div class="dialog-box">
+    <button class="dialog-close" onclick="closeMembersModal()">✕</button>
+    <h3 id="membersModalTitle">👥 共享資料夾成員名單</h3>
+    <div id="membersList" style="margin-bottom: 15px;"></div>
+    
+    <div style="border-top: 1px solid #eee; padding-top: 12px;">
+      <h4 style="margin: 0 0 8px 0; font-size: 0.95em;">【邀請成員】功能</h4>
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="inviteMemberInput" placeholder="輸入帳號暱稱 / 帳號名稱" style="flex:1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;">
+        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="sendMemberInviteFromModal()">發送邀請</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   /* ==========================================================================
      1. 全域狀態與雲端數據庫 (Auth System & Globals)
      ========================================================================== */
-  let usersDb = {}; // 模擬雲端數據庫: { username: { password, nickname, appData } }
+  let usersDb = {}; // 模擬雲端數據庫: { username: { password, nickname, appData, invitations: [] } }
   let currentUser = null; 
 
   let appData = { tree: [] };
@@ -619,6 +683,7 @@
   let currentYear = 2000;
   let uploadedFilesStore = {}; 
   let visibleCharMap = {}; 
+  let currentActiveFolderForModal = null; // 成員彈窗當前選擇的資料夾
 
   let currentH = 210, currentS = 1, currentV = 1;
   let currentZoom = 1;
@@ -654,8 +719,10 @@
       if (data.type === 'USER_JOINED') {
         showToastNotification(`🔔 即時通知：[${data.userName}] 加入了共享資料夾「${data.folderName}」`);
       } else if (data.type === 'FOLDER_SYNC' && data.targetFolder) {
-        // 同步選單：如果其他用戶更新了共享資料夾內容，實時更新本地樹
         syncSharedFolderToLocal(data.targetFolder);
+      } else if (data.type === 'INVITE_RECEIVED' && currentUser && data.targetUser === currentUser.username) {
+        showToastNotification(`✉️ 收到來自 [${data.senderNick}] 的共享資料夾邀請！`);
+        updateMailboxBadge();
       }
     };
   }
@@ -686,7 +753,212 @@
   }
 
   /* ==========================================================================
-     3. 24小時未保存數據暫存機制 (24-Hour Draft Auto-Save)
+     3. 信箱系統與邀請管理 (Mailbox & Invitation System)
+     ========================================================================== */
+  function updateMailboxBadge() {
+    if (!currentUser || !usersDb[currentUser.username]) return;
+    const invs = usersDb[currentUser.username].invitations || [];
+    const badge = document.getElementById('mailboxBadge');
+    if (invs.length > 0) {
+      badge.innerText = invs.length;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function openMailboxModal() {
+    renderMailboxList();
+    document.getElementById('mailboxModal').style.display = 'flex';
+  }
+
+  function closeMailboxModal() {
+    document.getElementById('mailboxModal').style.display = 'none';
+  }
+
+  function renderMailboxList() {
+    const list = document.getElementById('mailboxList');
+    list.innerHTML = '';
+    const invs = (currentUser && usersDb[currentUser.username]) ? (usersDb[currentUser.username].invitations || []) : [];
+
+    if (invs.length === 0) {
+      list.innerHTML = `<div style="text-align:center; color:#888; padding:20px 0;">信箱內目前沒有任何邀請</div>`;
+      return;
+    }
+
+    invs.forEach((inv, index) => {
+      const item = document.createElement('div');
+      item.className = 'invite-item';
+      item.innerHTML = `
+        <div>
+          <strong>[${inv.senderNick}]</strong> 邀請您加入共享資料夾：<br>
+          <span style="color:#2980b9; font-weight:bold;">${inv.folderName}</span>
+        </div>
+        <div class="invite-item-btns">
+          <button class="btn btn-success" style="padding:4px 8px; font-size:0.8em;" onclick="acceptInvitation(${index})">加入</button>
+          <button class="btn" style="background:#e74c3c; color:white; padding:4px 8px; font-size:0.8em;" onclick="rejectInvitation(${index})">拒絕</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function acceptInvitation(index) {
+    const invs = usersDb[currentUser.username].invitations;
+    const inv = invs[index];
+
+    // 將共享資料夾加入當前用戶的 appData 樹中（原創立者與新成員皆保留）
+    let existing = appData.tree.find(f => f.id === inv.folderData.id);
+    if (!existing) {
+      // 增加成員名單記錄
+      if (!inv.folderData.members) {
+        inv.folderData.members = [{ username: inv.senderUser, nickname: inv.senderNick, role: 'owner' }];
+      }
+      if (!inv.folderData.members.some(m => m.username === currentUser.username)) {
+        inv.folderData.members.push({ username: currentUser.username, nickname: currentUser.nickname, role: 'member' });
+        inv.folderData.shareCount = inv.folderData.members.length;
+      }
+      appData.tree.push(inv.folderData);
+      
+      // 同步更新創立者資料庫中的該資料夾成員資訊
+      if (usersDb[inv.senderUser] && usersDb[inv.senderUser].appData) {
+        let senderFolder = usersDb[inv.senderUser].appData.tree.find(f => f.id === inv.folderData.id);
+        if (senderFolder) {
+          senderFolder.members = inv.folderData.members;
+          senderFolder.shareCount = inv.folderData.shareCount;
+        }
+      }
+    }
+
+    invs.splice(index, 1);
+    saveUsersDbToStorage();
+    saveToLocalStorage();
+    renderTree();
+    renderMailboxList();
+    updateMailboxBadge();
+
+    // 廣播加入訊息
+    broadcastChannel.postMessage({
+      type: 'USER_JOINED',
+      userName: currentUser.nickname,
+      folderName: inv.folderName
+    });
+
+    showToastNotification(`✅ 已成功加入共享資料夾「${inv.folderName}」！`);
+  }
+
+  function rejectInvitation(index) {
+    usersDb[currentUser.username].invitations.splice(index, 1);
+    saveUsersDbToStorage();
+    renderMailboxList();
+    updateMailboxBadge();
+    showToastNotification(`已拒絕該邀請`);
+  }
+
+  /* ==========================================================================
+     4. 成員名單彈窗與刪除/邀請成員 (Member Management Modal)
+     ========================================================================== */
+  function openMembersModal(folderId) {
+    const res = findNodeAndParent(folderId);
+    if (!res || res.node.type !== 'folder') return;
+    currentActiveFolderForModal = res.node;
+
+    document.getElementById('membersModalTitle').innerText = `👥 共享資料夾成員名單 (${res.node.name})`;
+    renderMembersList();
+    document.getElementById('membersModal').style.display = 'flex';
+  }
+
+  function closeMembersModal() {
+    document.getElementById('membersModal').style.display = 'none';
+    currentActiveFolderForModal = null;
+  }
+
+  function renderMembersList() {
+    const list = document.getElementById('membersList');
+    list.innerHTML = '';
+    const folder = currentActiveFolderForModal;
+    if (!folder) return;
+
+    const members = folder.members || [
+      { username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }
+    ];
+
+    members.forEach((m) => {
+      const item = document.createElement('div');
+      item.className = 'member-item';
+      const isOwner = m.role === 'owner';
+      const canDelete = (folder.ownerId === currentUser.username || currentUser.username === m.username) && !isOwner;
+
+      item.innerHTML = `
+        <div>
+          <span>👤 <strong>${m.nickname}</strong> (${m.username})</span>
+          ${isOwner ? '<span style="font-size:0.75em; background:#f39c12; color:white; padding:1px 5px; border-radius:4px; margin-left:6px;">創立者</span>' : ''}
+        </div>
+        <div>
+          ${canDelete ? `<button class="btn" style="background:#e74c3c; color:white; padding:2px 6px; font-size:0.75em;" onclick="removeMemberFromFolder('${m.username}')">刪除成員</button>` : ''}
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function removeMemberFromFolder(targetUsername) {
+    const folder = currentActiveFolderForModal;
+    if (!folder || !confirm(`確定要刪除成員 [${targetUsername}] 嗎？`)) return;
+
+    folder.members = (folder.members || []).filter(m => m.username !== targetUsername);
+    folder.shareCount = folder.members.length;
+    saveToLocalStorage();
+    renderTree();
+    renderMembersList();
+    showToastNotification(`已將 [${targetUsername}] 從共享資料夾移除`);
+  }
+
+  function sendMemberInviteFromModal() {
+    const inputVal = document.getElementById('inviteMemberInput').value.trim();
+    if (!inputVal) { alert("請輸入對方的帳號暱稱或帳號名稱！"); return; }
+    const folder = currentActiveFolderForModal;
+    if (!folder) return;
+
+    // 尋找對應的用戶
+    let targetUserKey = null;
+    for (let u in usersDb) {
+      if (u === inputVal || usersDb[u].nickname === inputVal) {
+        targetUserKey = u;
+        break;
+      }
+    }
+
+    if (!targetUserKey) {
+      alert("找不到對應的帳號或暱稱，請再次確認！");
+      return;
+    }
+
+    if (!usersDb[targetUserKey].invitations) usersDb[targetUserKey].invitations = [];
+    
+    // 建立發送邀請數據
+    usersDb[targetUserKey].invitations.push({
+      senderUser: currentUser.username,
+      senderNick: currentUser.nickname,
+      folderName: folder.name,
+      folderData: JSON.parse(JSON.stringify(folder))
+    });
+
+    saveUsersDbToStorage();
+    document.getElementById('inviteMemberInput').value = '';
+
+    // 即時廣播給被邀請對象
+    broadcastChannel.postMessage({
+      type: 'INVITE_RECEIVED',
+      targetUser: targetUserKey,
+      senderNick: currentUser.nickname
+    });
+
+    alert(`✅ 已成功向 [${usersDb[targetUserKey].nickname}] 發送邀請函！`);
+  }
+
+  /* ==========================================================================
+     5. 24小時未保存數據暫存機制 (24-Hour Draft Auto-Save)
      ========================================================================== */
   function getDraftStorageKey(pageId) {
     return `oc_draft_${currentUser ? currentUser.username : 'guest'}_${pageId}`;
@@ -723,7 +995,6 @@
       const hoursDiff = (currentTime - draftObj.timestamp) / (1000 * 60 * 60);
 
       if (hoursDiff > 24) {
-        // 超過 24 小時，自動過期並清除
         localStorage.removeItem(key);
         return null;
       }
@@ -734,7 +1005,7 @@
   }
 
   /* ==========================================================================
-     4. 雲端帳號保存與持久化登入 (Cloud Auth)
+     6. 雲端帳號保存與持久化登入 (Cloud Auth)
      ========================================================================== */
   function loadUsersDbFromStorage() {
     const saved = localStorage.getItem('oc_system_users_db');
@@ -753,6 +1024,7 @@
       currentUser = { username: session, nickname: usersDb[session].nickname };
       document.getElementById('authOverlay').style.display = 'none';
       initUserAppData();
+      updateMailboxBadge();
     } else {
       document.getElementById('authOverlay').style.display = 'flex';
     }
@@ -779,7 +1051,8 @@
     const defaultData = {
       tree: [
         {
-          id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1,
+          id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, ownerId: user,
+          members: [{ username: user, nickname: nick, role: 'owner' }],
           children: [
             { id: "p_1", name: "主角 A", type: "page", ownerId: user, data: { name: "主角 A" } }
           ]
@@ -787,7 +1060,7 @@
       ]
     };
 
-    usersDb[user] = { password: pass, nickname: nick, appData: defaultData };
+    usersDb[user] = { password: pass, nickname: nick, appData: defaultData, invitations: [] };
     saveUsersDbToStorage();
 
     currentUser = { username: user, nickname: nick };
@@ -795,6 +1068,7 @@
     
     document.getElementById('authOverlay').style.display = 'none';
     initUserAppData();
+    updateMailboxBadge();
   }
 
   function handleLogin() {
@@ -809,6 +1083,7 @@
 
     document.getElementById('authOverlay').style.display = 'none';
     initUserAppData();
+    updateMailboxBadge();
   }
 
   function handleLogout() {
@@ -825,7 +1100,11 @@
       activePageId = firstPage.id;
     } else {
       const newPageId = "p_" + Date.now();
-      appData.tree = [{ id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, children: [{ id: newPageId, name: "新角色", type: "page", ownerId: currentUser.username, data: {} }] }];
+      appData.tree = [{ 
+        id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username,
+        members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }],
+        children: [{ id: newPageId, name: "新角色", type: "page", ownerId: currentUser.username, data: {} }] 
+      }];
       activePageId = newPageId;
     }
 
@@ -841,7 +1120,7 @@
   }
 
   /* ==========================================================================
-     5. 側邊欄邊框可拖曳 (Resizable Sidebar)
+     7. 側邊欄邊框可拖曳 (Resizable Sidebar)
      ========================================================================== */
   function initSidebarResizable() {
     const sidebar = document.getElementById('sidebar');
@@ -874,7 +1153,7 @@
   }
 
   /* ==========================================================================
-     6. 共享資料夾加入與即時通知 (Shared Folder & Broadcaster)
+     8. 共享資料夾加入與邀請碼處理
      ========================================================================== */
   function joinSharedFolderFromSidebar() {
     const code = document.getElementById("sidebarInviteInput").value.trim();
@@ -882,7 +1161,6 @@
 
     const targetFolderName = `共享企劃資料夾 (${code})`;
 
-    // 加入共享資料夾：包含資料夾內所有已經在裡面的角色資料頁內容
     const newSharedFolder = {
       id: "shared_f_" + code,
       name: targetFolderName,
@@ -890,6 +1168,11 @@
       collapsed: false,
       shareCount: 2,
       isShared: true,
+      ownerId: "creator_master",
+      members: [
+        { username: "creator_master", nickname: "資深企劃主", role: 'owner' },
+        { username: currentUser.username, nickname: currentUser.nickname, role: 'member' }
+      ],
       children: [
         { 
           id: "shared_p1_" + code, 
@@ -904,20 +1187,6 @@
             personalityList: ["嚴肅", "沈穩"],
             keywordsList: ["共享資料", "傳奇前輩"]
           } 
-        },
-        { 
-          id: "shared_p2_" + code, 
-          name: "企劃角色 B", 
-          type: "page", 
-          ownerId: "creator_alice", 
-          data: { 
-            name: "企劃角色 B", 
-            identity: "調查員", 
-            color: "#9b59b6", 
-            age: "19",
-            personalityList: ["機敏"],
-            keywordsList: ["偵探"]
-          } 
         }
       ]
     };
@@ -926,20 +1195,18 @@
     saveToLocalStorage();
     renderTree();
 
-    // 1. 即時廣播通知全員誰加入了共享資料夾
     broadcastChannel.postMessage({
       type: 'USER_JOINED',
       userName: currentUser.nickname,
       folderName: targetFolderName
     });
 
-    // 2. 廣播同步資料頁顯示
     broadcastChannel.postMessage({
       type: 'FOLDER_SYNC',
       targetFolder: newSharedFolder
     });
 
-    showToastNotification(`✅ 成功加入！[${currentUser.nickname}] 已進入「${targetFolderName}」並載入完整內容！`);
+    showToastNotification(`✅ 成功加入！[${currentUser.nickname}] 已進入「${targetFolderName}」！`);
     document.getElementById("sidebarInviteInput").value = "";
   }
 
@@ -953,10 +1220,19 @@
     const container = document.getElementById("mainContainer");
     const welcomeBanner = document.getElementById("welcomeBanner");
     const creatorBadge = document.getElementById("creatorBadge");
+    const pageTitleText = document.getElementById("pageTitleText");
     const isOwner = (currentPageOwnerId === currentUser.username);
 
-    // 右側實時顯示創作者名稱
-    creatorBadge.innerText = `👑 創建者: ${currentPageOwnerId || '未知'}`;
+    // 獲取當前創作者暱稱與頁面名稱，並在右邊顯示創作者是誰：（資料頁名稱）（賬號昵稱）
+    const res = findNodeAndParent(activePageId);
+    const curName = (res && res.node) ? res.node.name : '角色資料頁';
+    let ownerNick = currentPageOwnerId;
+    if (usersDb[currentPageOwnerId]) {
+      ownerNick = usersDb[currentPageOwnerId].nickname;
+    }
+
+    pageTitleText.innerText = `${curName} (${ownerNick || '未知'})`;
+    creatorBadge.innerText = `👑 創建者: ${ownerNick || '未知'}`;
 
     if (isOwner) {
       container.classList.remove("readonly-mode");
@@ -969,7 +1245,7 @@
 
   function saveCurrentPageToCloud(e) {
     saveCurrentPageData();
-    clearDraft(activePageId); // 清除草稿
+    clearDraft(activePageId);
 
     const saveButton = e ? e.target : document.querySelector('.submit-btn');
     const originalText = saveButton.innerText;
@@ -985,7 +1261,7 @@
   }
 
   /* ==========================================================================
-     7. 樹狀選單邏輯 (Tree View Rendering)
+     9. 樹狀選單邏輯 (Tree View Rendering)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -1030,11 +1306,16 @@
       const colorDotHtml = node.type === 'page' && node.data && node.data.color
         ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
 
-      let shareBadge = '';
+      let shareBadgeHtml = '';
       let hiddenCountBadge = '';
       if (node.type === 'folder') {
-        const shareNum = node.shareCount !== undefined ? node.shareCount : 1;
-        shareBadge = `<span class="share-member-count" title="${shareNum} 人參與共享資料夾">👥 ${shareNum}</span>`;
+        const members = node.members || [{ username: node.ownerId || currentUser.username, nickname: currentUser.nickname, role: 'owner' }];
+        const shareNum = members.length;
+        const memberNamesTooltip = members.map(m => `• ${m.nickname} (${m.role === 'owner' ? '創立者' : '成員'})`).join('\n');
+
+        // 人數標籤增加【滑鼠懸停顯示所有參與者】與【成員名單】功能 (點擊開啟對話框)
+        shareBadgeHtml = `<span class="share-member-count" title="參與者名單：&#10;${memberNamesTooltip}" onclick="event.stopPropagation(); openMembersModal('${node.id}')">👥 ${shareNum}</span>`;
+        
         if (node.collapsed) {
           const totalPages = countPagesInFolder(node);
           hiddenCountBadge = `<span class="hidden-page-count" title="包含 ${totalPages} 個資料頁">${totalPages}</span>`;
@@ -1044,7 +1325,7 @@
       header.innerHTML = `
         <span class="drag-handle">☰</span> ${toggleBtnHtml}
         <span class="item-title">
-          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadge} ${node.name}
+          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadgeHtml} ${node.name}
         </span>
         ${hiddenCountBadge}
         <div class="item-btns" style="margin-left: 6px;">
@@ -1089,7 +1370,14 @@
 
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
-    if (name) { appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, children: [] }); saveToLocalStorage(); renderTree(); }
+    if (name) { 
+      appData.tree.push({ 
+        id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username, 
+        members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }], children: [] 
+      }); 
+      saveToLocalStorage(); 
+      renderTree(); 
+    }
   }
 
   function promptAddSubFolder(parentId) {
@@ -1097,7 +1385,10 @@
     if (name) {
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
-        res.node.children.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, children: [] });
+        res.node.children.push({ 
+          id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username,
+          members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }], children: [] 
+        });
         res.node.collapsed = false; saveToLocalStorage(); renderTree();
       }
     }
@@ -1157,7 +1448,7 @@
   }
 
   /* ==========================================================================
-     8. 標籤與 HSV 調色盤控制
+     10. 標籤與 HSV 調色盤控制
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -1192,6 +1483,7 @@
   }
 
   function toggleColorPicker(e) {
+    if (currentPageOwnerId !== currentUser.username) return; // 唯讀模式下禁止觸發調色盤
     e.stopPropagation();
     const popover = document.getElementById('color-popover');
     popover.classList.toggle('active');
@@ -1356,13 +1648,14 @@
   }
 
   /* ==========================================================================
-     9. 圖片上傳與 Modal 檢視
+     11. 圖片上傳與 Modal 檢視
      ========================================================================== */
   function triggerInitialUpload(id) {
     if (!uploadedFilesStore[id]) triggerUpload(id);
   }
 
   function triggerUpload(id) {
+    if (currentPageOwnerId !== currentUser.username) return; // 唯讀模式下禁止觸發更換
     document.getElementById(`${id}-input`).click();
   }
 
@@ -1460,7 +1753,7 @@
   }
 
   /* ==========================================================================
-     10. 時間軸與垂直堆疊 × 符號
+     12. 時間軸與垂直堆疊 × 符號 (僅閲讀模式支援快捷鍵與查看)
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -1523,6 +1816,7 @@
         mark.style.color = item.color;
         mark.innerText = '✕';
         mark.title = `[${item.charName}] ${yNum}年 (${item.event.age || '?'}歲): ${item.event.name}\n敘述：${item.event.desc || '無描述'}`;
+        // 唯讀模式下快捷鍵點擊與選擇依然完全有效
         mark.onclick = () => selectTimelineEventNode(yNum, item.event);
         stackContainer.appendChild(mark);
       });
@@ -1612,6 +1906,7 @@
         const ageText = ev.age ? ` (${ev.age}歲)` : '';
         const deleteBtn = isCurrentPage ? `<button type="button" class="edit-only-btn" onclick="removeEvent(${idx})">✕</button>` : '';
 
+        // 唯讀模式支援顯示與快捷點擊預覽
         chip.innerHTML = `<span onclick="selectTimelineEventNode(${ev.year}, ${JSON.stringify(ev).replace(/"/g, '&quot;')})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
         list.appendChild(chip);
       });
@@ -1632,7 +1927,7 @@
   }
 
   /* ==========================================================================
-     11. 動態多卡片網格
+     13. 動態多卡片網格
      ========================================================================== */
   function createCardUploaderHtml(cardId) {
     return `
@@ -1715,7 +2010,7 @@
   }
 
   /* ==========================================================================
-     12. 資料儲存與載入 (Data Management)
+     14. 資料儲存與載入 (Data Management)
      ========================================================================== */
   function collectCurrentFormData() {
     return {
@@ -1773,11 +2068,9 @@
     const res = findNodeAndParent(pageId);
     if (!res || !res.node) return;
 
-    // 先讀取正式雲端數據
     let data = res.node.data || {};
     currentPageOwnerId = res.node.ownerId || (currentUser ? currentUser.username : "");
 
-    // 檢查是否有 24 小時內的未保存草稿
     const draftData = checkAndLoadDraft(pageId);
     if (draftData && currentPageOwnerId === (currentUser ? currentUser.username : "")) {
       data = draftData;

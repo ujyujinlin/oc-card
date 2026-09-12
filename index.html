@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>OC 角色卡雲端管理系統 Pro Max</title>
+  <title>OC 角色卡雲端與重大事件管理系統 Pro Max</title>
   <style>
     /* ==========================================================================
        1. 全局與基礎變數樣式 (Global Base)
@@ -11,7 +11,8 @@
     :root {
       --border-color: #333;
       --bg-color: #f9f9fb;
-      --primary-color: #28a745;
+      --primary-color: #4a90e2;
+      --success-color: #2ecc71;
       --accent-color: #007bff;
       --sidebar-width: 320px;
       --card-bg: #ffffff;
@@ -26,14 +27,70 @@
       display: flex; height: 100vh; overflow: hidden; color: #333;
     }
 
-    .submit-btn { 
-      width: 100%; background: var(--primary-color); color: white; 
-      border: none; padding: 12px; border-radius: 8px; font-weight: bold; 
-      font-size: 1.1em; cursor: pointer; margin-top: 10px;
+    .btn {
+      padding: 8px 16px; border: none; border-radius: 4px;
+      cursor: pointer; font-weight: bold; transition: background 0.2s;
     }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-success { background: var(--success-color); color: white; }
+    .btn:hover { opacity: 0.9; }
+
+    .submit-btn { 
+      width: 100%; background: var(--success-color); color: white; 
+      border: none; padding: 12px; border-radius: 8px; font-weight: bold; 
+      font-size: 1.1em; cursor: pointer; margin-top: 15px; transition: opacity 0.2s;
+    }
+    .submit-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
     /* ==========================================================================
-       2. 左側樹狀選單欄目 (Sidebar & Tree)
+       2. 共享資料夾、權限 UI 與 × 符號微調
+       ========================================================================== */
+    .share-panel {
+      background: #edf2f7; padding: 10px 14px; border-radius: 6px;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .share-panel input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+
+    .readonly-badge {
+      display: none; background: #e2e8f0; color: #4a5568;
+      padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;
+    }
+
+    /* 觀看非本人資料頁時僅檢閱（Read-only 模式控制） */
+    .readonly-mode .editable-field, 
+    .readonly-mode input, 
+    .readonly-mode textarea, 
+    .readonly-mode select {
+      pointer-events: none !important;
+      background-color: #f8f9fa !important;
+      border-color: #e9ecef !important;
+    }
+
+    .readonly-mode .edit-only-btn, 
+    .readonly-mode .submit-btn,
+    .readonly-mode .add-btn,
+    .readonly-mode .delete-card-btn {
+      display: none !important;
+    }
+
+    .readonly-mode .readonly-badge { display: inline-block; }
+
+    /* 背景長線與 × 符號定位 */
+    .timeline-line-container { position: relative; padding-top: 15px; margin-bottom: 15px; }
+    .timeline-long-line {
+      position: absolute; top: 25px; left: 0; width: 100%; height: 2px;
+      background-color: #888888; z-index: 1;
+    }
+
+    .close-btn {
+      position: absolute; top: 12px; right: 15px; width: 28px; height: 28px;
+      font-size: 32px; font-weight: 900; line-height: 28px; color: #e74c3c;
+      cursor: pointer; z-index: 2; text-align: center; user-select: none;
+    }
+    .close-btn:hover { color: #c0392b; transform: scale(1.15); }
+
+    /* ==========================================================================
+       3. 左側樹狀選單欄目 (Sidebar & Tree)
        ========================================================================== */
     .sidebar {
       width: var(--sidebar-width); background: #2c3e50; color: #ecf0f1;
@@ -41,17 +98,10 @@
       z-index: 100; position: absolute; left: 0; top: 0; bottom: 0;
     }
     .sidebar.closed { transform: translateX(-100%); }
-
-    .sidebar-header {
-      padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center;
-    }
+    .sidebar-header { padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center; }
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
-
     .sidebar-tools { padding: 10px; background: #34495e; display: flex; gap: 5px; flex-wrap: wrap; }
-    .sidebar-tools button {
-      flex: 1; padding: 6px; font-size: 0.8em; background: #16a085; color: white;
-      border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;
-    }
+    .sidebar-tools button { flex: 1; padding: 6px; font-size: 0.8em; background: #16a085; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
 
     .folder-container { flex: 1; overflow-y: auto; padding: 10px; }
     .tree-item { margin-bottom: 6px; border-radius: 4px; background: #34495e; transition: background 0.2s; }
@@ -60,12 +110,7 @@
     .item-header { padding: 8px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; }
     .drag-handle { cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em; user-select: none; }
     .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
-
-    .color-dot {
-      width: 12px; height: 12px; border-radius: 50%; display: inline-block;
-      margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6);
-    }
-
+    .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
     .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; }
     .item-btns { display: flex; gap: 2px; }
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
@@ -83,7 +128,7 @@
     }
 
     /* ==========================================================================
-       3. 右側主面板與佈局 (Main Content & Grid)
+       4. 右側主面板與 Layout
        ========================================================================== */
     .main-wrapper {
       flex: 1; overflow-y: auto; padding: 15px; padding-top: 55px;
@@ -91,9 +136,10 @@
     }
 
     .card-container {
-      width: 100%; max-width: 850px; background: var(--card-bg);
+      width: 100%; max-width: 900px; background: var(--card-bg);
       border: 2px solid var(--border-color); border-radius: 12px;
       padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: max-content;
+      position: relative;
     }
 
     .grid-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
@@ -105,9 +151,6 @@
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
     }
 
-    /* ==========================================================================
-       4. 基本資料與輸入控制欄目 (Basic Info & Inputs)
-       ========================================================================== */
     .form-group { display: flex; align-items: center; margin-bottom: 8px; }
     .form-group.vertical { flex-direction: column; align-items: flex-start; gap: 4px; }
     .form-group label { width: 100px; font-weight: bold; font-size: 0.9em; flex-shrink: 0; }
@@ -116,7 +159,7 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
-    /* 標籤化元件 */
+    /* 標籤控制 */
     .tag-wrapper { display: flex; flex-direction: column; width: 100%; gap: 6px; }
     .tag-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
     .custom-tag {
@@ -125,12 +168,9 @@
     }
     .custom-tag button { background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px; }
 
-    /* 代表色選擇器元件 */
+    /* HSV 調色盤 */
     .color-picker-group { display: flex; align-items: center; gap: 10px; position: relative; }
-    .color-swatch {
-      width: 32px; height: 32px; border: 2px solid #555; border-radius: 6px; cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    }
+    .color-swatch { width: 32px; height: 32px; border: 2px solid #555; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .color-picker-popover {
       display: none; position: absolute; top: 40px; left: 0; z-index: 500;
       background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 8px;
@@ -138,9 +178,7 @@
     }
     .color-picker-popover.active { display: block; }
 
-    /* ==========================================================================
-       5. 證件照與圖片上傳區塊 (Avatar & Upload)
-       ========================================================================== */
+    /* 圖片上傳區塊 */
     .avatar-right { padding: 0.75cm !important; display: flex; flex-direction: column; gap: 10px; }
     .id-photos-vertical { display: flex; flex-direction: column; gap: 12px; flex: 1; }
     .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 140px; }
@@ -161,9 +199,7 @@
     .image-uploader-wrapper:hover .image-overlay { opacity: 1; }
     .overlay-btn { background: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
 
-    /* ==========================================================================
-       6. 動態多卡片網格 (Cards Grid: 人物、信物、穿搭)
-       ========================================================================== */
+    /* 多卡片網格 */
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .card-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; position: relative; }
     .card-item input, .card-item textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9em; }
@@ -175,47 +211,40 @@
     }
     .add-btn { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer; }
 
-    /* ==========================================================================
-       7. 時間軸與事件欄目 (Timeline & Events)
-       ========================================================================== */
+    /* 時間軸與事件歷程 */
     .line-timeline-wrapper { margin: 30px 10px 20px 10px; position: relative; }
     .line-timeline-track { height: 4px; background: #333; width: 100%; position: relative; border-radius: 2px; }
     .line-mark-x {
       position: absolute; top: -10px; transform: translateX(-50%);
       font-weight: bold; font-size: 16px; cursor: pointer; line-height: 1;
-      user-select: none; transition: transform 0.1s;
-      text-shadow: 0 0 3px #fff;
+      user-select: none; transition: transform 0.1s; text-shadow: 0 0 3px #fff;
     }
     .line-mark-x:hover { transform: translateX(-50%) scale(1.5); }
-
     .timeline-range-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .timeline-range-tag input[type="number"] { width: 60px; text-align: center; border: none; border-radius: 4px; font-weight: bold; padding: 2px; }
+
+    .event-section-box { margin-top: 15px; background: #fafafa; padding: 15px; border-left: 4px solid var(--primary-color); border-radius: 6px; }
+    .event-version-tag { font-size: 12px; color: #7f8c8d; margin-bottom: 8px; }
 
     .events-bar { margin-top: 15px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9; }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     .char-filter-box { margin-bottom: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid #ddd; font-size: 0.82em; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
-
     .event-chip {
       border-radius: 16px; padding: 4px 12px; font-size: 0.85em;
       display: flex; align-items: center; gap: 6px; cursor: pointer;
       font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); color: #fff;
     }
     .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
-    .event-chip button:hover { opacity: 1; }
 
-    /* ==========================================================================
-       8. Modal 彈出視窗與燈箱 (Modal Viewer)
-       ========================================================================== */
+    /* Modal 燈箱 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .modal-viewport { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: grab; position: relative; }
     .modal-img-container { transform-origin: center center; transition: transform 0.05s linear; }
     .modal-img-container img, .modal-img-container iframe { max-width: 90vw; max-height: 85vh; object-fit: contain; }
-
     .zoom-controls { position: absolute; bottom: 20px; display: flex; gap: 10px; z-index: 2100; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px); }
     .zoom-controls button { background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
 
-    /* 響應式佈局轉換 */
     @media (min-width: 600px) {
       .grid-row { flex-direction: row; }
       .info-left { flex: 1.2; }
@@ -247,35 +276,56 @@
 
 <!-- 主內容卡片區 -->
 <div class="main-wrapper">
-  <div class="card-container">
+  <div class="card-container" id="mainContainer">
+    
+    <!-- 共享資料夾與邀請碼設定 -->
+    <div class="share-panel">
+      <strong>共享資料夾設定：</strong>
+      <label for="inviteCodeInput">邀請碼：</label>
+      <input type="text" id="inviteCodeInput" placeholder="輸入邀請碼 (輸入 READONLY_DEMO 測試唯讀)" value="SHARE2026">
+      <button class="btn btn-primary" onclick="joinSharedFolder()">加入/同步共享資料夾</button>
+      <span id="roleTag" style="margin-left: auto; font-size: 13px; color: #555;">當前身份：建立者 (可編輯)</span>
+    </div>
+
+    <!-- 頂部功能按鈕與背景長線微調容器 -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="margin: 5px 0;">角色資料頁 <span class="readonly-badge" id="readOnlyBadge">🔒 僅供檢閱 (非本人建立)</span></h2>
+      <button type="button" class="btn btn-success edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
+    </div>
+
+    <div class="timeline-line-container">
+      <div class="timeline-long-line"></div>
+      <div class="close-btn edit-only-btn" onclick="removeCharacterPage()" title="刪除頁面">×</div>
+    </div>
+
     <form id="ocForm">
       <div class="grid-row">
         <!-- 基本資訊 -->
         <div class="section-box info-left">
-          <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateTimeRangeTag()"></div>
-          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias"></div>
-          <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" placeholder="DD/MM/YY"></div>
-          <div class="form-group"><label>身份：</label><input type="text" id="field-identity"></div>
-          <div class="form-group"><label>能力：</label><input type="text" id="field-ability"></div>
-          <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
-          <div class="form-group"><label>種族：</label><input type="text" id="field-race"></div>
+          <div class="form-group"><label>名字：</label><input type="text" id="field-name" class="editable-field" oninput="updateTimeRangeTag()"></div>
+          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias" class="editable-field"></div>
+          <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" class="editable-field" placeholder="DD/MM/YY"></div>
+          <div class="form-group"><label>身份：</label><input type="text" id="field-identity" class="editable-field"></div>
+          <div class="form-group"><label>能力：</label><input type="text" id="field-ability" class="editable-field"></div>
+          <div class="form-group"><label>年齡：</label><input type="text" id="field-age" class="editable-field"></div>
+          <div class="form-group"><label>種族：</label><input type="text" id="field-race" class="editable-field"></div>
           
           <div class="form-group vertical">
             <label>性格：</label>
             <div class="tag-wrapper">
-              <input type="text" id="personality-input" placeholder="按下 Enter 新增標籤" onkeydown="handleTagInput(event, 'personality')">
+              <input type="text" id="personality-input" class="editable-field" placeholder="按下 Enter 新增標籤" onkeydown="handleTagInput(event, 'personality')">
               <div class="tag-container" id="personality-tags"></div>
             </div>
           </div>
 
-          <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat"></div>
-          <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
-          <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
+          <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat" class="editable-field"></div>
+          <div class="form-group"><label>喜好：</label><input type="text" id="field-like" class="editable-field"></div>
+          <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike" class="editable-field"></div>
           
           <div class="form-group vertical">
             <label>關鍵詞：</label>
             <div class="tag-wrapper">
-              <input type="text" id="keyword-input" placeholder="按下 Enter 新增關鍵詞" onkeydown="handleTagInput(event, 'keyword')">
+              <input type="text" id="keyword-input" class="editable-field" placeholder="按下 Enter 新增關鍵詞" onkeydown="handleTagInput(event, 'keyword')">
               <div class="tag-container" id="keyword-tags"></div>
             </div>
           </div>
@@ -284,12 +334,12 @@
             <label>代表色：</label>
             <div class="color-picker-group">
               <div class="color-swatch" id="color-swatch" style="background-color: #007bff;" onclick="toggleColorPicker(event)"></div>
-              <input type="text" id="field-color-hex" style="width: 100px;" value="#007bff" onchange="manualColorInput(this.value)">
+              <input type="text" id="field-color-hex" class="editable-field" style="width: 100px;" value="#007bff" onchange="manualColorInput(this.value)">
 
               <div class="color-picker-popover" id="color-popover" onclick="event.stopPropagation()">
                 <canvas id="color-wheel-canvas" width="220" height="220" style="cursor:crosshair; display:block; margin:0 auto;"></canvas>
                 <div style="font-size:0.8em; margin-top:8px; text-align:center; color:#ccc;">
-                  外環：色相 | 倒三角：白(左上) 飽和(右上) 黑(下)<br>(黑色極值不可選)
+                  外環：色相 | 倒三角：飽和/明度
                 </div>
               </div>
             </div>
@@ -308,7 +358,7 @@
               </div>
               <div class="image-overlay" id="avatar1-overlay" style="display:none;">
                 <button type="button" class="overlay-btn" onclick="openModalById('avatar1')">🔍 檢視</button>
-                <button type="button" class="overlay-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
+                <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
               </div>
             </div>
             <input type="file" id="avatar1-input" accept=".pdf,.png,.jpeg,.jpg,.psd,.gif" style="display:none" onchange="handleFileUpload(this, 'avatar1')">
@@ -321,7 +371,7 @@
               </div>
               <div class="image-overlay" id="avatar2-overlay" style="display:none;">
                 <button type="button" class="overlay-btn" onclick="openModalById('avatar2')">🔍 檢視</button>
-                <button type="button" class="overlay-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
+                <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
               </div>
             </div>
             <input type="file" id="avatar2-input" accept=".pdf,.png,.jpeg,.jpg,.psd,.gif" style="display:none" onchange="handleFileUpload(this, 'avatar2')">
@@ -329,11 +379,21 @@
         </div>
       </div>
 
+      <!-- 重大事件歷程 (自動同步最新版本) -->
+      <div class="event-section-box">
+        <h3 style="margin-top:0; margin-bottom:8px;">重大事件歷程 (自動同步最新版本)</h3>
+        <div class="event-version-tag" id="eventVersionTag">最新版本更新時間: 載入中...</div>
+        <textarea id="eventDescription" class="editable-field" placeholder="輸入或更新該角色的最新重大事件描述..."></textarea>
+        <div style="margin-top: 10px;">
+          <button type="button" class="btn btn-primary edit-only-btn" onclick="submitEventUpdate()">更新重大事件版本</button>
+        </div>
+      </div>
+
       <!-- 重要的人 -->
-      <div class="section-box" style="margin-bottom: 12px;">
+      <div class="section-box" style="margin-top: 12px; margin-bottom: 12px;">
         <div class="section-title">
           <span>重要的人</span>
-          <button type="button" class="add-btn" onclick="addPersonCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addPersonCard()">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="person-grid"></div>
       </div>
@@ -342,7 +402,7 @@
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>重要信物</span>
-          <button type="button" class="add-btn" onclick="addKeepCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addKeepCard()">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="keep-grid"></div>
       </div>
@@ -353,9 +413,9 @@
           <span>成長時間線</span>
           <div class="timeline-range-tag">
             <span>記錄始自</span>
-            <input type="number" id="startYearInput" value="2000" onchange="updateTimeRangeTag()">
+            <input type="number" id="startYearInput" class="editable-field" value="2000" onchange="updateTimeRangeTag()">
             <span>至</span>
-            <input type="number" id="endYearInput" value="2026" onchange="updateTimeRangeTag()">
+            <input type="number" id="endYearInput" class="editable-field" value="2026" onchange="updateTimeRangeTag()">
             <span>年（歷經 <strong id="totalYearsDisplay">27</strong> 年）</span>
           </div>
         </div>
@@ -366,8 +426,8 @@
 
         <div class="events-bar">
           <div class="events-title">
-            <span>重大事件（同資料夾跨角色聯通）</span>
-            <button type="button" class="add-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增重大事件</button>
+            <span>重大事件節點（跨角色聯通）</span>
+            <button type="button" class="add-btn edit-only-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增節點</button>
           </div>
           
           <div class="char-filter-box" id="char-filter-box">
@@ -381,10 +441,10 @@
         <div style="margin-top: 10px;">
           <div style="font-size:0.85em; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
             <span>目前年份：</span>
-            <input type="number" id="currentYearInput" value="2000" style="width:75px; text-align:center; font-weight:bold; font-size:1em; padding:2px 4px; border:1px solid #007bff; border-radius:4px; color:#007bff;" onchange="onYearInputChange(this.value)">
+            <input type="number" id="currentYearInput" class="editable-field" value="2000" style="width:75px; text-align:center; font-weight:bold; font-size:1em; padding:2px 4px; border:1px solid #007bff; border-radius:4px; color:#007bff;" onchange="onYearInputChange(this.value)">
             <span>年</span>
           </div>
-          <textarea id="timelineNote" style="width:100%; border:1px solid #ccc; border-radius:6px; padding:8px; min-height:75px;" placeholder="輸入該年份的備忘說明..." oninput="onNoteInput()"></textarea>
+          <textarea id="timelineNote" class="editable-field" style="width:100%; border:1px solid #ccc; border-radius:6px; padding:8px; min-height:65px;" placeholder="輸入該年份的備忘說明..." oninput="onNoteInput()"></textarea>
         </div>
       </div>
 
@@ -392,12 +452,12 @@
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>衣服穿搭</span>
-          <button type="button" class="add-btn" onclick="addOutfitCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addOutfitCard()">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="outfit-grid"></div>
       </div>
 
-      <button type="button" class="submit-btn" onclick="saveCurrentPageData()">保存當前資料頁</button>
+      <button type="button" class="submit-btn edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
     </form>
   </div>
 </div>
@@ -420,27 +480,41 @@
 
 <script>
   /* ==========================================================================
-     1. 系統全域變數與初始化 (Globals & Init)
+     1. 系統與使用者全域狀態 (Globals & Users)
      ========================================================================== */
+  const currentUser = { id: "user_001", name: "Alice" };
+
   let appData = {
     tree: [
       {
         id: "f_1", name: "預設資料夾", type: "folder", collapsed: false,
-        children: [{ id: "p_1", name: "未命名 OC", type: "page", data: {} }]
+        children: [{ id: "p_1", name: "主角 A", type: "page", ownerId: "user_001", data: {} }]
       }
     ]
   };
 
   let activePageId = "p_1";
+  let currentPageOwnerId = "user_001";
+  let folderInviteCode = "SHARE2026";
+
   let timelineData = {}; 
   let majorEvents = [];
   let personalityList = [];
   let keywordsList = [];
   let currentYear = 2000;
   let uploadedFilesStore = {}; 
-  let visibleCharMap = {}; // 跨角色時間線過濾盒狀態
+  let visibleCharMap = {}; 
 
-  // HSV 顏色預設
+  // 最新重大事件中央資料庫
+  const globalLatestEvents = {
+    "p_1": {
+      version: 3,
+      content: "第三章：在決戰中覺醒了隱藏能力，成功擊退強敵並拯救了同盟。",
+      updatedAt: "2026-09-12 21:00",
+      updatedBy: "user_001"
+    }
+  };
+
   let currentH = 210, currentS = 1, currentV = 1;
   let currentZoom = 1;
 
@@ -472,7 +546,101 @@
   }
 
   /* ==========================================================================
-     2. 樹狀選單邏輯 (Tree View Logic)
+     2. 共享資料夾與權限判斷 (Sharing & Permissions)
+     ========================================================================== */
+  function joinSharedFolder() {
+    const inputCode = document.getElementById("inviteCodeInput").value.trim();
+    if (!inputCode) {
+      alert("請輸入有效的邀請碼");
+      return;
+    }
+
+    folderInviteCode = inputCode;
+    
+    // 示範：若輸入 READONLY_DEMO 切換為唯讀檢閱模式
+    if (inputCode === "READONLY_DEMO") {
+      currentPageOwnerId = "user_999";
+      document.getElementById("roleTag").innerText = "當前身份：協同者 (唯讀)";
+    } else {
+      currentPageOwnerId = currentUser.id;
+      document.getElementById("roleTag").innerText = "當前身份：建立者 (可編輯)";
+    }
+
+    checkPermissions();
+    alert(`已套用共享資料夾邀請碼 [${inputCode}]`);
+  }
+
+  function checkPermissions() {
+    const container = document.getElementById("mainContainer");
+    const isOwner = (currentPageOwnerId === currentUser.id);
+
+    if (isOwner) {
+      container.classList.remove("readonly-mode");
+    } else {
+      container.classList.add("readonly-mode");
+    }
+  }
+
+  /* ==========================================================================
+     3. 保存雲端與重大事件版本控制
+     ========================================================================== */
+  function saveCurrentPageToCloud(e) {
+    saveCurrentPageData();
+    const saveButton = e ? e.target : document.querySelector('.submit-btn');
+    const originalText = saveButton.innerText;
+    
+    saveButton.innerText = "保存中...";
+    saveButton.disabled = true;
+
+    setTimeout(() => {
+      saveButton.innerText = originalText;
+      saveButton.disabled = false;
+      alert("✅ 成功保存至雲端！");
+    }, 800);
+  }
+
+  function renderLatestEvent() {
+    const latestEvent = globalLatestEvents[activePageId];
+    const eventInput = document.getElementById("eventDescription");
+    const versionTag = document.getElementById("eventVersionTag");
+
+    if (latestEvent) {
+      eventInput.value = latestEvent.content;
+      versionTag.innerText = `最新版本 (v${latestEvent.version}) | 最後更新：${latestEvent.updatedAt} 由 ${latestEvent.updatedBy}`;
+    } else {
+      eventInput.value = "";
+      versionTag.innerText = "暫無重大事件紀錄";
+    }
+  }
+
+  function submitEventUpdate() {
+    const newContent = document.getElementById("eventDescription").value;
+    if (!newContent.trim()) {
+      alert("請輸入事件描述內容！");
+      return;
+    }
+
+    const currentVersion = globalLatestEvents[activePageId] ? globalLatestEvents[activePageId].version : 0;
+    
+    globalLatestEvents[activePageId] = {
+      version: currentVersion + 1,
+      content: newContent,
+      updatedAt: new Date().toLocaleString(),
+      updatedBy: currentUser.id
+    };
+
+    renderLatestEvent();
+    alert("重大事件已更新至最新版本！其他角色頁面現在將僅檢閱此版本。");
+  }
+
+  function removeCharacterPage() {
+    if (confirm("確定要刪除此角色資料頁嗎？")) {
+      deleteNode(activePageId);
+    }
+  }
+
+  /* ==========================================================================
+     4. 樹狀選單邏輯 (Tree View Logic)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -571,7 +739,7 @@
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
         const newId = "p_" + Date.now();
-        res.node.children.push({ id: newId, name, type: "page", data: {} });
+        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.id, data: {} });
         res.node.collapsed = false; saveToLocalStorage(); switchPage(newId);
       }
     }
@@ -580,7 +748,15 @@
   function deleteNode(id) {
     if (confirm("確定要刪除？此操作不可逆！")) {
       const res = findNodeAndParent(id);
-      if (res) { res.list.splice(res.index, 1); saveToLocalStorage(); renderTree(); }
+      if (res) { 
+        res.list.splice(res.index, 1); 
+        saveToLocalStorage(); 
+        renderTree();
+        if (appData.tree.length > 0) {
+          let firstPage = findFirstPage(appData.tree);
+          if (firstPage) switchPage(firstPage.id);
+        }
+      }
     }
   }
 
@@ -597,13 +773,19 @@
 
   function switchPage(pageId) { 
     saveCurrentPageData(); 
-    activePageId = pageId; 
+    activePageId = pageId;
+    
+    const res = findNodeAndParent(pageId);
+    if (res && res.node) {
+      currentPageOwnerId = res.node.ownerId || currentUser.id;
+    }
+    
     renderTree(); 
     loadPageData(pageId); 
   }
 
   /* ==========================================================================
-     3. 標籤輸入邏輯 (Tags Input)
+     5. 標籤與 HSV 調色盤控制 (Tags & HSV Palette)
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -625,7 +807,7 @@
     container.innerHTML = '';
     list.forEach((item, idx) => {
       const tag = document.createElement('div'); tag.className = 'custom-tag';
-      tag.innerHTML = `<span>${item}</span><button type="button" onclick="removeTag(${idx}, '${type}')">✕</button>`;
+      tag.innerHTML = `<span>${item}</span><button type="button" class="edit-only-btn" onclick="removeTag(${idx}, '${type}')">✕</button>`;
       container.appendChild(tag);
     });
   }
@@ -635,9 +817,6 @@
     else { keywordsList.splice(idx, 1); renderTags('keyword'); }
   }
 
-  /* ==========================================================================
-     4. HSV 色輪與調色盤 (Color Wheel Logic)
-     ========================================================================== */
   function toggleColorPicker(e) {
     e.stopPropagation();
     const popover = document.getElementById('color-popover');
@@ -801,7 +980,7 @@
   }
 
   /* ==========================================================================
-     5. 圖片上傳與 Modal 檢視 (Image Upload & Viewer)
+     6. 圖片上傳與 Modal 檢視 (Image Upload & Viewer)
      ========================================================================== */
   function triggerInitialUpload(id) {
     if (!uploadedFilesStore[id]) triggerUpload(id);
@@ -874,15 +1053,7 @@
     const container = document.getElementById('modalImgContainer');
     let isPanning = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
 
-    // 滑鼠滾輪縮放支援
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.15 : -0.15;
-      adjustZoom(delta);
-    }, { passive: false });
-
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.tagName === 'BUTTON') return;
       isPanning = true; startX = e.clientX - translateX; startY = e.clientY - translateY;
       viewport.style.cursor = 'grabbing';
     });
@@ -901,7 +1072,7 @@
     }
 
     window.adjustZoom = function(delta) {
-      currentZoom = Math.max(0.1, Math.min(5, currentZoom + delta));
+      currentZoom = Math.max(0.2, currentZoom + delta);
       updateTransform();
     };
 
@@ -912,7 +1083,7 @@
   }
 
   /* ==========================================================================
-     6. 同資料夾跨角色時間線聯通與事件 (Folder Multi-Character Timeline)
+     7. 時間軸與事件 (Timeline & Events)
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -920,7 +1091,6 @@
     if (res.parent && res.parent.type === 'folder') {
       return res.parent.children.filter(n => n.type === 'page');
     }
-    // 若在根目錄
     return appData.tree.filter(n => n.type === 'page');
   }
 
@@ -942,7 +1112,7 @@
     const siblingPages = getSiblingPagesOfActivePage();
 
     siblingPages.forEach(p => {
-      if (visibleCharMap[p.id] === false) return; // 被過濾掉不顯示
+      if (visibleCharMap[p.id] === false) return;
 
       const pageData = (p.id === activePageId) ? { color: document.getElementById('field-color-hex').value, timelineData, majorEvents } : (p.data || {});
       const pColor = pageData.color || '#007bff';
@@ -1032,7 +1202,7 @@
         
         const isCurrentPage = (p.id === activePageId);
         const ageText = ev.age ? ` (${ev.age}歲)` : '';
-        const deleteBtn = isCurrentPage ? `<button type="button" onclick="removeEvent(${idx})">✕</button>` : '';
+        const deleteBtn = isCurrentPage ? `<button type="button" class="edit-only-btn" onclick="removeEvent(${idx})">✕</button>` : '';
 
         chip.innerHTML = `<span onclick="selectTimelineYear(${ev.year})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
         list.appendChild(chip);
@@ -1053,7 +1223,7 @@
   }
 
   /* ==========================================================================
-     7. 動態卡片與圖片上傳邏輯 (Dynamic Cards with Image Upload)
+     8. 動態多卡片網格 (Dynamic Cards Grid)
      ========================================================================== */
   function createCardUploaderHtml(cardId) {
     return `
@@ -1065,7 +1235,7 @@
         </div>
         <div class="image-overlay" id="${cardId}-overlay" style="display:none;">
           <button type="button" class="overlay-btn" onclick="openModalById('${cardId}')">🔍 檢視</button>
-          <button type="button" class="overlay-btn" onclick="triggerUpload('${cardId}')">🔄 更換</button>
+          <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('${cardId}')">🔄 更換</button>
         </div>
       </div>
       <input type="file" id="${cardId}-input" accept=".pdf,.png,.jpeg,.jpg,.psd,.gif" style="display:none" onchange="handleFileUpload(this, '${cardId}')">
@@ -1074,66 +1244,68 @@
 
   function addPersonCard(data = {}) {
     const grid = document.getElementById('person-grid');
-    const id = data.imgId || ("pcard_" + Date.now() + Math.floor(Math.random()*1000));
+    const id = "pcard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-name" placeholder="名字" value="${data.name || ''}">
-      <input type="text" class="card-rel" placeholder="關係敘述" value="${data.rel || ''}">
+      <input type="text" class="card-name editable-field" placeholder="名字" value="${data.name || ''}">
+      <input type="text" class="card-rel editable-field" placeholder="關係敘述" value="${data.rel || ''}">
     `;
     grid.appendChild(div);
 
-    if (uploadedFilesStore[id]) {
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
       displayUploadedFile(id);
     }
   }
 
   function addKeepCard(data = {}) {
     const grid = document.getElementById('keep-grid');
-    const id = data.imgId || ("kcard_" + Date.now() + Math.floor(Math.random()*1000));
+    const id = "kcard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title" placeholder="信物名稱" value="${data.title || ''}">
-      <textarea class="card-desc" rows="2" placeholder="說明描述">${data.desc || ''}</textarea>
+      <input type="text" class="card-title editable-field" placeholder="信物名稱" value="${data.title || ''}">
+      <textarea class="card-desc editable-field" rows="2" placeholder="說明描述">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
 
-    if (uploadedFilesStore[id]) {
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
       displayUploadedFile(id);
     }
   }
 
   function addOutfitCard(data = {}) {
     const grid = document.getElementById('outfit-grid');
-    const id = data.imgId || ("ocard_" + Date.now() + Math.floor(Math.random()*1000));
+    const id = "ocard_" + Date.now() + Math.floor(Math.random()*1000);
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
-      <button type="button" class="delete-card-btn" onclick="removeCardItem('${id}')">✕</button>
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title" placeholder="穿搭名稱" value="${data.title || ''}">
-      <textarea class="card-desc" rows="3" placeholder="文字敘述說明...">${data.desc || ''}</textarea>
+      <input type="text" class="card-title editable-field" placeholder="穿搭名稱" value="${data.title || ''}">
+      <textarea class="card-desc editable-field" rows="3" placeholder="文字敘述說明...">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
 
-    if (uploadedFilesStore[id]) {
+    if (data.imgId && uploadedFilesStore[data.imgId]) {
+      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
       displayUploadedFile(id);
     }
   }
 
   function removeCardItem(cardId) {
-    const el = document.getElementById(cardId);
-    if (el) el.remove();
+    document.getElementById(cardId).remove();
     delete uploadedFilesStore[cardId];
   }
 
   /* ==========================================================================
-     8. 資料儲存、加載與匯入匯出 (Save, Load & Storage)
+     9. 資料儲存與加載 (Storage & Data Management)
      ========================================================================== */
   function saveCurrentPageData() {
     const res = findNodeAndParent(activePageId);
@@ -1189,6 +1361,7 @@
     if (!res || !res.node) return;
 
     const data = res.node.data || {};
+    currentPageOwnerId = res.node.ownerId || currentUser.id;
     
     document.getElementById('field-name').value = data.name || res.node.name || '';
     document.getElementById('field-alias').value = data.alias || '';
@@ -1227,7 +1400,7 @@
       }
     });
 
-    // 清空與重新加載動態卡片
+    // 清空與重載動態卡片
     document.getElementById('person-grid').innerHTML = '';
     (data.persons || []).forEach(p => addPersonCard(p));
 
@@ -1237,6 +1410,8 @@
     document.getElementById('outfit-grid').innerHTML = '';
     (data.outfits || []).forEach(o => addOutfitCard(o));
 
+    checkPermissions();
+    renderLatestEvent();
     updateTimeRangeTag();
     selectTimelineYear(parseInt(document.getElementById('startYearInput').value) || 2000);
     renderMajorEvents();

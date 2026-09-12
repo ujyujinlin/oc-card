@@ -43,14 +43,8 @@
     .submit-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
     /* ==========================================================================
-       2. 共享資料夾、權限 UI 與 × 符號微調
+       2. 權限 UI 與 × 符號微調
        ========================================================================== */
-    .share-panel {
-      background: #edf2f7; padding: 10px 14px; border-radius: 6px;
-      margin-bottom: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-    .share-panel input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
-
     .readonly-badge {
       display: none; background: #e2e8f0; color: #4a5568;
       padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;
@@ -75,7 +69,7 @@
 
     .readonly-mode .readonly-badge { display: inline-block; }
 
-    /* 背景長線與 × 符號定位 */
+    /* 背景長線與標題刪除 × 符號定位 */
     .timeline-line-container { position: relative; padding-top: 15px; margin-bottom: 15px; }
     .timeline-long-line {
       position: absolute; top: 25px; left: 0; width: 100%; height: 2px;
@@ -90,7 +84,7 @@
     .close-btn:hover { color: #c0392b; transform: scale(1.15); }
 
     /* ==========================================================================
-       3. 左側樹狀選單欄目 (Sidebar & Tree)
+       3. 左側樹狀選單與共享設定區 (Sidebar & Tree)
        ========================================================================== */
     .sidebar {
       width: var(--sidebar-width); background: #2c3e50; color: #ecf0f1;
@@ -111,15 +105,33 @@
     .drag-handle { cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em; user-select: none; }
     .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
     .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
-    .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; }
+    .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; gap: 4px; }
     .item-btns { display: flex; gap: 2px; }
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
+
+    /* 共享標記與隱藏頁數計數標籤 */
+    .share-member-count { font-size: 0.75em; background: #16a085; color: white; padding: 1px 5px; border-radius: 10px; }
+    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 5px; border-radius: 10px; margin-left: 4px; }
 
     .sub-tree { list-style: none; padding-left: 18px; margin: 0; }
     .sub-tree.collapsed { display: none; }
     .page-node { background: #3d566e; margin: 3px 0; border-radius: 4px; }
     .page-node.active { background: var(--accent-color); font-weight: bold; }
+
+    /* 側邊欄底部共享設定區塊 */
+    .sidebar-share-section {
+      padding: 12px; background: #1a252f; border-top: 1px solid #34495e;
+      display: flex; flex-direction: column; gap: 8px; font-size: 0.85em;
+    }
+    .sidebar-share-section input {
+      padding: 6px 8px; border: 1px solid #455a64; border-radius: 4px;
+      background: #2c3e50; color: #fff; font-size: 0.9em; width: 100%;
+    }
+    .sidebar-share-section button {
+      width: 100%; padding: 6px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
+    }
+    .sidebar-share-section button:hover { background: #3498db; }
 
     .toggle-sidebar-btn {
       position: absolute; top: 12px; left: 12px; z-index: 90;
@@ -211,20 +223,27 @@
     }
     .add-btn { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; cursor: pointer; }
 
-    /* 時間軸與事件歷程 */
-    .line-timeline-wrapper { margin: 30px 10px 20px 10px; position: relative; }
+    /* ==========================================================================
+       5. 時間軸與垂直堆疊 × 符號
+       ========================================================================== */
+    .line-timeline-wrapper { margin: 40px 10px 20px 10px; position: relative; }
     .line-timeline-track { height: 4px; background: #333; width: 100%; position: relative; border-radius: 2px; }
-    .line-mark-x {
-      position: absolute; top: -10px; transform: translateX(-50%);
-      font-weight: bold; font-size: 16px; cursor: pointer; line-height: 1;
-      user-select: none; transition: transform 0.1s; text-shadow: 0 0 3px #fff;
+    
+    .line-mark-stack {
+      position: absolute; bottom: 0; transform: translateX(-50%);
+      display: flex; flex-direction: column-reverse; align-items: center;
+      z-index: 5;
     }
-    .line-mark-x:hover { transform: translateX(-50%) scale(1.5); }
+    
+    .line-mark-x {
+      font-weight: bold; font-size: 16px; cursor: pointer; line-height: 12px;
+      user-select: none; transition: transform 0.1s; text-shadow: 0 0 3px #fff;
+      height: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .line-mark-x:hover { transform: scale(1.5); z-index: 10; }
+
     .timeline-range-tag { background: #16a085; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .timeline-range-tag input[type="number"] { width: 60px; text-align: center; border: none; border-radius: 4px; font-weight: bold; padding: 2px; }
-
-    .event-section-box { margin-top: 15px; background: #fafafa; padding: 15px; border-left: 4px solid var(--primary-color); border-radius: 6px; }
-    .event-version-tag { font-size: 12px; color: #7f8c8d; margin-bottom: 8px; }
 
     .events-bar { margin-top: 15px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9; }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
@@ -271,21 +290,26 @@
     <button onclick="document.getElementById('import-file-input').click()">📤 匯入資料檔</button>
     <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importDataJson(this)">
   </div>
+  
+  <!-- 樹狀資料夾 -->
   <div class="folder-container" id="tree-root"></div>
+
+  <!-- 選單底部共享資料夾設定 -->
+  <div class="sidebar-share-section">
+    <div style="font-weight: bold; color: #f39c12;">🔗 共享資料夾設定</div>
+    <div>
+      <label style="display:block; margin-bottom:4px; font-size:0.8em; color:#bdc3c7;">輸入邀請碼：</label>
+      <input type="text" id="sidebarInviteInput" placeholder="輸入邀請碼 (輸入 READONLY 測試唯讀)">
+    </div>
+    <button onclick="joinSharedFolderFromSidebar()">加入 / 同步共享資料夾</button>
+    <button onclick="generateInviteCode()" style="background: #27ae60;">生成當前資料夾邀請碼</button>
+    <div id="sidebarRoleStatus" style="font-size:0.75em; color:#aaa; text-align:center;">身分：建立者 (可編輯)</div>
+  </div>
 </div>
 
 <!-- 主內容卡片區 -->
 <div class="main-wrapper">
   <div class="card-container" id="mainContainer">
-    
-    <!-- 共享資料夾與邀請碼設定 -->
-    <div class="share-panel">
-      <strong>共享資料夾設定：</strong>
-      <label for="inviteCodeInput">邀請碼：</label>
-      <input type="text" id="inviteCodeInput" placeholder="輸入邀請碼 (輸入 READONLY_DEMO 測試唯讀)" value="SHARE2026">
-      <button class="btn btn-primary" onclick="joinSharedFolder()">加入/同步共享資料夾</button>
-      <span id="roleTag" style="margin-left: auto; font-size: 13px; color: #555;">當前身份：建立者 (可編輯)</span>
-    </div>
 
     <!-- 頂部功能按鈕與背景長線微調容器 -->
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -379,16 +403,6 @@
         </div>
       </div>
 
-      <!-- 重大事件歷程 (自動同步最新版本) -->
-      <div class="event-section-box">
-        <h3 style="margin-top:0; margin-bottom:8px;">重大事件歷程 (自動同步最新版本)</h3>
-        <div class="event-version-tag" id="eventVersionTag">最新版本更新時間: 載入中...</div>
-        <textarea id="eventDescription" class="editable-field" placeholder="輸入或更新該角色的最新重大事件描述..."></textarea>
-        <div style="margin-top: 10px;">
-          <button type="button" class="btn btn-primary edit-only-btn" onclick="submitEventUpdate()">更新重大事件版本</button>
-        </div>
-      </div>
-
       <!-- 重要的人 -->
       <div class="section-box" style="margin-top: 12px; margin-bottom: 12px;">
         <div class="section-title">
@@ -407,7 +421,7 @@
         <div class="cards-grid" id="keep-grid"></div>
       </div>
 
-      <!-- 成長時間線 -->
+      <!-- 成長時間線與雲端重大事件同步 -->
       <div class="section-box timeline-container" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>成長時間線</span>
@@ -426,7 +440,7 @@
 
         <div class="events-bar">
           <div class="events-title">
-            <span>重大事件節點（跨角色聯通）</span>
+            <span>重大事件節點（跨角色雲端同步）</span>
             <button type="button" class="add-btn edit-only-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增節點</button>
           </div>
           
@@ -487,16 +501,17 @@
   let appData = {
     tree: [
       {
-        id: "f_1", name: "預設資料夾", type: "folder", collapsed: false,
-        children: [{ id: "p_1", name: "主角 A", type: "page", ownerId: "user_001", data: {} }]
+        id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 3,
+        children: [
+          { id: "p_1", name: "主角 A", type: "page", ownerId: "user_001", data: {} },
+          { id: "p_2", name: "配角 B", type: "page", ownerId: "user_001", data: {} }
+        ]
       }
     ]
   };
 
   let activePageId = "p_1";
   let currentPageOwnerId = "user_001";
-  let folderInviteCode = "SHARE2026";
-
   let timelineData = {}; 
   let majorEvents = [];
   let personalityList = [];
@@ -504,16 +519,6 @@
   let currentYear = 2000;
   let uploadedFilesStore = {}; 
   let visibleCharMap = {}; 
-
-  // 最新重大事件中央資料庫
-  const globalLatestEvents = {
-    "p_1": {
-      version: 3,
-      content: "第三章：在決戰中覺醒了隱藏能力，成功擊退強敵並拯救了同盟。",
-      updatedAt: "2026-09-12 21:00",
-      updatedBy: "user_001"
-    }
-  };
 
   let currentH = 210, currentS = 1, currentV = 1;
   let currentZoom = 1;
@@ -546,28 +551,28 @@
   }
 
   /* ==========================================================================
-     2. 共享資料夾與權限判斷 (Sharing & Permissions)
+     2. 側邊欄共享設定與邀請碼 logic
      ========================================================================== */
-  function joinSharedFolder() {
-    const inputCode = document.getElementById("inviteCodeInput").value.trim();
-    if (!inputCode) {
-      alert("請輸入有效的邀請碼");
-      return;
-    }
+  function joinSharedFolderFromSidebar() {
+    const code = document.getElementById("sidebarInviteInput").value.trim();
+    if (!code) { alert("請輸入有效的邀請碼"); return; }
 
-    folderInviteCode = inputCode;
-    
-    // 示範：若輸入 READONLY_DEMO 切換為唯讀檢閱模式
-    if (inputCode === "READONLY_DEMO") {
+    if (code === "READONLY") {
       currentPageOwnerId = "user_999";
-      document.getElementById("roleTag").innerText = "當前身份：協同者 (唯讀)";
+      document.getElementById("sidebarRoleStatus").innerText = "身分：協同者 (唯讀模式)";
     } else {
       currentPageOwnerId = currentUser.id;
-      document.getElementById("roleTag").innerText = "當前身份：建立者 (可編輯)";
+      document.getElementById("sidebarRoleStatus").innerText = "身分：建立者 (可編輯)";
     }
 
     checkPermissions();
-    alert(`已套用共享資料夾邀請碼 [${inputCode}]`);
+    alert(`成功連結至共享邀請碼：${code}`);
+  }
+
+  function generateInviteCode() {
+    const code = "OC-" + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById("sidebarInviteInput").value = code;
+    alert(`已為當前資料夾生成全新邀請碼：${code}`);
   }
 
   function checkPermissions() {
@@ -582,7 +587,7 @@
   }
 
   /* ==========================================================================
-     3. 保存雲端與重大事件版本控制
+     3. 雲端保存與重大事件同步
      ========================================================================== */
   function saveCurrentPageToCloud(e) {
     saveCurrentPageData();
@@ -595,42 +600,8 @@
     setTimeout(() => {
       saveButton.innerText = originalText;
       saveButton.disabled = false;
-      alert("✅ 成功保存至雲端！");
-    }, 800);
-  }
-
-  function renderLatestEvent() {
-    const latestEvent = globalLatestEvents[activePageId];
-    const eventInput = document.getElementById("eventDescription");
-    const versionTag = document.getElementById("eventVersionTag");
-
-    if (latestEvent) {
-      eventInput.value = latestEvent.content;
-      versionTag.innerText = `最新版本 (v${latestEvent.version}) | 最後更新：${latestEvent.updatedAt} 由 ${latestEvent.updatedBy}`;
-    } else {
-      eventInput.value = "";
-      versionTag.innerText = "暫無重大事件紀錄";
-    }
-  }
-
-  function submitEventUpdate() {
-    const newContent = document.getElementById("eventDescription").value;
-    if (!newContent.trim()) {
-      alert("請輸入事件描述內容！");
-      return;
-    }
-
-    const currentVersion = globalLatestEvents[activePageId] ? globalLatestEvents[activePageId].version : 0;
-    
-    globalLatestEvents[activePageId] = {
-      version: currentVersion + 1,
-      content: newContent,
-      updatedAt: new Date().toLocaleString(),
-      updatedBy: currentUser.id
-    };
-
-    renderLatestEvent();
-    alert("重大事件已更新至最新版本！其他角色頁面現在將僅檢閱此版本。");
+      alert("✅ 成功保存至雲端！重大事件已全域同步。");
+    }, 600);
   }
 
   function removeCharacterPage() {
@@ -640,9 +611,20 @@
   }
 
   /* ==========================================================================
-     4. 樹狀選單邏輯 (Tree View Logic)
+     4. 樹狀選單邏輯 (Tree View - 人數標記與隱藏頁數計數)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+
+  function countPagesInFolder(folderNode) {
+    let count = 0;
+    if (folderNode.children) {
+      folderNode.children.forEach(child => {
+        if (child.type === 'page') count++;
+        else if (child.type === 'folder') count += countPagesInFolder(child);
+      });
+    }
+    return count;
+  }
 
   function renderTree() {
     const root = document.getElementById('tree-root');
@@ -674,9 +656,23 @@
       const colorDotHtml = node.type === 'page' && node.data && node.data.color
         ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
 
+      // 資料夾共享人數與折疊頁數顯示
+      let shareBadge = '';
+      let hiddenCountBadge = '';
+      if (node.type === 'folder') {
+        const shareNum = node.shareCount !== undefined ? node.shareCount : 1;
+        shareBadge = `<span class="share-member-count" title="${shareNum} 人參與共享資料夾">👥 ${shareNum}</span>`;
+        if (node.collapsed) {
+          const totalPages = countPagesInFolder(node);
+          hiddenCountBadge = `<span class="hidden-page-count" title="包含 ${totalPages} 個資料頁">📄 ${totalPages}</span>`;
+        }
+      }
+
       header.innerHTML = `
         <span class="drag-handle">☰</span> ${toggleBtnHtml}
-        <span class="item-title">${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${node.name}</span>
+        <span class="item-title">
+          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadge} ${node.name} ${hiddenCountBadge}
+        </span>
         <div class="item-btns">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
           ${node.type === 'folder' ? `<button title="新增子資料夾" onclick="event.stopPropagation(); promptAddSubFolder('${node.id}')">📁+</button>` : ''}
@@ -719,7 +715,7 @@
 
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
-    if (name) { appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] }); saveToLocalStorage(); renderTree(); }
+    if (name) { appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, children: [] }); saveToLocalStorage(); renderTree(); }
   }
 
   function promptAddSubFolder(parentId) {
@@ -727,7 +723,7 @@
     if (name) {
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
-        res.node.children.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
+        res.node.children.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, children: [] });
         res.node.collapsed = false; saveToLocalStorage(); renderTree();
       }
     }
@@ -1083,7 +1079,7 @@
   }
 
   /* ==========================================================================
-     7. 時間軸與事件 (Timeline & Events)
+     7. 時間軸與垂直堆疊 × 符號 (Vertical Stacked Marks & Event Sync)
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -1111,6 +1107,9 @@
 
     const siblingPages = getSiblingPagesOfActivePage();
 
+    // 依年份搜集所有角色的事件標記
+    const yearEventsMap = {};
+
     siblingPages.forEach(p => {
       if (visibleCharMap[p.id] === false) return;
 
@@ -1121,18 +1120,44 @@
       pEvents.forEach(ev => {
         const yNum = parseInt(ev.year);
         if (yNum >= startYear && yNum <= endYear) {
-          const percent = ((yNum - startYear) / totalYears) * 100;
-          const mark = document.createElement('div');
-          mark.className = 'line-mark-x';
-          mark.style.left = `${percent}%`;
-          mark.style.color = pColor;
-          mark.innerText = '✕';
-          mark.title = `[${p.name}] ${yNum}年 (${ev.age || '?'}歲): ${ev.name}`;
-          mark.onclick = () => selectTimelineYear(yNum);
-          track.appendChild(mark);
+          if (!yearEventsMap[yNum]) yearEventsMap[yNum] = [];
+          yearEventsMap[yNum].push({
+            charName: p.name,
+            color: pColor,
+            event: ev
+          });
         }
       });
     });
+
+    // 渲染垂直堆疊 × 符號
+    Object.keys(yearEventsMap).forEach(yStr => {
+      const yNum = parseInt(yStr);
+      const percent = ((yNum - startYear) / totalYears) * 100;
+
+      const stackContainer = document.createElement('div');
+      stackContainer.className = 'line-mark-stack';
+      stackContainer.style.left = `${percent}%`;
+
+      yearEventsMap[yNum].forEach(item => {
+        const mark = document.createElement('div');
+        mark.className = 'line-mark-x';
+        mark.style.color = item.color;
+        mark.innerText = '✕';
+        mark.title = `[${item.charName}] ${yNum}年 (${item.event.age || '?'}歲): ${item.event.name}\n敘述：${item.event.desc || '無描述'}`;
+        mark.onclick = () => selectTimelineEventNode(yNum, item.event);
+        stackContainer.appendChild(mark);
+      });
+
+      track.appendChild(stackContainer);
+    });
+  }
+
+  function selectTimelineEventNode(yr, eventObj) {
+    selectTimelineYear(yr);
+    if (eventObj && eventObj.desc) {
+      alert(`📌 [${yr}年重大事件] ${eventObj.name}\n\n詳細敘述：\n${eventObj.desc}`);
+    }
   }
 
   function selectTimelineYear(yr) {
@@ -1161,13 +1186,17 @@
     const year = prompt("請輸入發生的年份：", currentYear);
     if (!year) return;
     const age = prompt("請輸入當時角色年齡：", document.getElementById('field-age').value || "");
+    const desc = prompt("請輸入重大事件的詳細敘述 (將雲端同步至其他角色檢視)：", "");
     
     majorEvents.push({ 
       id: "ev_" + Date.now(), 
       name, 
       year: parseInt(year) || currentYear,
-      age: age || ''
+      age: age || '',
+      desc: desc || ''
     });
+
+    saveCurrentPageData();
     renderMajorEvents();
     renderLineTimeline();
   }
@@ -1204,7 +1233,7 @@
         const ageText = ev.age ? ` (${ev.age}歲)` : '';
         const deleteBtn = isCurrentPage ? `<button type="button" class="edit-only-btn" onclick="removeEvent(${idx})">✕</button>` : '';
 
-        chip.innerHTML = `<span onclick="selectTimelineYear(${ev.year})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
+        chip.innerHTML = `<span onclick="selectTimelineEventNode(${ev.year}, ${JSON.stringify(ev).replace(/"/g, '&quot;')})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
         list.appendChild(chip);
       });
     });
@@ -1218,6 +1247,7 @@
 
   function removeEvent(idx) {
     majorEvents.splice(idx, 1);
+    saveCurrentPageData();
     renderMajorEvents();
     renderLineTimeline();
   }
@@ -1411,7 +1441,6 @@
     (data.outfits || []).forEach(o => addOutfitCard(o));
 
     checkPermissions();
-    renderLatestEvent();
     updateTimeRangeTag();
     selectTimelineYear(parseInt(document.getElementById('startYearInput').value) || 2000);
     renderMajorEvents();

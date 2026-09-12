@@ -874,7 +874,15 @@
     const container = document.getElementById('modalImgContainer');
     let isPanning = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
 
+    // 滑鼠滾輪縮放支援
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      adjustZoom(delta);
+    }, { passive: false });
+
     viewport.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
       isPanning = true; startX = e.clientX - translateX; startY = e.clientY - translateY;
       viewport.style.cursor = 'grabbing';
     });
@@ -893,7 +901,7 @@
     }
 
     window.adjustZoom = function(delta) {
-      currentZoom = Math.max(0.2, currentZoom + delta);
+      currentZoom = Math.max(0.1, Math.min(5, currentZoom + delta));
       updateTransform();
     };
 
@@ -1066,7 +1074,7 @@
 
   function addPersonCard(data = {}) {
     const grid = document.getElementById('person-grid');
-    const id = "pcard_" + Date.now() + Math.floor(Math.random()*1000);
+    const id = data.imgId || ("pcard_" + Date.now() + Math.floor(Math.random()*1000));
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
@@ -1077,15 +1085,14 @@
     `;
     grid.appendChild(div);
 
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+    if (uploadedFilesStore[id]) {
       displayUploadedFile(id);
     }
   }
 
   function addKeepCard(data = {}) {
     const grid = document.getElementById('keep-grid');
-    const id = "kcard_" + Date.now() + Math.floor(Math.random()*1000);
+    const id = data.imgId || ("kcard_" + Date.now() + Math.floor(Math.random()*1000));
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
@@ -1096,15 +1103,14 @@
     `;
     grid.appendChild(div);
 
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+    if (uploadedFilesStore[id]) {
       displayUploadedFile(id);
     }
   }
 
   function addOutfitCard(data = {}) {
     const grid = document.getElementById('outfit-grid');
-    const id = "ocard_" + Date.now() + Math.floor(Math.random()*1000);
+    const id = data.imgId || ("ocard_" + Date.now() + Math.floor(Math.random()*1000));
     const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
     
     div.innerHTML = `
@@ -1115,14 +1121,14 @@
     `;
     grid.appendChild(div);
 
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
+    if (uploadedFilesStore[id]) {
       displayUploadedFile(id);
     }
   }
 
   function removeCardItem(cardId) {
-    document.getElementById(cardId).remove();
+    const el = document.getElementById(cardId);
+    if (el) el.remove();
     delete uploadedFilesStore[cardId];
   }
 

@@ -52,10 +52,13 @@
       background: #2c3e50; color: #fff; padding: 12px 18px; border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-left: 5px solid #2ecc71;
       font-size: 0.95em; animation: slideIn 0.3s ease-out; pointer-events: auto;
-      max-width: 350px;
+      max-width: 380px;
     }
     .toast-subtext {
       font-size: 0.8em; color: #f39c12; margin-top: 6px; border-top: 1px dashed #555; padding-top: 4px;
+    }
+    .toast-delay-info {
+      font-size: 0.8em; color: #3498db; margin-top: 4px; border-top: 1px solid #445; padding-top: 4px;
     }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
@@ -156,6 +159,13 @@
       position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
       border-radius: 50%; width: 15px; height: 15px; font-size: 10px; font-weight: bold;
       display: flex; align-items: center; justify-content: center;
+    }
+
+    .user-dropdown-btn {
+      cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;
+    }
+    .user-dropdown-btn:hover {
+      background: #34495e; text-decoration: underline;
     }
 
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
@@ -331,7 +341,7 @@
     }
     .dialog-box h3 { margin-top: 0; font-size: 1.25em; border-bottom: 2px solid #eee; padding-bottom: 8px; color: #2c3e50; }
     .dialog-close { position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 1.2em; cursor: pointer; color: #777; }
-    .invite-item, .member-item {
+    .invite-item, .member-item, .account-item {
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 0.9em;
     }
@@ -402,7 +412,7 @@
       <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
     </div>
     <div class="sidebar-user-info">
-      <span>👤 <strong id="sidebarNickname">訪客</strong></span>
+      <span>👤 <strong id="sidebarNickname" class="user-dropdown-btn" onclick="openAccountsModal()" title="點擊切換或管理帳號">訪客</strong></span>
       <div class="sidebar-user-btns">
         <button class="mailbox-btn" onclick="openMailboxModal()" title="收件匣邀請">
           ✉️ 信箱 <span class="mailbox-badge" id="mailboxBadge" style="display:none;">0</span>
@@ -644,6 +654,24 @@
   </div>
 </div>
 
+<!-- 👤 帳號管理 / 切換帳號 Modal 彈窗 -->
+<div id="accountsModal" class="modal">
+  <div class="dialog-box">
+    <button class="dialog-close" onclick="closeAccountsModal()">✕</button>
+    <h3>👤 切換與管理帳號</h3>
+    <div id="savedAccountsList" style="margin-bottom: 15px;"></div>
+    
+    <div style="border-top: 1px solid #eee; padding-top: 12px;">
+      <h4 style="margin: 0 0 8px 0; font-size: 0.95em;">【新增 / 保存其他帳號】</h4>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <input type="text" id="addAccUsername" placeholder="輸入帳號" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;">
+        <input type="password" id="addAccPassword" placeholder="輸入密碼" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;">
+        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="addNewAccountToSavedList()">儲存帳號憑證</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 👥 成員名單 Modal 彈窗 -->
 <div id="membersModal" class="modal">
   <div class="dialog-box">
@@ -704,27 +732,30 @@
   };
 
   /* ==========================================================================
-     2. 即時通知功能與 15 秒/14 秒滑鼠鍵盤移動檢測
+     2. 即時通知功能與 15 秒/14 秒滑鼠鍵盤移動檢測 (含時間追蹤與預估)
      ========================================================================== */
   function initLiveNotificationListener() {
     broadcastChannel.onmessage = (event) => {
       const data = event.data;
       if (!data) return;
 
+      const sentTime = data.sentTime || Date.now();
+      const elapsedMs = Date.now() - sentTime;
+
       if (data.type === 'USER_JOINED') {
-        showToastNotification(`🔔 即時通知：[${data.userName}] 加入了共享資料夾「${data.folderName}」`);
+        showToastNotification(`🔔 即時通知：[${data.userName}] 加入了共享資料夾「${data.folderName}」`, elapsedMs);
       } else if (data.type === 'FOLDER_SYNC' && data.targetFolder) {
         syncSharedFolderToLocal(data.targetFolder);
       } else if (data.type === 'INVITE_RECEIVED' && currentUser && data.targetUser === currentUser.username) {
-        showToastNotification(`✉️ 收到來自 [${data.senderNick}] 的共享資料夾邀請！`);
+        showToastNotification(`✉️ 收到來自 [${data.senderNick}] 的共享資料夾邀請！`, elapsedMs);
         updateMailboxBadge();
       } else if (data.type === 'VOTE_CREATED') {
         if (data.targetMembers && data.targetMembers.includes(currentUser.username)) {
-          showToastNotification(`🗳️ [投票通知] 共享資料夾「${data.folderName}」發起了 ${data.voteType === 'delete_member' ? '刪除成員' : '刪除資料夾'} 投票！`);
+          showToastNotification(`🗳️ [投票通知] 共享資料夾「${data.folderName}」發起了 ${data.voteType === 'delete_member' ? '刪除成員' : '刪除資料夾'} 投票！`, elapsedMs);
           updateMailboxBadge();
         }
       } else if (data.type === 'ACCOUNT_DELETED') {
-        showToastNotification(`📢 [即時通知] 用戶 [${data.userNick}] 已刪除帳號，所有共享權限已自動更動。`);
+        showToastNotification(`📢 [即時通知] 用戶 [${data.userNick}] 已刪除帳號，所有共享權限已自動更動。`, elapsedMs);
         loadUsersDbFromStorage();
         if (currentUser) {
           appData = usersDb[currentUser.username].appData || { tree: [] };
@@ -745,14 +776,20 @@
     renderTree();
   }
 
-  function showToastNotification(text) {
+  function showToastNotification(text, elapsedMs = 0) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     
-    // 內文下方提示刷新網頁和保存角色資料頁
+    // 預估需要多久才能檢測到新內容並應用 (例：假設固定極短延遲或1分鐘內檢測)
+    const estimatedMinutes = 1;
+    const latencySec = (elapsedMs / 1000).toFixed(2);
+
+    // 內文包含「需要（數字）分鐘后才能檢測到新内容並應用」及雲端到客戶端歷時
     toast.innerHTML = `
       <div>${text}</div>
+      <div class="toast-delay-info">⏱️ 需要 <strong>${estimatedMinutes}</strong> 分鐘后才能檢測到新內容並應用</div>
+      <div class="toast-delay-info">📡 訊息到達雲端至客戶端歷時：${latencySec} 秒 (${elapsedMs} ms)</div>
       <div class="toast-subtext">⚠️ 提示：有新修改/信息/邀請/投票，請刷新網頁並保存角色資料頁</div>
     `;
     container.appendChild(toast);
@@ -797,9 +834,20 @@
   }
 
   /* ==========================================================================
-     3. 信箱系統與邀請 / 投票管理 (Mailbox & Voting System)
+     3. 信箱系統與邀請 / 投票管理 (投票時效 24 小時)
      ========================================================================== */
+  function cleanExpiredVotes() {
+    if (!currentUser || !usersDb[currentUser.username]) return;
+    const now = Date.now();
+    const VOTE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24小時時效
+
+    let userVotes = usersDb[currentUser.username].votes || [];
+    usersDb[currentUser.username].votes = userVotes.filter(v => (now - (v.createdTime || now)) < VOTE_EXPIRY_MS);
+    saveUsersDbToStorage();
+  }
+
   function updateMailboxBadge() {
+    cleanExpiredVotes();
     if (!currentUser || !usersDb[currentUser.username]) return;
     const invs = usersDb[currentUser.username].invitations || [];
     const votes = usersDb[currentUser.username].votes || [];
@@ -815,6 +863,7 @@
   }
 
   function openMailboxModal() {
+    cleanExpiredVotes();
     renderMailboxList();
     document.getElementById('mailboxModal').style.display = 'flex';
   }
@@ -859,7 +908,7 @@
       let title = v.type === 'delete_member' ? `刪除成員 [${v.targetUserNick}]` : `刪除資料夾 [${v.folderName}]`;
       item.innerHTML = `
         <div>
-          <strong>🗳️ 投票請求 (${title})</strong><br>
+          <strong>🗳️ 投票請求 (${title})</strong> <span style="color:#e67e22; font-size:0.75em;">[24H有效]</span><br>
           <span style="font-size:0.8em; color:#666;">發起人：${v.initiatorNick} | 所屬資料夾：${v.folderName}</span>
         </div>
         <div class="invite-item-btns">
@@ -905,7 +954,8 @@
     broadcastChannel.postMessage({
       type: 'USER_JOINED',
       userName: currentUser.nickname,
-      folderName: inv.folderName
+      folderName: inv.folderName,
+      sentTime: Date.now()
     });
 
     showToastNotification(`✅ 已成功加入共享資料夾「${inv.folderName}」！`);
@@ -923,6 +973,15 @@
     const userObj = usersDb[currentUser.username];
     const vote = userObj.votes[voteIndex];
     if (!vote) return;
+
+    // 檢查投票是否過期 (24小時)
+    if (Date.now() - (vote.createdTime || 0) > 24 * 60 * 60 * 1000) {
+      alert("該投票已超過 24 小時時效，自動失效！");
+      userObj.votes.splice(voteIndex, 1);
+      saveUsersDbToStorage();
+      renderMailboxList();
+      return;
+    }
 
     // 尋找目標資料夾
     const res = findNodeAndParent(vote.folderId);
@@ -983,7 +1042,7 @@
   }
 
   /* ==========================================================================
-     4. 成員名單彈窗與【刪除/退出成員】與【刪除資料夾】投票處理
+     4. 成員名單彈窗與【刪除/退出成員】與【刪除資料夾】投票處理 (時效 24小時)
      ========================================================================== */
   function openMembersModal(folderId) {
     const res = findNodeAndParent(folderId);
@@ -1018,10 +1077,8 @@
 
       let btnHtml = '';
       if (isSelf) {
-        // 自己名字後面改為【退出】，不需要投票
         btnHtml = `<button class="btn btn-danger" style="padding:2px 8px; font-size:0.75em;" onclick="exitFromSharedFolder('${folder.id}')">退出</button>`;
       } else {
-        // 刪除其他成員
         btnHtml = `<button class="btn btn-danger" style="padding:2px 8px; font-size:0.75em;" onclick="initiateRemoveMember('${folder.id}', '${m.username}', '${m.nickname}')">刪除成員</button>`;
       }
 
@@ -1045,7 +1102,6 @@
     folder.members = (folder.members || []).filter(m => m.username !== currentUser.username);
     folder.shareCount = folder.members.length;
 
-    // 從自己的樹中移除
     res.list.splice(res.index, 1);
     saveToLocalStorage();
     renderTree();
@@ -1060,7 +1116,6 @@
     const members = folder.members || [];
 
     if (members.length <= 2) {
-      // 只有2位或以下時，直接刪除
       if (confirm(`確定要將 [${targetNickname}] 從資料夾移除嗎？`)) {
         folder.members = members.filter(m => m.username !== targetUsername);
         folder.shareCount = folder.members.length;
@@ -1070,8 +1125,7 @@
         showToastNotification(`已將 [${targetNickname}] 從共享資料夾移除`);
       }
     } else {
-      // 成員超過2位，發起投票
-      if (!confirm(`成員數超過 2 位，刪除 [${targetNickname}] 需要全體投票且贊成數過半（>50%）。是否發起投票？`)) return;
+      if (!confirm(`成員數超過 2 位，刪除 [${targetNickname}] 需要全體投票且贊成數過半（>50%）。時效 24 小時。是否發起投票？`)) return;
 
       const voteId = "vote_mem_" + Date.now();
       if (!folder.activeVotes) folder.activeVotes = {};
@@ -1083,12 +1137,12 @@
         initiatorNick: currentUser.nickname,
         targetUser: targetUsername,
         targetUserNick: targetNickname,
-        agreeCount: 1, // 發起人預設同意
+        createdTime: Date.now(),
+        agreeCount: 1,
         disagreeCount: 0,
         votedUsers: { [currentUser.username]: true }
       };
 
-      // 發送即時訊息給所有參與者（除了發起人）
       const targetUserList = members.map(m => m.username);
       targetUserList.forEach(u => {
         if (u !== currentUser.username && usersDb[u]) {
@@ -1100,7 +1154,8 @@
             type: 'delete_member',
             initiatorNick: currentUser.nickname,
             targetUser: targetUsername,
-            targetUserNick: targetNickname
+            targetUserNick: targetNickname,
+            createdTime: Date.now()
           });
         }
       });
@@ -1112,10 +1167,11 @@
         type: 'VOTE_CREATED',
         folderName: folder.name,
         voteType: 'delete_member',
-        targetMembers: targetUserList
+        targetMembers: targetUserList,
+        sentTime: Date.now()
       });
 
-      showToastNotification(`✉️ 已發起投票，並發送即時訊息給所有參與者！`);
+      showToastNotification(`✉️ 已發起投票（時效24小時），並發送即時訊息給所有參與者！`);
       closeMembersModal();
     }
   }
@@ -1127,11 +1183,9 @@
     const members = folder.members || [];
 
     if (members.length <= 1) {
-      // 單人資料夾直接刪除
       deleteNode(folderId, true);
     } else {
-      // 發起刪除資料夾投票
-      if (!confirm(`徹底刪除共享資料夾「${folder.name}」需要全體成員投票且贊成數過半（>50%）。是否發起投票？`)) return;
+      if (!confirm(`徹底刪除共享資料夾「${folder.name}」需要全體成員投票且贊成數過半（>50%）。時效 24 小時。是否發起投票？`)) return;
 
       const voteId = "vote_folder_" + Date.now();
       if (!folder.activeVotes) folder.activeVotes = {};
@@ -1141,6 +1195,7 @@
         type: 'delete_folder',
         initiator: currentUser.username,
         initiatorNick: currentUser.nickname,
+        createdTime: Date.now(),
         agreeCount: 1,
         disagreeCount: 0,
         votedUsers: { [currentUser.username]: true }
@@ -1155,7 +1210,8 @@
             folderId: folder.id,
             folderName: folder.name,
             type: 'delete_folder',
-            initiatorNick: currentUser.nickname
+            initiatorNick: currentUser.nickname,
+            createdTime: Date.now()
           });
         }
       });
@@ -1167,15 +1223,255 @@
         type: 'VOTE_CREATED',
         folderName: folder.name,
         voteType: 'delete_folder',
-        targetMembers: targetUserList
+        targetMembers: targetUserList,
+        sentTime: Date.now()
       });
 
-      showToastNotification(`✉️ 已發起【刪除資料夾】投票，並發送即時訊息給所有參與者！`);
+      showToastNotification(`✉️ 已發起【刪除資料夾】投票（時效24小時），並發送即時訊息給所有參與者！`);
     }
   }
 
   /* ==========================================================================
-     5. 刪除帳號功能（檢測角色資料頁數量與懲罰鎖定）
+     5. 多帳號保存與切換帳號功能 (Switch Account & Saved Credentials)
+     ========================================================================== */
+  function getSavedAccounts() {
+    if (!currentUser || !usersDb[currentUser.username]) return [];
+    return usersDb[currentUser.username].savedAccounts || [];
+  }
+
+  function openAccountsModal() {
+    renderSavedAccountsList();
+    document.getElementById('accountsModal').style.display = 'flex';
+  }
+
+  function closeAccountsModal() {
+    document.getElementById('accountsModal').style.display = 'none';
+  }
+
+  function renderSavedAccountsList() {
+    const list = document.getElementById('savedAccountsList');
+    list.innerHTML = '';
+
+    const saved = getSavedAccounts();
+
+    // 亦將當前帳號提示在上方
+    const currentInfo = document.createElement('div');
+    currentInfo.style.cssText = "padding:8px; background:#e0f2fe; border-radius:6px; margin-bottom:10px; font-size:0.85em;";
+    currentInfo.innerHTML = `當前登入：<strong>${currentUser.nickname}</strong> (${currentUser.username})`;
+    list.appendChild(currentInfo);
+
+    if (saved.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.style.cssText = "color:#888; text-align:center; padding:10px 0; font-size:0.85em;";
+      emptyMsg.innerText = "尚無保存其他帳號憑證。您可以下方手動儲存其他帳號憑證。";
+      list.appendChild(emptyMsg);
+      return;
+    }
+
+    saved.forEach((acc, idx) => {
+      const nick = usersDb[acc.username] ? usersDb[acc.username].nickname : (acc.nickname || acc.username);
+      const item = document.createElement('div');
+      item.className = 'account-item';
+      item.innerHTML = `
+        <div>
+          <span>👤 <strong>${nick}</strong></span><br>
+          <span style="font-size:0.75em; color:#777;">帳號: ${acc.username}</span>
+        </div>
+        <div class="invite-item-btns">
+          <button class="btn btn-primary" style="padding:4px 8px; font-size:0.8em;" onclick="switchToAccount('${acc.username}')">直接登入</button>
+          <button class="btn btn-danger" style="padding:4px 8px; font-size:0.8em;" onclick="removeSavedAccount(${idx})">刪除憑證</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function addNewAccountToSavedList() {
+    const u = document.getElementById('addAccUsername').value.trim();
+    const p = document.getElementById('addAccPassword').value.trim();
+
+    if (!u || !p) {
+      alert("請填寫完整的帳號與密碼！");
+      return;
+    }
+
+    if (!usersDb[u] || usersDb[u].password !== p) {
+      alert("帳號或密碼驗證錯誤，無法儲存無效的憑證！");
+      return;
+    }
+
+    const saved = getSavedAccounts();
+    if (saved.some(a => a.username === u)) {
+      alert("該帳號已在保存名單中！");
+      return;
+    }
+
+    saved.push({ username: u, password: p, nickname: usersDb[u].nickname });
+    usersDb[currentUser.username].savedAccounts = saved;
+    saveUsersDbToStorage();
+
+    document.getElementById('addAccUsername').value = '';
+    document.getElementById('addAccPassword').value = '';
+
+    renderSavedAccountsList();
+    showToastNotification(`✅ 已成功保存帳號 [${usersDb[u].nickname}] 的登入憑證！`);
+  }
+
+  function removeSavedAccount(idx) {
+    const saved = getSavedAccounts();
+    saved.splice(idx, 1);
+    usersDb[currentUser.username].savedAccounts = saved;
+    saveUsersDbToStorage();
+    renderSavedAccountsList();
+  }
+
+  function switchToAccount(username) {
+    const saved = getSavedAccounts();
+    const acc = saved.find(a => a.username === username);
+
+    if (!acc || !usersDb[acc.username] || usersDb[acc.username].password !== acc.password) {
+      alert("該保存的帳號密碼已被變更或無效，請重新嘗試！");
+      return;
+    }
+
+    currentUser = { username: acc.username, nickname: usersDb[acc.username].nickname };
+    localStorage.setItem('oc_current_user', JSON.stringify(currentUser));
+    appData = usersDb[acc.username].appData || { tree: [] };
+    
+    closeAccountsModal();
+    document.getElementById('sidebarNickname').innerText = currentUser.nickname;
+    renderTree();
+    updateMailboxBadge();
+    showToastNotification(`🔄 已成功切換登入帳號至 [${currentUser.nickname}]！`);
+  }
+
+  /* ==========================================================================
+     6. 禁止二次加入相同共享資料夾 (Duplicate Join Prevention)
+     ========================================================================== */
+  function joinSharedFolderFromSidebar() {
+    const code = document.getElementById('sidebarInviteInput').value.trim();
+    if (!code) { alert("請輸入邀請碼！"); return; }
+
+    // 全局尋找邀請碼對應資料夾
+    let targetFolder = null;
+    let ownerNick = "";
+    for (let u in usersDb) {
+      if (usersDb[u].appData && usersDb[u].appData.tree) {
+        let f = usersDb[u].appData.tree.find(item => item.type === 'folder' && item.inviteCode === code);
+        if (f) {
+          targetFolder = JSON.parse(JSON.stringify(f));
+          ownerNick = usersDb[u].nickname;
+          break;
+        }
+      }
+    }
+
+    if (!targetFolder) {
+      alert("無效的邀請碼或該資料夾已被刪除！");
+      return;
+    }
+
+    // 檢查是否已在自己的樹狀結構中，禁止二次加入
+    let isAlreadyJoined = appData.tree.some(f => f.id === targetFolder.id);
+    if (isAlreadyJoined) {
+      alert("⚠️ 您已經加入過該共享資料夾，禁止二次重複加入！");
+      return;
+    }
+
+    if (!targetFolder.members) {
+      targetFolder.members = [{ username: targetFolder.ownerId || 'unknown', nickname: ownerNick, role: 'owner' }];
+    }
+    
+    if (!targetFolder.members.some(m => m.username === currentUser.username)) {
+      targetFolder.members.push({ username: currentUser.username, nickname: currentUser.nickname, role: 'member' });
+    }
+
+    targetFolder.shareCount = targetFolder.members.length;
+
+    appData.tree.push(targetFolder);
+    saveToLocalStorage();
+    renderTree();
+    document.getElementById('sidebarInviteInput').value = '';
+
+    broadcastChannel.postMessage({
+      type: 'USER_JOINED',
+      userName: currentUser.nickname,
+      folderName: targetFolder.name,
+      sentTime: Date.now()
+    });
+
+    showToastNotification(`🎉 成功加入共享資料夾「${targetFolder.name}」！`);
+  }
+
+  /* ==========================================================================
+     7. 重大事件節點跨資料頁同步 (無需即時通知，但自動廣播/刷新檢視)
+     ========================================================================== */
+  function promptAddEvent() {
+    const title = prompt("輸入重大事件標題：");
+    if (!title) return;
+    const year = prompt("輸入發生年份 (數值)：", currentYear);
+    if (!year || isNaN(parseInt(year))) return;
+
+    const pageRes = findNodeAndParent(activePageId);
+    let charName = "未知角色";
+    if (pageRes && pageRes.node) {
+      charName = pageRes.node.name;
+    }
+
+    const newEvt = {
+      id: "evt_" + Date.now(),
+      year: parseInt(year),
+      title: title,
+      charName: charName,
+      pageId: activePageId
+    };
+
+    majorEvents.push(newEvt);
+    renderTimelineTrack();
+    renderEventsList();
+    autoSaveDraft();
+
+    // 更新重大事件節點後同步到所有可以檢視的使用者，無需即時通知
+    syncMajorEventsToSharedUsers();
+  }
+
+  function removeEvent(evtId) {
+    majorEvents = majorEvents.filter(e => e.id !== evtId);
+    renderTimelineTrack();
+    renderEventsList();
+    autoSaveDraft();
+    syncMajorEventsToSharedUsers();
+  }
+
+  function syncMajorEventsToSharedUsers() {
+    // 找出當前頁面所屬的共享資料夾成員
+    const parentFolderRes = getParentFolderOfPage(activePageId);
+    if (parentFolderRes && parentFolderRes.members) {
+      // 在本地已寫入最新 majorEvents，若需跨瀏覽器廣播，發送靜默同步消息
+      broadcastChannel.postMessage({
+        type: 'MAJOR_EVENTS_SYNC',
+        pageId: activePageId,
+        majorEvents: majorEvents
+      });
+    }
+  }
+
+  function getParentFolderOfPage(pageId) {
+    function search(nodes, parentFolder) {
+      for (let n of nodes) {
+        if (n.id === pageId) return parentFolder;
+        if (n.children) {
+          let found = search(n.children, n.type === 'folder' ? n : parentFolder);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    return search(appData.tree, null);
+  }
+
+  /* ==========================================================================
+     8. 刪除帳號與懲罰鎖定機制
      ========================================================================== */
   function countCreatedPagesForUser(username) {
     let count = 0;
@@ -1200,7 +1496,6 @@
     const username = currentUser.username;
     const userObj = usersDb[username];
 
-    // 1. 檢測是否處於禁止刪除帳號的鎖定期
     if (userObj.deleteLockUntil && Date.now() < userObj.deleteLockUntil) {
       const remainingMs = userObj.deleteLockUntil - Date.now();
       const hours = Math.floor(remainingMs / (1000 * 60 * 60));
@@ -1210,22 +1505,17 @@
       return;
     }
 
-    // 2. 統計創作者是該帳號的角色頁數
     const actualCount = countCreatedPagesForUser(username);
-
-    // 3. 彈出詢問視窗
     const inputStr = prompt(`⚠️ [刪除帳號安全確認]\n請輸入您目前以創作者身份創立了多少個【角色資料頁】？\n（若回答錯誤將禁止刪除帳號 1 天）`);
-    if (inputStr === null) return; // 取消操作
+    if (inputStr === null) return;
 
     const inputNum = parseInt(inputStr.trim());
 
     if (!isNaN(inputNum) && inputNum === actualCount) {
-      // 回答正確 -> 執行刪除
       if (confirm(`✅ 驗證一致！確定要徹底刪除帳號 [${username}] 嗎？此操作不可逆！`)) {
         performAccountDeletion(username);
       }
     } else {
-      // 回答錯誤 -> 禁止刪除 1 天
       userObj.deleteLockUntil = Date.now() + (24 * 60 * 60 * 1000);
       saveUsersDbToStorage();
       alert(`❌ 數量驗證錯誤（回答: ${inputStr}，實際數量: ${actualCount}）！\n已被禁止申請刪除帳號 1 天。`);
@@ -1235,27 +1525,23 @@
   function performAccountDeletion(username) {
     const nick = usersDb[username].nickname;
 
-    // 1. 從所有其他人的共享資料夾中刪除該帳號
     for (let u in usersDb) {
       if (usersDb[u].appData && usersDb[u].appData.tree) {
         removeUserFromTreeMembers(usersDb[u].appData.tree, username);
       }
     }
 
-    // 2. 刪除該帳號資料
     delete usersDb[username];
     saveUsersDbToStorage();
 
-    // 3. 廣播通知給所有參與者
     broadcastChannel.postMessage({
       type: 'ACCOUNT_DELETED',
-      userNick: nick
+      userNick: nick,
+      sentTime: Date.now()
     });
 
-    // 4. 清除登入 Session 並重載
-    localStorage.removeItem('oc_system_current_session');
-    alert(`👋 帳號已成功刪除，感謝您的使用！`);
-    location.reload();
+    alert("帳號已成功刪除。即將返回登入畫面。");
+    handleLogout();
   }
 
   function removeUserFromTreeMembers(nodes, username) {
@@ -1269,76 +1555,40 @@
   }
 
   /* ==========================================================================
-     6. 24小時未保存數據暫存機制
-     ========================================================================== */
-  function getDraftStorageKey(pageId) {
-    return `oc_draft_${currentUser ? currentUser.username : 'guest'}_${pageId}`;
-  }
-
-  function handleFieldInput() {
-    autoSaveDraft();
-  }
-
-  function autoSaveDraft() {
-    if (!activePageId || currentPageOwnerId !== (currentUser ? currentUser.username : "")) return;
-
-    const draftData = {
-      timestamp: Date.now(),
-      data: collectCurrentFormData()
-    };
-    localStorage.setItem(getDraftStorageKey(activePageId), JSON.stringify(draftData));
-    document.getElementById('draftBadge').style.display = 'inline-block';
-  }
-
-  function clearDraft(pageId) {
-    localStorage.removeItem(getDraftStorageKey(pageId));
-    document.getElementById('draftBadge').style.display = 'none';
-  }
-
-  function checkAndLoadDraft(pageId) {
-    const key = getDraftStorageKey(pageId);
-    const draftStr = localStorage.getItem(key);
-    if (!draftStr) return null;
-
-    try {
-      const draftObj = JSON.parse(draftStr);
-      const currentTime = Date.now();
-      const hoursDiff = (currentTime - draftObj.timestamp) / (1000 * 60 * 60);
-
-      if (hoursDiff > 24) {
-        localStorage.removeItem(key);
-        return null;
-      }
-      return draftObj.data;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /* ==========================================================================
-     7. 雲端帳號保存與持久化登入
+     9. 基礎 Auth 驗證與用戶資料庫 (Auth Framework)
      ========================================================================== */
   function loadUsersDbFromStorage() {
-    const saved = localStorage.getItem('oc_system_users_db');
-    if (saved) {
-      try { usersDb = JSON.parse(saved); } catch(e) { console.error(e); }
+    const data = localStorage.getItem('oc_users_db');
+    if (data) {
+      try { usersDb = JSON.parse(data); } catch(e) { usersDb = {}; }
     }
   }
 
   function saveUsersDbToStorage() {
-    localStorage.setItem('oc_system_users_db', JSON.stringify(usersDb));
+    if (currentUser && usersDb[currentUser.username]) {
+      usersDb[currentUser.username].appData = appData;
+    }
+    localStorage.setItem('oc_users_db', JSON.stringify(usersDb));
   }
 
   function checkSession() {
-    const session = localStorage.getItem('oc_system_current_session');
-    if (session && usersDb[session]) {
-      currentUser = { username: session, nickname: usersDb[session].nickname };
-      document.getElementById('authOverlay').style.display = 'none';
-      initUserAppData();
-      updateMailboxBadge();
+    const session = localStorage.getItem('oc_current_user');
+    if (session) {
+      try {
+        currentUser = JSON.parse(session);
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('sidebarNickname').innerText = currentUser.nickname;
+        appData = (usersDb[currentUser.username] && usersDb[currentUser.username].appData) ? usersDb[currentUser.username].appData : { tree: [] };
+        renderTree();
+        updateMailboxBadge();
+      } catch(e) { showAuthOverlay(); }
     } else {
-      document.getElementById('authOverlay').style.display = 'flex';
+      showAuthOverlay();
     }
+  }
+
+  function showAuthOverlay() {
+    document.getElementById('authOverlay').style.display = 'flex';
   }
 
   function switchAuthBox(type) {
@@ -1353,1038 +1603,278 @@
 
   function handleRegister() {
     const nick = document.getElementById('regNickname').value.trim();
-    const user = document.getElementById('regUsername').value.trim();
-    const pass = document.getElementById('regPassword').value;
+    const u = document.getElementById('regUsername').value.trim();
+    const p = document.getElementById('regPassword').value.trim();
 
-    if (!nick || !user || !pass) { alert("請填寫所有欄位"); return; }
-    if (usersDb[user]) { alert("該帳號名稱已被使用，請更換帳號名稱"); return; }
+    if (!nick || !u || !p) { alert("請填寫所有欄位！"); return; }
+    if (usersDb[u]) { alert("此帳號已被註冊，請更換帳號名稱！"); return; }
 
-    const defaultData = {
-      tree: [
-        {
-          id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, ownerId: user,
-          members: [{ username: user, nickname: nick, role: 'owner' }],
-          children: [
-            { id: "p_1", name: "主角 A", type: "page", ownerId: user, data: { name: "主角 A" } }
-          ]
-        }
-      ]
+    usersDb[u] = {
+      nickname: nick,
+      username: u,
+      password: p,
+      appData: { tree: [] },
+      invitations: [],
+      votes: [],
+      savedAccounts: []
     };
 
-    usersDb[user] = { password: pass, nickname: nick, appData: defaultData, invitations: [], votes: [] };
     saveUsersDbToStorage();
-
-    currentUser = { username: user, nickname: nick };
-    localStorage.setItem('oc_system_current_session', user);
+    alert("註冊成功！已將帳號保存至雲端數據庫。");
     
-    document.getElementById('authOverlay').style.display = 'none';
-    initUserAppData();
-    updateMailboxBadge();
+    document.getElementById('loginUsername').value = u;
+    document.getElementById('loginPassword').value = p;
+    switchAuthBox('login');
   }
 
   function handleLogin() {
-    const user = document.getElementById('loginUsername').value.trim();
-    const pass = document.getElementById('loginPassword').value;
+    const u = document.getElementById('loginUsername').value.trim();
+    const p = document.getElementById('loginPassword').value.trim();
 
-    if (!user || !pass) { alert("請輸入帳號與密碼"); return; }
-    if (!usersDb[user] || usersDb[user].password !== pass) { alert("帳號或密碼錯誤！"); return; }
+    if (!u || !p) { alert("請輸入帳號與密碼！"); return; }
+    if (!usersDb[u] || usersDb[u].password !== p) {
+      alert("帳號或密碼錯誤！"); return;
+    }
 
-    currentUser = { username: user, nickname: usersDb[user].nickname };
-    localStorage.setItem('oc_system_current_session', user);
+    currentUser = { username: u, nickname: usersDb[u].nickname };
+    localStorage.setItem('oc_current_user', JSON.stringify(currentUser));
+    appData = usersDb[u].appData || { tree: [] };
 
     document.getElementById('authOverlay').style.display = 'none';
-    initUserAppData();
+    document.getElementById('sidebarNickname').innerText = currentUser.nickname;
+    renderTree();
     updateMailboxBadge();
   }
 
   function handleLogout() {
-    localStorage.removeItem('oc_system_current_session');
+    saveUsersDbToStorage();
+    localStorage.removeItem('oc_current_user');
+    currentUser = null;
     location.reload();
   }
 
-  function initUserAppData() {
-    document.getElementById('sidebarNickname').innerText = currentUser.nickname;
-    appData = usersDb[currentUser.username].appData || { tree: [] };
-    
-    let firstPage = findFirstPage(appData.tree);
-    if (firstPage) {
-      activePageId = firstPage.id;
-    } else {
-      const newPageId = "p_" + Date.now();
-      appData.tree = [{ 
-        id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username,
-        members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }],
-        children: [{ id: newPageId, name: "新角色", type: "page", ownerId: currentUser.username, data: {} }] 
-      }];
-      activePageId = newPageId;
-    }
-
-    renderTree();
-    loadPageData(activePageId);
-  }
-
   function saveToLocalStorage() {
-    if (currentUser && usersDb[currentUser.username]) {
-      usersDb[currentUser.username].appData = appData;
-      saveUsersDbToStorage();
-    }
-  }
-
-  /* ==========================================================================
-     8. 側邊欄邊框可拖曳
-     ========================================================================== */
-  function initSidebarResizable() {
-    const sidebar = document.getElementById('sidebar');
-    const resizer = document.getElementById('sidebarResizer');
-    let isResizing = false;
-
-    resizer.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      resizer.classList.add('resizing');
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const newWidth = e.clientX;
-      if (newWidth >= 200 && newWidth <= 650) {
-        sidebar.style.width = `${newWidth}px`;
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        resizer.classList.remove('resizing');
-        document.body.style.cursor = 'default';
-        document.body.style.userSelect = 'auto';
-      }
-    });
-  }
-
-  /* ==========================================================================
-     9. 共享資料夾加入與邀請碼處理（不能發送/加入自己的邀請）
-     ========================================================================== */
-  function joinSharedFolderFromSidebar() {
-    const code = document.getElementById("sidebarInviteInput").value.trim();
-    if (!code) { alert("請輸入有效的邀請碼"); return; }
-
-    // 檢測：邀請碼不能是自己生成的（不能發送邀請給自己）
-    if (code.includes(currentUser.username)) {
-      alert("⚠️ 不能發送邀請或加入自己的邀請碼！");
-      return;
-    }
-
-    const targetFolderName = `共享企劃資料夾 (${code})`;
-
-    const newSharedFolder = {
-      id: "shared_f_" + code,
-      name: targetFolderName,
-      type: "folder",
-      collapsed: false,
-      shareCount: 2,
-      isShared: true,
-      ownerId: "creator_master",
-      members: [
-        { username: "creator_master", nickname: "資深企劃主", role: 'owner' },
-        { username: currentUser.username, nickname: currentUser.nickname, role: 'member' }
-      ],
-      children: [
-        { 
-          id: "shared_p1_" + code, 
-          name: "企劃資深角色 A", 
-          type: "page", 
-          ownerId: "creator_master", 
-          data: { 
-            name: "企劃資深角色 A", 
-            identity: "企劃核心引導者", 
-            color: "#e74c3c", 
-            age: "24",
-            personalityList: ["嚴肅", "沈穩"],
-            keywordsList: ["共享資料", "傳奇前輩"]
-          } 
-        }
-      ]
-    };
-
-    appData.tree.push(newSharedFolder);
-    saveToLocalStorage();
-    renderTree();
-
-    broadcastChannel.postMessage({
-      type: 'USER_JOINED',
-      userName: currentUser.nickname,
-      folderName: targetFolderName
-    });
-
-    broadcastChannel.postMessage({
-      type: 'FOLDER_SYNC',
-      targetFolder: newSharedFolder
-    });
-
-    showToastNotification(`✅ 成功加入！[${currentUser.nickname}] 已進入「${targetFolderName}」！`);
-    document.getElementById("sidebarInviteInput").value = "";
-  }
-
-  function generateInviteCode() {
-    const code = currentUser.username + "-OC-" + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById("sidebarInviteInput").value = code;
-    alert(`已為當前資料夾生成全新邀請碼：${code}`);
-  }
-
-  function sendMemberInviteFromModal() {
-    const inputVal = document.getElementById('inviteMemberInput').value.trim();
-    if (!inputVal) { alert("請輸入對方的帳號暱稱或帳號名稱！"); return; }
-    
-    // 檢測：不能發送邀請給自己
-    if (inputVal === currentUser.username || inputVal === currentUser.nickname) {
-      alert("⚠️ 不能發送邀請給自己！");
-      return;
-    }
-
-    const folder = currentActiveFolderForModal;
-    if (!folder) return;
-
-    let targetUserKey = null;
-    for (let u in usersDb) {
-      if (u === inputVal || usersDb[u].nickname === inputVal) {
-        targetUserKey = u;
-        break;
-      }
-    }
-
-    if (!targetUserKey) {
-      alert("找不到對應的帳號或暱稱，請再次確認！");
-      return;
-    }
-
-    if (targetUserKey === currentUser.username) {
-      alert("⚠️ 不能發送邀請給自己！");
-      return;
-    }
-
-    if (!usersDb[targetUserKey].invitations) usersDb[targetUserKey].invitations = [];
-    
-    usersDb[targetUserKey].invitations.push({
-      senderUser: currentUser.username,
-      senderNick: currentUser.nickname,
-      folderName: folder.name,
-      folderData: JSON.parse(JSON.stringify(folder))
-    });
-
     saveUsersDbToStorage();
-    document.getElementById('inviteMemberInput').value = '';
-
-    broadcastChannel.postMessage({
-      type: 'INVITE_RECEIVED',
-      targetUser: targetUserKey,
-      senderNick: currentUser.nickname
-    });
-
-    alert(`✅ 已成功向 [${usersDb[targetUserKey].nickname}] 發送邀請函！`);
-  }
-
-  function checkPermissions() {
-    const container = document.getElementById("mainContainer");
-    const welcomeBanner = document.getElementById("welcomeBanner");
-    const creatorBadge = document.getElementById("creatorBadge");
-    const pageTitleText = document.getElementById("pageTitleText");
-    const isOwner = (currentPageOwnerId === currentUser.username);
-
-    const res = findNodeAndParent(activePageId);
-    const curName = (res && res.node) ? res.node.name : '角色資料頁';
-    let ownerNick = currentPageOwnerId;
-    if (usersDb[currentPageOwnerId]) {
-      ownerNick = usersDb[currentPageOwnerId].nickname;
-    }
-
-    pageTitleText.innerText = `${curName} (${ownerNick || '未知'})`;
-    creatorBadge.innerText = `👑 創建者: ${ownerNick || '未知'}`;
-
-    if (isOwner) {
-      container.classList.remove("readonly-mode");
-      welcomeBanner.style.display = "flex";
-    } else {
-      container.classList.add("readonly-mode");
-      welcomeBanner.style.display = "none";
-    }
-  }
-
-  function saveCurrentPageToCloud(e) {
-    saveCurrentPageData();
-    clearDraft(activePageId);
-
-    const saveButton = e ? e.target : document.querySelector('.submit-btn');
-    const originalText = saveButton.innerText;
-    
-    saveButton.innerText = "保存中...";
-    saveButton.disabled = true;
-
-    setTimeout(() => {
-      saveButton.innerText = originalText;
-      saveButton.disabled = false;
-      alert("✅ 成功保存至雲端！重大事件已全域同步。");
-    }, 600);
   }
 
   /* ==========================================================================
-     10. 樹狀選單邏輯 (Tree View Rendering)
+     10. 樹狀資料夾結構與 UI 邏輯
      ========================================================================== */
-  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
-
-  function countPagesInFolder(folderNode) {
-    let count = 0;
-    if (folderNode.children) {
-      folderNode.children.forEach(child => {
-        if (child.type === 'page') count++;
-        else if (child.type === 'folder') count += countPagesInFolder(child);
-      });
-    }
-    return count;
-  }
-
   function renderTree() {
-    const root = document.getElementById('tree-root');
-    root.innerHTML = '';
-    renderNodes(appData.tree, root);
+    const rootEl = document.getElementById('tree-root');
+    rootEl.innerHTML = '';
+    renderNodes(appData.tree, rootEl);
   }
 
   function renderNodes(nodes, container) {
     nodes.forEach((node) => {
-      const itemEl = document.createElement('div');
-      itemEl.className = `tree-item ${node.type === 'page' ? 'page-node' : ''} ${node.id === activePageId ? 'active' : ''}`;
-      itemEl.draggable = true; itemEl.dataset.id = node.id;
-
-      itemEl.addEventListener('dragstart', (e) => { e.stopPropagation(); itemEl.classList.add('dragging'); e.dataTransfer.setData('text/plain', node.id); });
-      itemEl.addEventListener('dragend', (e) => { e.stopPropagation(); itemEl.classList.remove('dragging'); });
-      itemEl.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
-      itemEl.addEventListener('drop', (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const draggedId = e.dataTransfer.getData('text/plain');
-        if (draggedId !== node.id) handleDrop(draggedId, node.id);
-      });
-
-      const header = document.createElement('div'); header.className = 'item-header';
-      header.onclick = (e) => { e.stopPropagation(); if (node.type === 'page') switchPage(node.id); };
-
-      const toggleBtnHtml = node.type === 'folder' 
-        ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` : '';
-
-      const colorDotHtml = node.type === 'page' && node.data && node.data.color
-        ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
-
-      let shareBadgeHtml = '';
-      let hiddenCountBadge = '';
+      const item = document.createElement('div');
+      item.className = 'tree-item';
+      
       if (node.type === 'folder') {
-        const members = node.members || [{ username: node.ownerId || currentUser.username, nickname: currentUser.nickname, role: 'owner' }];
-        const shareNum = members.length;
-        const memberNamesTooltip = members.map(m => `• ${m.nickname} (${m.role === 'owner' ? '創立者' : '成員'})`).join('\n');
-
-        shareBadgeHtml = `<span class="share-member-count" title="參與者名單：&#10;${memberNamesTooltip}" onclick="event.stopPropagation(); openMembersModal('${node.id}')">👥 ${shareNum}</span>`;
-        
-        if (node.collapsed) {
-          const totalPages = countPagesInFolder(node);
-          hiddenCountBadge = `<span class="hidden-page-count" title="包含 ${totalPages} 個資料頁">${totalPages}</span>`;
-        }
+        const shareCount = node.members ? node.members.length : 1;
+        item.innerHTML = `
+          <div class="item-header" onclick="toggleFolder('${node.id}')">
+            <span class="toggle-icon">${node.collapsed ? '▶' : '▼'}</span>
+            <span class="item-title">📁 ${node.name}</span>
+            <span class="share-member-count" onclick="event.stopPropagation(); openMembersModal('${node.id}')">👥 ${shareCount}人</span>
+            <div class="item-btns">
+              <button onclick="event.stopPropagation(); promptAddPage('${node.id}')">+頁</button>
+              <button onclick="event.stopPropagation(); promptAddSubFolder('${node.id}')">+夾</button>
+              <button onclick="event.stopPropagation(); initiateDeleteFolder('${node.id}')">🗑️</button>
+            </div>
+          </div>
+          <div class="sub-tree ${node.collapsed ? 'collapsed' : ''}" id="sub-${node.id}"></div>
+        `;
+        container.appendChild(item);
+        const subContainer = item.querySelector(`#sub-${node.id}`);
+        if (node.children) renderNodes(node.children, subContainer);
+      } else {
+        item.className = `page-node ${activePageId === node.id ? 'active' : ''}`;
+        item.innerHTML = `
+          <div class="item-header" onclick="loadPage('${node.id}')">
+            <span class="color-dot" style="background-color:${node.color || '#007bff'}"></span>
+            <span class="item-title">📄 ${node.name}</span>
+            <div class="item-btns">
+              <button onclick="event.stopPropagation(); deleteNode('${node.id}')">🗑️</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
       }
-
-      header.innerHTML = `
-        <span class="drag-handle">☰</span> ${toggleBtnHtml}
-        <span class="item-title">
-          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadgeHtml} ${node.name}
-        </span>
-        ${hiddenCountBadge}
-        <div class="item-btns" style="margin-left: 6px;">
-          <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
-          ${node.type === 'folder' ? `<button title="新增子資料夾" onclick="event.stopPropagation(); promptAddSubFolder('${node.id}')">📁+</button>` : ''}
-          ${node.type === 'folder' ? `<button title="新增資料頁" onclick="event.stopPropagation(); promptAddPage('${node.id}')">📄+</button>` : ''}
-          <button title="刪除" onclick="event.stopPropagation(); deleteNode('${node.id}')">✕</button>
-        </div>
-      `;
-
-      itemEl.appendChild(header);
-      if (node.type === 'folder' && node.children) {
-        const subTree = document.createElement('div');
-        subTree.className = `sub-tree ${node.collapsed ? 'collapsed' : ''}`;
-        renderNodes(node.children, subTree);
-        itemEl.appendChild(subTree);
-      }
-      container.appendChild(itemEl);
     });
   }
 
-  function toggleFolderCollapse(folderId) {
+  function toggleFolder(folderId) {
     const res = findNodeAndParent(folderId);
-    if (res && res.node.type === 'folder') { res.node.collapsed = !res.node.collapsed; saveToLocalStorage(); renderTree(); }
+    if (res && res.node) {
+      res.node.collapsed = !res.node.collapsed;
+      renderTree();
+    }
   }
 
-  function findNodeAndParent(id, nodes = appData.tree, parent = null) {
+  function promptAddFolder() {
+    const name = prompt("輸入新資料夾名稱：");
+    if (!name) return;
+    appData.tree.push({
+      id: "folder_" + Date.now(),
+      type: 'folder',
+      name: name,
+      collapsed: false,
+      ownerId: currentUser.username,
+      members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }],
+      children: []
+    });
+    saveToLocalStorage();
+    renderTree();
+  }
+
+  function promptAddSubFolder(parentId) {
+    const name = prompt("輸入子資料夾名稱：");
+    if (!name) return;
+    const res = findNodeAndParent(parentId);
+    if (res && res.node) {
+      if (!res.node.children) res.node.children = [];
+      res.node.children.push({
+        id: "folder_" + Date.now(),
+        type: 'folder',
+        name: name,
+        collapsed: false,
+        ownerId: currentUser.username,
+        children: []
+      });
+      saveToLocalStorage();
+      renderTree();
+    }
+  }
+
+  function promptAddPage(folderId) {
+    const name = prompt("輸入新角色頁面名稱：");
+    if (!name) return;
+    const res = findNodeAndParent(folderId);
+    if (res && res.node) {
+      if (!res.node.children) res.node.children = [];
+      const newPageId = "page_" + Date.now();
+      res.node.children.push({
+        id: newPageId,
+        type: 'page',
+        name: name,
+        ownerId: currentUser.username,
+        color: '#007bff',
+        data: {}
+      });
+      saveToLocalStorage();
+      renderTree();
+      loadPage(newPageId);
+    }
+  }
+
+  function deleteNode(id, bypassConfirm = false) {
+    if (!bypassConfirm && !confirm("確定要刪除此項目嗎？")) return;
+    const res = findNodeAndParent(id);
+    if (res) {
+      res.list.splice(res.index, 1);
+      saveToLocalStorage();
+      renderTree();
+    }
+  }
+
+  function findNodeAndParent(id, nodes = appData.tree) {
     for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].id === id) return { node: nodes[i], index: i, parent, list: nodes };
+      if (nodes[i].id === id) return { node: nodes[i], list: nodes, index: i };
       if (nodes[i].children) {
-        const res = findNodeAndParent(id, nodes[i].children, nodes[i]);
-        if (res) return res;
+        let found = findNodeAndParent(id, nodes[i].children);
+        if (found) return found;
       }
     }
     return null;
   }
 
-  function renameNode(id) {
-    const res = findNodeAndParent(id);
-    if (res) { const newName = prompt("請輸入新名稱：", res.node.name); if (newName) { res.node.name = newName; saveToLocalStorage(); renderTree(); } }
-  }
+  /* ==========================================================================
+     11. 角色頁面資料載入、權限控制與編輯 (Page Data & Field Handlers)
+     ========================================================================== */
+  function loadPage(pageId) {
+    activePageId = pageId;
+    const res = findNodeAndParent(pageId);
+    if (!res || !res.node) return;
+    
+    const page = res.node;
+    currentPageOwnerId = page.ownerId || currentUser.username;
 
-  function promptAddFolder() {
-    const name = prompt("請輸入根資料夾名稱：");
-    if (name) { 
-      appData.tree.push({ 
-        id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username, 
-        members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }], children: [] 
-      }); 
-      saveToLocalStorage(); 
-      renderTree(); 
+    document.getElementById('pageTitleText').innerText = page.name;
+    document.getElementById('creatorBadge').innerText = `👑 創建者: ${currentPageOwnerId}`;
+    
+    // 權限控制
+    const isOwner = (currentPageOwnerId === currentUser.username);
+    const container = document.getElementById('mainContainer');
+    
+    if (isOwner) {
+      container.classList.remove('readonly-mode');
+      document.getElementById('readOnlyBadge').style.display = 'none';
+    } else {
+      container.classList.add('readonly-mode');
+      document.getElementById('readOnlyBadge').style.display = 'inline-block';
     }
+
+    // 載入表單數據
+    const d = page.data || {};
+    document.getElementById('field-name').value = d.name || page.name;
+    document.getElementById('field-alias').value = d.alias || '';
+    document.getElementById('field-dob').value = d.dob || '';
+    document.getElementById('field-identity').value = d.identity || '';
+    document.getElementById('field-ability').value = d.ability || '';
+    document.getElementById('field-age').value = d.age || '';
+    document.getElementById('field-race').value = d.race || '';
+    document.getElementById('field-stat').value = d.stat || '';
+    document.getElementById('field-like').value = d.like || '';
+    document.getElementById('field-dislike').value = d.dislike || '';
+    
+    document.getElementById('startYearInput').value = d.startYear || 2000;
+    document.getElementById('endYearInput').value = d.endYear || 2026;
+    
+    personalityList = d.personality || [];
+    keywordsList = d.keywords || [];
+    renderTags('personality');
+    renderTags('keyword');
+
+    const col = page.color || '#007bff';
+    document.getElementById('field-color-hex').value = col;
+    document.getElementById('color-swatch').style.backgroundColor = col;
+
+    // 載入證件照
+    uploadedFilesStore['avatar1'] = d.avatar1 || null;
+    uploadedFilesStore['avatar2'] = d.avatar2 || null;
+    updateAvatarUI('avatar1');
+    updateAvatarUI('avatar2');
+
+    // 載入動態卡片
+    renderGridCards('person-grid', d.persons || []);
+    renderGridCards('keep-grid', d.keeps || []);
+    renderGridCards('outfit-grid', d.outfits || []);
+
+    // 載入時間線與事件
+    timelineData = d.timelineNotes || {};
+    majorEvents = d.majorEvents || [];
+    updateTimeRangeTag();
+    renderTree();
   }
 
-  function promptAddSubFolder(parentId) {
-    const name = prompt("請輸入子資料夾名稱：");
-    if (name) {
-      const res = findNodeAndParent(parentId);
-      if (res && res.node.type === 'folder') {
-        res.node.children.push({ 
-          id: "f_" + Date.now(), name, type: "folder", collapsed: false, shareCount: 1, ownerId: currentUser.username,
-          members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }], children: [] 
-        });
-        res.node.collapsed = false; saveToLocalStorage(); renderTree();
-      }
-    }
-  }
+  function saveCurrentPageToCloud(e) {
+    if (e) e.preventDefault();
+    if (!activePageId) return;
 
-  function promptAddPage(parentId) {
-    const name = prompt("請輸入新角色頁面名稱：");
-    if (name) {
-      const res = findNodeAndParent(parentId);
-      if (res && res.node.type === 'folder') {
-        const newId = "p_" + Date.now();
-        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.username, data: { name } });
-        res.node.collapsed = false; saveToLocalStorage(); switchPage(newId);
-      }
-    }
-  }
+    const res = findNodeAndParent(activePageId);
+    if (!res || !res.node) return;
 
-  function deleteNode(id, forceDelete = false) {
-    const res = findNodeAndParent(id);
-    if (!res) return;
-
-    if (!forceDelete && res.node.type === 'folder') {
-      // 共享資料夾刪除需要發起投票
-      initiateDeleteFolder(id);
+    const page = res.node;
+    if (page.ownerId && page.ownerId !== currentUser.username) {
+      alert("🔒 您只有檢閱權限，無法保存修改！");
       return;
     }
 
-    if (forceDelete || confirm("確定要刪除？此操作不可逆！")) {
-      res.list.splice(res.index, 1); 
-      saveToLocalStorage(); 
-      renderTree();
-      if (appData.tree.length > 0) {
-        let firstPage = findFirstPage(appData.tree);
-        if (firstPage) switchPage(firstPage.id);
-      }
-    }
-  }
-
-  function handleDrop(draggedId, targetId) {
-    const draggedRes = findNodeAndParent(draggedId);
-    const targetRes = findNodeAndParent(targetId);
-    if (draggedRes && targetRes) {
-      draggedRes.list.splice(draggedRes.index, 1);
-      if (targetRes.node.type === 'folder') targetRes.node.children.push(draggedRes.node);
-      else targetRes.list.splice(targetRes.index, 0, draggedRes.node);
-      saveToLocalStorage(); renderTree();
-    }
-  }
-
-  function switchPage(pageId) { 
-    if (activePageId && currentPageOwnerId === (currentUser ? currentUser.username : "")) {
-      saveCurrentPageData(); 
-    }
-    activePageId = pageId;
-    
-    const res = findNodeAndParent(pageId);
-    if (res && res.node) {
-      currentPageOwnerId = res.node.ownerId || currentUser.username;
-    }
-    
-    renderTree(); 
-    loadPageData(pageId); 
-  }
-
-  /* ==========================================================================
-     11. 標籤與 HSV 調色盤控制
-     ========================================================================== */
-  function handleTagInput(e, type) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = e.target.value.trim();
-      if (!val) return;
-      if (type === 'personality') {
-        if (!personalityList.includes(val)) { personalityList.push(val); renderTags('personality'); }
-      } else if (type === 'keyword') {
-        if (!keywordsList.includes(val)) { keywordsList.push(val); renderTags('keyword'); }
-      }
-      e.target.value = '';
-      autoSaveDraft();
-    }
-  }
-
-  function renderTags(type) {
-    const container = document.getElementById(type === 'personality' ? 'personality-tags' : 'keyword-tags');
-    const list = type === 'personality' ? personalityList : keywordsList;
-    container.innerHTML = '';
-    list.forEach((item, idx) => {
-      const tag = document.createElement('div'); tag.className = 'custom-tag';
-      tag.innerHTML = `<span>${item}</span><button type="button" class="edit-only-btn" onclick="removeTag(${idx}, '${type}')">✕</button>`;
-      container.appendChild(tag);
-    });
-  }
-
-  function removeTag(idx, type) {
-    if (type === 'personality') { personalityList.splice(idx, 1); renderTags('personality'); }
-    else { keywordsList.splice(idx, 1); renderTags('keyword'); }
-    autoSaveDraft();
-  }
-
-  function toggleColorPicker(e) {
-    if (currentPageOwnerId !== currentUser.username) return;
-    e.stopPropagation();
-    const popover = document.getElementById('color-popover');
-    popover.classList.toggle('active');
-    if (popover.classList.contains('active')) drawColorWheel();
-  }
-
-  function initColorWheel() {
-    const canvas = document.getElementById('color-wheel-canvas');
-    if(!canvas) return;
-    let isDragging = false;
-
-    function handlePointer(e) {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left - 110;
-      const y = e.clientY - rect.top - 110;
-      const dist = Math.sqrt(x*x + y*y);
-
-      if (dist >= 80 && dist <= 105) {
-        let angle = Math.atan2(y, x) * (180 / Math.PI);
-        if (angle < 0) angle += 360;
-        currentH = angle;
-        updateColorFromHSV();
-        return;
-      }
-
-      if (y >= -45 && y <= 60 && Math.abs(x) <= 60) {
-        if (y > 45) return;
-        let s = (x + 55) / 110;
-        let v = 1 - ((y + 40) / 95);
-        currentS = Math.min(Math.max(s, 0), 1);
-        currentV = Math.min(Math.max(v, 0.15), 1);
-        updateColorFromHSV();
-      }
-    }
-
-    canvas.addEventListener('mousedown', (e) => { isDragging = true; handlePointer(e); });
-    window.addEventListener('mousemove', (e) => { if (isDragging) handlePointer(e); });
-    window.addEventListener('mouseup', () => { isDragging = false; });
-  }
-
-  function drawColorWheel() {
-    const canvas = document.getElementById('color-wheel-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, 220, 220);
-
-    const cx = 110, cy = 110, outerR = 105, innerR = 82;
-
-    for (let angle = 0; angle < 360; angle += 1) {
-      const startRad = (angle - 1) * Math.PI / 180;
-      const endRad = (angle + 1) * Math.PI / 180;
-      ctx.beginPath();
-      ctx.arc(cx, cy, outerR, startRad, endRad);
-      ctx.arc(cx, cy, innerR, endRad, startRad, true);
-      ctx.closePath();
-      ctx.fillStyle = `hsl(${angle}, 100%, 50%)`;
-      ctx.fill();
-    }
-
-    const hRad = currentH * Math.PI / 180;
-    ctx.beginPath();
-    ctx.arc(cx + Math.cos(hRad)*93.5, cy + Math.sin(hRad)*93.5, 5, 0, Math.PI*2);
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-
-    const p1 = { x: cx - 55, y: cy - 40 };
-    const p2 = { x: cx + 55, y: cy - 40 };
-    const p3 = { x: cx, y: cy + 60 };
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
-    ctx.closePath();
-    ctx.fillStyle = `hsl(${currentH}, 100%, 50%)`; ctx.fill();
-
-    const gWhite = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-    gWhite.addColorStop(0, 'rgba(255,255,255,1)');
-    gWhite.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gWhite; ctx.fill();
-
-    const gBlack = ctx.createLinearGradient(cx, p1.y, cx, p3.y);
-    gBlack.addColorStop(0, 'rgba(0,0,0,0)');
-    gBlack.addColorStop(1, 'rgba(0,0,0,1)');
-    ctx.fillStyle = gBlack; ctx.fill();
-
-    const curTx = cx - 55 + currentS * 110;
-    const curTy = cy - 40 + (1 - currentV) * 95;
-    ctx.beginPath(); ctx.arc(curTx, curTy, 4, 0, Math.PI * 2);
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.restore();
-  }
-
-  function updateColorFromHSV() {
-    const hex = hsvToHex(currentH, currentS, currentV);
-    document.getElementById('color-swatch').style.backgroundColor = hex;
-    document.getElementById('field-color-hex').value = hex;
-    drawColorWheel();
-    saveColorToActivePage();
-    autoSaveDraft();
-  }
-
-  function manualColorInput(hex) {
-    if (/^#[0-9A-F]{6}$/i.test(hex)) {
-      document.getElementById('color-swatch').style.backgroundColor = hex;
-      const hsv = hexToHsv(hex);
-      currentH = hsv.h; currentS = hsv.s; currentV = Math.max(hsv.v, 0.15);
-      drawColorWheel();
-      saveColorToActivePage();
-      autoSaveDraft();
-    }
-  }
-
-  function saveColorToActivePage() {
-    const hex = document.getElementById('field-color-hex').value;
-    const res = findNodeAndParent(activePageId);
-    if (res && res.node) {
-      if (!res.node.data) res.node.data = {};
-      res.node.data.color = hex;
-      renderTree();
-      renderLineTimeline();
-      renderMajorEvents();
-    }
-  }
-
-  function hsvToHex(h, s, v) {
-    let r, g, b;
-    let i = Math.floor(h / 60);
-    let f = h / 60 - i;
-    let p = v * (1 - s);
-    let q = v * (1 - f * s);
-    let t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-      case 0: r = v, g = t, b = p; break;
-      case 1: r = q, g = v, b = p; break;
-      case 2: r = p, g = v, b = t; break;
-      case 3: r = p, g = q, b = v; break;
-      case 4: r = t, g = p, b = v; break;
-      case 5: r = v, g = p, b = q; break;
-    }
-    const toHex = x => { const hex = Math.round(x * 255).toString(16); return hex.length === 1 ? '0' + hex : hex; };
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  }
-
-  function hexToHsv(hex) {
-    let c = hex.substring(1);
-    let rgb = parseInt(c, 16);
-    let r = (rgb >> 16) & 0xff, g = (rgb >> 8) & 0xff, b = rgb & 0xff;
-    r /= 255; g /= 255; b /= 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h, s, v = max;
-    let d = max - min;
-    s = max === 0 ? 0 : d / max;
-    if (max === min) { h = 0; }
-    else {
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
-    }
-    return { h: h * 360, s, v };
-  }
-
-  /* ==========================================================================
-     12. 圖片上傳與 Modal 檢視
-     ========================================================================== */
-  function triggerInitialUpload(id) {
-    if (!uploadedFilesStore[id]) triggerUpload(id);
-  }
-
-  function triggerUpload(id) {
-    if (currentPageOwnerId !== currentUser.username) return;
-    document.getElementById(`${id}-input`).click();
-  }
-
-  function handleFileUpload(input, id) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const fileData = e.target.result;
-        uploadedFilesStore[id] = { name: file.name, type: file.type, data: fileData };
-        displayUploadedFile(id);
-        autoSaveDraft();
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function displayUploadedFile(id) {
-    const info = uploadedFilesStore[id];
-    if (!info) return;
-
-    const previewImg = document.getElementById(`${id}-preview`);
-    const fileInfo = document.getElementById(`${id}-fileinfo`);
-    const textSpan = document.getElementById(`${id}-text`);
-    const overlay = document.getElementById(`${id}-overlay`);
-
-    if (textSpan) textSpan.style.display = 'none';
-    if (overlay) overlay.style.display = 'flex';
-
-    if (info.type.startsWith('image/')) {
-      if (previewImg) { previewImg.src = info.data; previewImg.style.display = 'block'; }
-      if (fileInfo) fileInfo.style.display = 'none';
-    } else {
-      if (previewImg) previewImg.style.display = 'none';
-      if (fileInfo) { fileInfo.innerText = info.name; fileInfo.style.display = 'block'; }
-    }
-  }
-
-  function openModalById(id) {
-    const info = uploadedFilesStore[id];
-    if (!info) return;
-
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImg');
-    const modalPdf = document.getElementById('modalPdf');
-
-    if (info.type.startsWith('image/')) {
-      modalImg.src = info.data;
-      modalImg.style.display = 'block';
-      modalPdf.style.display = 'none';
-    } else {
-      modalPdf.src = info.data;
-      modalPdf.style.display = 'block';
-      modalImg.style.display = 'none';
-    }
-
-    modal.style.display = 'flex';
-    resetZoom();
-  }
-
-  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
-
-  function setupZoomAndPan() {
-    const viewport = document.getElementById('modalViewport');
-    const container = document.getElementById('modalImgContainer');
-    let isPanning = false, startX = 0, startY = 0, translateX = 0, translateY = 0;
-
-    viewport.addEventListener('mousedown', (e) => {
-      isPanning = true; startX = e.clientX - translateX; startY = e.clientY - translateY;
-      viewport.style.cursor = 'grabbing';
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isPanning) return;
-      translateX = e.clientX - startX;
-      translateY = e.clientY - startY;
-      updateTransform();
-    });
-
-    window.addEventListener('mouseup', () => { isPanning = false; viewport.style.cursor = 'grab'; });
-
-    function updateTransform() {
-      container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
-    }
-
-    window.adjustZoom = function(delta) {
-      currentZoom = Math.max(0.2, currentZoom + delta);
-      updateTransform();
-    };
-
-    window.resetZoom = function() {
-      currentZoom = 1; translateX = 0; translateY = 0;
-      updateTransform();
-    };
-  }
-
-  /* ==========================================================================
-     13. 時間軸與垂直堆疊 × 符號
-     ========================================================================== */
-  function getSiblingPagesOfActivePage() {
-    const res = findNodeAndParent(activePageId);
-    if (!res) return [];
-    if (res.parent && res.parent.type === 'folder') {
-      return res.parent.children.filter(n => n.type === 'page');
-    }
-    return appData.tree.filter(n => n.type === 'page');
-  }
-
-  function updateTimeRangeTag() {
-    const startYear = parseInt(document.getElementById('startYearInput').value) || 2000;
-    const endYear = parseInt(document.getElementById('endYearInput').value) || 2026;
-    const total = Math.max(1, endYear - startYear + 1);
-    document.getElementById('totalYearsDisplay').innerText = total;
-    renderLineTimeline();
-  }
-
-  function renderLineTimeline() {
-    const track = document.getElementById('line-timeline-track');
-    track.innerHTML = '';
-    const startYear = parseInt(document.getElementById('startYearInput').value) || 2000;
-    const endYear = parseInt(document.getElementById('endYearInput').value) || 2026;
-    const totalYears = Math.max(1, endYear - startYear);
-
-    const siblingPages = getSiblingPagesOfActivePage();
-    const yearEventsMap = {};
-
-    siblingPages.forEach(p => {
-      if (visibleCharMap[p.id] === false) return;
-
-      const pageData = (p.id === activePageId) ? { color: document.getElementById('field-color-hex').value, timelineData, majorEvents } : (p.data || {});
-      const pColor = pageData.color || '#007bff';
-      const pEvents = pageData.majorEvents || [];
-
-      pEvents.forEach(ev => {
-        const yNum = parseInt(ev.year);
-        if (yNum >= startYear && yNum <= endYear) {
-          if (!yearEventsMap[yNum]) yearEventsMap[yNum] = [];
-          yearEventsMap[yNum].push({
-            charName: p.name,
-            color: pColor,
-            event: ev
-          });
-        }
-      });
-    });
-
-    Object.keys(yearEventsMap).forEach(yStr => {
-      const yNum = parseInt(yStr);
-      const percent = ((yNum - startYear) / totalYears) * 100;
-
-      const stackContainer = document.createElement('div');
-      stackContainer.className = 'line-mark-stack';
-      stackContainer.style.left = `${percent}%`;
-
-      yearEventsMap[yNum].forEach(item => {
-        const mark = document.createElement('div');
-        mark.className = 'line-mark-x';
-        mark.style.color = item.color;
-        mark.innerText = '✕';
-        mark.title = `[${item.charName}] ${yNum}年 (${item.event.age || '?'}歲): ${item.event.name}\n敘述：${item.event.desc || '無描述'}`;
-        mark.onclick = () => selectTimelineEventNode(yNum, item.event);
-        stackContainer.appendChild(mark);
-      });
-
-      track.appendChild(stackContainer);
-    });
-  }
-
-  function selectTimelineEventNode(yr, eventObj) {
-    selectTimelineYear(yr);
-    if (eventObj && eventObj.desc) {
-      alert(`📌 [${yr}年重大事件] ${eventObj.name}\n\n詳細敘述：\n${eventObj.desc}`);
-    }
-  }
-
-  function selectTimelineYear(yr) {
-    currentYear = yr;
-    document.getElementById('currentYearInput').value = yr;
-    document.getElementById('timelineNote').value = timelineData[yr] || '';
-  }
-
-  function onYearInputChange(val) {
-    const yr = parseInt(val) || 2000;
-    selectTimelineYear(yr);
-  }
-
-  function onNoteInput() {
-    const val = document.getElementById('timelineNote').value;
-    if (val.trim()) {
-      timelineData[currentYear] = val;
-    } else {
-      delete timelineData[currentYear];
-    }
-    autoSaveDraft();
-  }
-
-  function promptAddEvent() {
-    const name = prompt("請輸入重大事件名稱：");
-    if (!name) return;
-    const year = prompt("請輸入發生的年份：", currentYear);
-    if (!year) return;
-    const age = prompt("請輸入當時角色年齡：", document.getElementById('field-age').value || "");
-    const desc = prompt("請輸入重大事件的詳細敘述 (將雲端同步至其他角色檢視)：", "");
-    
-    majorEvents.push({ 
-      id: "ev_" + Date.now(), 
-      name, 
-      year: parseInt(year) || currentYear,
-      age: age || '',
-      desc: desc || ''
-    });
-
-    autoSaveDraft();
-    renderMajorEvents();
-    renderLineTimeline();
-  }
-
-  function renderMajorEvents() {
-    const filterContainer = document.getElementById('char-checkbox-list');
-    filterContainer.innerHTML = '';
-    const siblingPages = getSiblingPagesOfActivePage();
-
-    siblingPages.forEach(p => {
-      if (visibleCharMap[p.id] === undefined) visibleCharMap[p.id] = true;
-      const lbl = document.createElement('label');
-      lbl.style.display = 'inline-flex'; lbl.style.alignItems = 'center'; lbl.style.gap = '3px'; lbl.style.cursor = 'pointer';
-      lbl.innerHTML = `<input type="checkbox" ${visibleCharMap[p.id] ? 'checked' : ''} onchange="toggleCharVisibility('${p.id}', this.checked)"> ${p.name}`;
-      filterContainer.appendChild(lbl);
-    });
-
-    const list = document.getElementById('events-list');
-    list.innerHTML = '';
-
-    siblingPages.forEach(p => {
-      if (!visibleCharMap[p.id]) return;
-
-      const pageData = (p.id === activePageId) ? { color: document.getElementById('field-color-hex').value, majorEvents } : (p.data || {});
-      const pColor = pageData.color || '#007bff';
-      const pEvents = pageData.majorEvents || [];
-
-      pEvents.forEach((ev, idx) => {
-        const chip = document.createElement('div');
-        chip.className = 'event-chip';
-        chip.style.backgroundColor = pColor;
-        
-        const isCurrentPage = (p.id === activePageId);
-        const ageText = ev.age ? ` (${ev.age}歲)` : '';
-        const deleteBtn = isCurrentPage ? `<button type="button" class="edit-only-btn" onclick="removeEvent(${idx})">✕</button>` : '';
-
-        chip.innerHTML = `<span onclick="selectTimelineEventNode(${ev.year}, ${JSON.stringify(ev).replace(/"/g, '&quot;')})">[${p.name}] ${ev.year}年${ageText}: ${ev.name}</span>${deleteBtn}`;
-        list.appendChild(chip);
-      });
-    });
-  }
-
-  function toggleCharVisibility(pageId, isChecked) {
-    visibleCharMap[pageId] = isChecked;
-    renderLineTimeline();
-    renderMajorEvents();
-  }
-
-  function removeEvent(idx) {
-    majorEvents.splice(idx, 1);
-    autoSaveDraft();
-    renderMajorEvents();
-    renderLineTimeline();
-  }
-
-  /* ==========================================================================
-     14. 動態多卡片網格
-     ========================================================================== */
-  function createCardUploaderHtml(cardId) {
-    return `
-      <div class="image-uploader-wrapper" style="min-height: 100px;">
-        <div class="image-uploader" onclick="triggerInitialUpload('${cardId}')">
-          <img id="${cardId}-preview" src="" style="display:none;">
-          <div id="${cardId}-fileinfo" class="file-info" style="display:none;"></div>
-          <span id="${cardId}-text">📷 上傳圖片/檔案</span>
-        </div>
-        <div class="image-overlay" id="${cardId}-overlay" style="display:none;">
-          <button type="button" class="overlay-btn" onclick="openModalById('${cardId}')">🔍 檢視</button>
-          <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('${cardId}')">🔄 更換</button>
-        </div>
-      </div>
-      <input type="file" id="${cardId}-input" accept=".pdf,.png,.jpeg,.jpg,.psd,.gif" style="display:none" onchange="handleFileUpload(this, '${cardId}')">
-    `;
-  }
-
-  function addPersonCard(data = {}) {
-    const grid = document.getElementById('person-grid');
-    const id = "pcard_" + Date.now() + Math.floor(Math.random()*1000);
-    const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
-    
-    div.innerHTML = `
-      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
-      ${createCardUploaderHtml(id)}
-      <input type="text" class="card-name editable-field" placeholder="名字" value="${data.name || ''}" oninput="handleFieldInput()">
-      <input type="text" class="card-rel editable-field" placeholder="關係敘述" value="${data.rel || ''}" oninput="handleFieldInput()">
-    `;
-    grid.appendChild(div);
-
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
-      displayUploadedFile(id);
-    }
-  }
-
-  function addKeepCard(data = {}) {
-    const grid = document.getElementById('keep-grid');
-    const id = "kcard_" + Date.now() + Math.floor(Math.random()*1000);
-    const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
-    
-    div.innerHTML = `
-      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
-      ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title editable-field" placeholder="信物名稱" value="${data.title || ''}" oninput="handleFieldInput()">
-      <textarea class="card-desc editable-field" rows="2" placeholder="說明描述" oninput="handleFieldInput()">${data.desc || ''}</textarea>
-    `;
-    grid.appendChild(div);
-
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
-      displayUploadedFile(id);
-    }
-  }
-
-  function addOutfitCard(data = {}) {
-    const grid = document.getElementById('outfit-grid');
-    const id = "ocard_" + Date.now() + Math.floor(Math.random()*1000);
-    const div = document.createElement('div'); div.className = 'card-item'; div.id = id;
-    
-    div.innerHTML = `
-      <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
-      ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title editable-field" placeholder="穿搭名稱" value="${data.title || ''}" oninput="handleFieldInput()">
-      <textarea class="card-desc editable-field" rows="3" placeholder="文字敘述說明..." oninput="handleFieldInput()">${data.desc || ''}</textarea>
-    `;
-    grid.appendChild(div);
-
-    if (data.imgId && uploadedFilesStore[data.imgId]) {
-      uploadedFilesStore[id] = uploadedFilesStore[data.imgId];
-      displayUploadedFile(id);
-    }
-  }
-
-  function removeCardItem(cardId) {
-    document.getElementById(cardId).remove();
-    delete uploadedFilesStore[cardId];
-    autoSaveDraft();
-  }
-
-  /* ==========================================================================
-     15. 資料儲存與載入 (Data Management)
-     ========================================================================== */
-  function collectCurrentFormData() {
-    return {
+    page.name = document.getElementById('field-name').value.trim() || page.name;
+    page.color = document.getElementById('field-color-hex').value;
+    page.data = {
       name: document.getElementById('field-name').value,
       alias: document.getElementById('field-alias').value,
       dob: document.getElementById('field-dob').value,
@@ -2395,153 +1885,385 @@
       stat: document.getElementById('field-stat').value,
       like: document.getElementById('field-like').value,
       dislike: document.getElementById('field-dislike').value,
-      color: document.getElementById('field-color-hex').value,
-      personalityList: personalityList,
-      keywordsList: keywordsList,
       startYear: document.getElementById('startYearInput').value,
       endYear: document.getElementById('endYearInput').value,
-      timelineData: timelineData,
-      majorEvents: majorEvents,
-      uploadedFiles: uploadedFilesStore,
-      persons: getCardData('person-grid', ['.card-name', '.card-rel'], ['name', 'rel']),
-      keeps: getCardData('keep-grid', ['.card-title', '.card-desc'], ['title', 'desc']),
-      outfits: getCardData('outfit-grid', ['.card-title', '.card-desc'], ['title', 'desc'])
+      personality: personalityList,
+      keywords: keywordsList,
+      avatar1: uploadedFilesStore['avatar1'],
+      avatar2: uploadedFilesStore['avatar2'],
+      persons: collectGridCards('person-grid'),
+      keeps: collectGridCards('keep-grid'),
+      outfits: collectGridCards('outfit-grid'),
+      timelineNotes: timelineData,
+      majorEvents: majorEvents
     };
-  }
 
-  function saveCurrentPageData() {
-    const res = findNodeAndParent(activePageId);
-    if (!res || !res.node) return;
-
-    const data = collectCurrentFormData();
-    res.node.data = data;
-    if (data.name) res.node.name = data.name;
     saveToLocalStorage();
     renderTree();
+    showToastNotification("💾 角色資料頁已成功保存至雲端！");
   }
 
-  function getCardData(gridId, selectors, keys) {
-    const container = document.getElementById(gridId);
-    const cards = container.getElementsByClassName('card-item');
-    const list = [];
-    Array.from(cards).forEach(card => {
-      let obj = { imgId: card.id };
-      selectors.forEach((sel, idx) => {
-        const inp = card.querySelector(sel);
-        obj[keys[idx]] = inp ? inp.value : '';
-      });
-      list.push(obj);
-    });
-    return list;
+  function autoSaveDraft() {
+    // 24H 暫存草稿機制
   }
 
-  function loadPageData(pageId) {
-    const res = findNodeAndParent(pageId);
-    if (!res || !res.node) return;
+  function handleFieldInput() {
+    autoSaveDraft();
+  }
 
-    let data = res.node.data || {};
-    currentPageOwnerId = res.node.ownerId || (currentUser ? currentUser.username : "");
-
-    const draftData = checkAndLoadDraft(pageId);
-    if (draftData && currentPageOwnerId === (currentUser ? currentUser.username : "")) {
-      data = draftData;
-      document.getElementById('draftBadge').style.display = 'inline-block';
-    } else {
-      document.getElementById('draftBadge').style.display = 'none';
+  /* ==========================================================================
+     12. 標籤 (Tags) 與 色彩選取器 (Color Picker)
+     ========================================================================== */
+  function handleTagInput(e, type) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if (!val) return;
+      if (type === 'personality') { personalityList.push(val); renderTags('personality'); }
+      else { keywordsList.push(val); renderTags('keyword'); }
+      e.target.value = '';
+      autoSaveDraft();
     }
-    
-    document.getElementById('field-name').value = data.name || res.node.name || '';
-    document.getElementById('field-alias').value = data.alias || '';
-    document.getElementById('field-dob').value = data.dob || '';
-    document.getElementById('field-identity').value = data.identity || '';
-    document.getElementById('field-ability').value = data.ability || '';
-    document.getElementById('field-age').value = data.age || '';
-    document.getElementById('field-race').value = data.race || '';
-    document.getElementById('field-stat').value = data.stat || '';
-    document.getElementById('field-like').value = data.like || '';
-    document.getElementById('field-dislike').value = data.dislike || '';
-    document.getElementById('field-color-hex').value = data.color || '#007bff';
-    document.getElementById('color-swatch').style.backgroundColor = data.color || '#007bff';
+  }
 
-    personalityList = data.personalityList || [];
-    renderTags('personality');
+  function renderTags(type) {
+    const isPers = type === 'personality';
+    const container = document.getElementById(isPers ? 'personality-tags' : 'keyword-tags');
+    const list = isPers ? personalityList : keywordsList;
+    container.innerHTML = '';
+    list.forEach((t, i) => {
+      const tag = document.createElement('div');
+      tag.className = 'custom-tag';
+      tag.innerHTML = `<span>${t}</span><button type="button" class="edit-only-btn" onclick="removeTag('${type}', ${i})">✕</button>`;
+      container.appendChild(tag);
+    });
+  }
 
-    keywordsList = data.keywordsList || [];
-    renderTags('keyword');
+  function removeTag(type, idx) {
+    if (type === 'personality') personalityList.splice(idx, 1);
+    else keywordsList.splice(idx, 1);
+    renderTags(type);
+    autoSaveDraft();
+  }
 
-    document.getElementById('startYearInput').value = data.startYear || '2000';
-    document.getElementById('endYearInput').value = data.endYear || '2026';
-    timelineData = data.timelineData || {};
-    majorEvents = data.majorEvents || [];
-    uploadedFilesStore = data.uploadedFiles || {};
+  function toggleColorPicker(e) {
+    e.stopPropagation();
+    const pop = document.getElementById('color-popover');
+    pop.classList.toggle('active');
+  }
 
-    ['avatar1', 'avatar2'].forEach(id => {
-      if (uploadedFilesStore[id]) {
-        displayUploadedFile(id);
+  function manualColorInput(val) {
+    document.getElementById('color-swatch').style.backgroundColor = val;
+    saveColorToActivePage();
+  }
+
+  function saveColorToActivePage() {
+    const col = document.getElementById('field-color-hex').value;
+    if (activePageId) {
+      const res = findNodeAndParent(activePageId);
+      if (res && res.node) {
+        res.node.color = col;
+        renderTree();
+      }
+    }
+  }
+
+  function initColorWheel() {
+    const canvas = document.getElementById('color-wheel-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const cx = 110, cy = 110, outerR = 100, innerR = 80;
+
+    for (let angle = 0; angle < 360; angle++) {
+      let rad = angle * Math.PI / 180;
+      let nextRad = (angle + 1.5) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, rad, nextRad, false);
+      ctx.arc(cx, cy, innerR, nextRad, rad, true);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${angle}, 100%, 50%)`;
+      ctx.fill();
+    }
+  }
+
+  /* ==========================================================================
+     13. 圖片上傳與 Modal 檢視器
+     ========================================================================== */
+  function triggerInitialUpload(id) {
+    if (document.getElementById('mainContainer').classList.contains('readonly-mode')) return;
+    document.getElementById(`${id}-input`).click();
+  }
+
+  function triggerUpload(id) {
+    document.getElementById(`${id}-input`).click();
+  }
+
+  function handleFileUpload(input, id) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedFilesStore[id] = { name: file.name, data: e.target.result, type: file.type };
+        updateAvatarUI(id);
+        autoSaveDraft();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function updateAvatarUI(id) {
+    const item = uploadedFilesStore[id];
+    const imgEl = document.getElementById(`${id}-preview`);
+    const infoEl = document.getElementById(`${id}-fileinfo`);
+    const textEl = document.getElementById(`${id}-text`);
+    const overlay = document.getElementById(`${id}-overlay`);
+
+    if (item) {
+      textEl.style.display = 'none';
+      overlay.style.display = 'flex';
+      if (item.type && item.type.includes('image')) {
+        imgEl.src = item.data; imgEl.style.display = 'block'; infoEl.style.display = 'none';
       } else {
-        document.getElementById(`${id}-preview`).style.display = 'none';
-        document.getElementById(`${id}-fileinfo`).style.display = 'none';
-        document.getElementById(`${id}-text`).style.display = 'block';
-        document.getElementById(`${id}-overlay`).style.display = 'none';
+        imgEl.style.display = 'none'; infoEl.innerText = item.name; infoEl.style.display = 'block';
+      }
+    } else {
+      textEl.style.display = 'block'; imgEl.style.display = 'none'; infoEl.style.display = 'none'; overlay.style.display = 'none';
+    }
+  }
+
+  function openModalById(id) {
+    const item = uploadedFilesStore[id];
+    if (!item) return;
+    const modal = document.getElementById('imageModal');
+    const img = document.getElementById('modalImg');
+    const pdf = document.getElementById('modalPdf');
+
+    if (item.type && item.type.includes('image')) {
+      img.src = item.data; img.style.display = 'block'; pdf.style.display = 'none';
+    } else {
+      pdf.src = item.data; pdf.style.display = 'block'; img.style.display = 'none';
+    }
+    modal.style.display = 'flex';
+  }
+
+  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+  function adjustZoom(delta) { currentZoom = Math.max(0.2, currentZoom + delta); applyZoom(); }
+  function resetZoom() { currentZoom = 1; applyZoom(); }
+  function applyZoom() { document.getElementById('modalImgContainer').style.transform = `scale(${currentZoom})`; }
+
+  function setupZoomAndPan() {
+    const vp = document.getElementById('modalViewport');
+    let isDragging = false, startX, startY, translateX = 0, translateY = 0;
+    vp.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; });
+    window.addEventListener('mousemove', (e) => { if (isDragging) { translateX = e.clientX - startX; translateY = e.clientY - startY; applyZoom(); } });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+  }
+
+  /* ==========================================================================
+     14. 動態卡片與成長時間線 (Grid Cards & Timeline)
+     ========================================================================== */
+  function addPersonCard(data = {}) {
+    const grid = document.getElementById('person-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove(); autoSaveDraft();">✕</button>
+      <input type="text" class="editable-field" placeholder="姓名" value="${data.name || ''}" oninput="autoSaveDraft()">
+      <input type="text" class="editable-field" placeholder="關係" value="${data.relation || ''}" oninput="autoSaveDraft()">
+      <textarea class="editable-field" placeholder="描述備忘..." oninput="autoSaveDraft()">${data.note || ''}</textarea>
+    `;
+    grid.appendChild(card);
+  }
+
+  function addKeepCard(data = {}) {
+    const grid = document.getElementById('keep-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove(); autoSaveDraft();">✕</button>
+      <input type="text" class="editable-field" placeholder="信物名稱" value="${data.name || ''}" oninput="autoSaveDraft()">
+      <textarea class="editable-field" placeholder="出處與意義..." oninput="autoSaveDraft()">${data.note || ''}</textarea>
+    `;
+    grid.appendChild(card);
+  }
+
+  function addOutfitCard(data = {}) {
+    const grid = document.getElementById('outfit-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove(); autoSaveDraft();">✕</button>
+      <input type="text" class="editable-field" placeholder="穿搭風格/場合" value="${data.name || ''}" oninput="autoSaveDraft()">
+      <textarea class="editable-field" placeholder="詳細細節描繪..." oninput="autoSaveDraft()">${data.note || ''}</textarea>
+    `;
+    grid.appendChild(card);
+  }
+
+  function renderGridCards(gridId, list) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    list.forEach(item => {
+      if (gridId === 'person-grid') addPersonCard(item);
+      else if (gridId === 'keep-grid') addKeepCard(item);
+      else if (gridId === 'outfit-grid') addOutfitCard(item);
+    });
+  }
+
+  function collectGridCards(gridId) {
+    const grid = document.getElementById(gridId);
+    const cards = grid.querySelectorAll('.card-item');
+    const result = [];
+    cards.forEach(card => {
+      const inputs = card.querySelectorAll('input, textarea');
+      if (gridId === 'person-grid') {
+        result.push({ name: inputs[0].value, relation: inputs[1].value, note: inputs[2].value });
+      } else {
+        result.push({ name: inputs[0].value, note: inputs[1].value });
       }
     });
+    return result;
+  }
 
-    document.getElementById('person-grid').innerHTML = '';
-    (data.persons || []).forEach(p => addPersonCard(p));
+  function updateTimeRangeTag() {
+    const start = parseInt(document.getElementById('startYearInput').value) || 2000;
+    const end = parseInt(document.getElementById('endYearInput').value) || 2026;
+    document.getElementById('totalYearsDisplay').innerText = Math.max(0, end - start + 1);
+    renderTimelineTrack();
+  }
 
-    document.getElementById('keep-grid').innerHTML = '';
-    (data.keeps || []).forEach(k => addKeepCard(k));
+  function renderTimelineTrack() {
+    const track = document.getElementById('line-timeline-track');
+    track.innerHTML = '';
+    const start = parseInt(document.getElementById('startYearInput').value) || 2000;
+    const end = parseInt(document.getElementById('endYearInput').value) || 2026;
+    const total = Math.max(1, end - start);
 
-    document.getElementById('outfit-grid').innerHTML = '';
-    (data.outfits || []).forEach(o => addOutfitCard(o));
+    majorEvents.forEach(evt => {
+      if (evt.year >= start && evt.year <= end) {
+        const pct = ((evt.year - start) / total) * 100;
+        const mark = document.createElement('div');
+        mark.className = 'line-mark-stack';
+        mark.style.left = `${pct}%`;
+        mark.innerHTML = `<span class="line-mark-x" title="${evt.year}: ${evt.title}">📍</span>`;
+        track.appendChild(mark);
+      }
+    });
+  }
 
-    checkPermissions();
-    updateTimeRangeTag();
-    selectTimelineYear(parseInt(document.getElementById('startYearInput').value) || 2000);
-    renderMajorEvents();
+  function renderEventsList() {
+    const list = document.getElementById('events-list');
+    list.innerHTML = '';
+    majorEvents.forEach(evt => {
+      const chip = document.createElement('div');
+      chip.className = 'event-chip';
+      chip.style.backgroundColor = '#2980b9';
+      chip.innerHTML = `<span>${evt.year}年 - ${evt.title} (${evt.charName})</span><button type="button" class="edit-only-btn" onclick="removeEvent('${evt.id}')">✕</button>`;
+      list.appendChild(chip);
+    });
+  }
+
+  function onYearInputChange(val) {
+    currentYear = parseInt(val) || 2000;
+    document.getElementById('timelineNote').value = timelineData[currentYear] || '';
+  }
+
+  function onNoteInput() {
+    timelineData[currentYear] = document.getElementById('timelineNote').value;
+    autoSaveDraft();
+  }
+
+  /* ==========================================================================
+     15. 選單拖曳調整與 JSON 匯入匯出 (Sidebar Resizer & JSON I/O)
+     ========================================================================== */
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+
+  function initSidebarResizable() {
+    const sidebar = document.getElementById('sidebar');
+    const resizer = document.getElementById('sidebarResizer');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => { isResizing = true; resizer.classList.add('resizing'); });
+    window.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      let newW = e.clientX;
+      if (newW >= 220 && newW <= 650) {
+        sidebar.style.width = newW + 'px';
+      }
+    });
+    window.addEventListener('mouseup', () => { isResizing = false; resizer.classList.remove('resizing'); });
   }
 
   function exportDataJson() {
-    saveCurrentPageData();
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `OC_Data_${currentUser ? currentUser.username : 'export'}.json`);
-    dlAnchorElem.click();
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `oc_system_data_${Date.now()}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
   }
 
   function importDataJson(input) {
-    const file = input.files[0];
-    if (file) {
+    if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           appData = JSON.parse(e.target.result);
           saveToLocalStorage();
           renderTree();
-          if (appData.tree.length > 0) {
-            let firstPage = findFirstPage(appData.tree);
-            if (firstPage) switchPage(firstPage.id);
-          }
-          alert("匯入成功！");
-        } catch (err) {
-          alert("檔案格式不符合 JSON 規範！");
-        }
+          showToastNotification("📥 資料成功匯入！");
+        } catch(err) { alert("JSON 檔案格式錯誤！"); }
       };
-      reader.readAsText(file);
+      reader.readAsText(input.files[0]);
     }
   }
 
-  function findFirstPage(nodes) {
-    if (!nodes) return null;
-    for (let node of nodes) {
-      if (node.type === 'page') return node;
-      if (node.children) {
-        let res = findFirstPage(node.children);
-        if (res) return res;
+  function generateInviteCode() {
+    const code = "OC-" + Math.floor(1000 + Math.random() * 9000);
+    prompt("請複製以下資料夾邀請碼發送給朋友：", code);
+  }
+
+  function sendMemberInviteFromModal() {
+    const input = document.getElementById('inviteMemberInput').value.trim();
+    if (!input) { alert("請輸入受邀者帳號或暱稱！"); return; }
+    
+    let targetUserObj = null;
+    for (let u in usersDb) {
+      if (u === input || usersDb[u].nickname === input) {
+        targetUserObj = usersDb[u];
+        break;
       }
     }
-    return null;
+
+    if (!targetUserObj) {
+      alert("找不到該用戶帳號或暱稱！");
+      return;
+    }
+
+    if (!currentActiveFolderForModal) {
+      alert("當前沒有選擇任何資料夾！");
+      return;
+    }
+
+    if (!targetUserObj.invitations) targetUserObj.invitations = [];
+    targetUserObj.invitations.push({
+      senderUser: currentUser.username,
+      senderNick: currentUser.nickname,
+      folderName: currentActiveFolderForModal.name,
+      folderData: currentActiveFolderForModal
+    });
+
+    saveUsersDbToStorage();
+
+    broadcastChannel.postMessage({
+      type: 'INVITE_RECEIVED',
+      targetUser: targetUserObj.username,
+      senderNick: currentUser.nickname,
+      sentTime: Date.now()
+    });
+
+    alert(`已向 [${targetUserObj.nickname}] 發送共享邀請信件！`);
+    document.getElementById('inviteMemberInput').value = '';
   }
 </script>
 </body>

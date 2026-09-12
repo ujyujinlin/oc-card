@@ -84,9 +84,19 @@
       padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px;
     }
 
+    .creator-info-badge {
+      display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1;
+      padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-left: 10px;
+      border: 1px solid #bae6fd;
+    }
+
     .readonly-badge {
-      display: none; background: #e2e8f0; color: #4a5568;
-      padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;
+      display: none; background: #fee2e2; color: #991b1b;
+      padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; border: 1px solid #fca5a5;
+    }
+
+    .draft-badge {
+      display: none; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #fcd34d; margin-left: 6px;
     }
 
     .readonly-mode .editable-field, 
@@ -126,7 +136,6 @@
     }
     .sidebar.closed { transform: translateX(-100%); position: absolute; left: 0; top: 0; bottom: 0; }
     
-    /* 可拖曳選單右側邊框 Handle */
     .sidebar-resizer {
       width: 6px; cursor: col-resize; background: #1a252f; transition: background 0.2s;
       height: 100%; z-index: 101;
@@ -148,7 +157,6 @@
     .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
     .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
     
-    /* 文字延伸：允許顯示極長名稱 */
     .item-title { flex: 1; font-size: 0.9em; display: flex; align-items: center; gap: 4px; word-break: break-all; white-space: normal; line-height: 1.3; }
     .item-btns { display: flex; gap: 2px; flex-shrink: 0; }
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
@@ -407,8 +415,17 @@
 
     <!-- 頂部功能按鈕與背景長線 -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-      <h2 style="margin: 5px 0;">角色資料頁 <span class="readonly-badge" id="readOnlyBadge">🔒 僅供檢閱 (非本人建立)</span></h2>
-      <button type="button" class="btn btn-success edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
+      <h2 style="margin: 5px 0; display:flex; align-items:center; flex-wrap:wrap;">
+        角色資料頁 
+        <span class="draft-badge" id="draftBadge">⚠️ 載入未保存草稿 (24H暫存)</span>
+      </h2>
+      
+      <!-- 顯示創建者與權限 Badge -->
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="creator-info-badge" id="creatorBadge">👑 創建者: --</span>
+        <span class="readonly-badge" id="readOnlyBadge">🔒 僅供檢閱 (非本人建立)</span>
+        <button type="button" class="btn btn-success edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
+      </div>
     </div>
 
     <div class="timeline-line-container">
@@ -419,13 +436,13 @@
       <div class="grid-row">
         <!-- 基本資訊 -->
         <div class="section-box info-left">
-          <div class="form-group"><label>名字：</label><input type="text" id="field-name" class="editable-field" oninput="updateTimeRangeTag()"></div>
-          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias" class="editable-field"></div>
-          <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" class="editable-field" placeholder="DD/MM/YY"></div>
-          <div class="form-group"><label>身份：</label><input type="text" id="field-identity" class="editable-field"></div>
-          <div class="form-group"><label>能力：</label><input type="text" id="field-ability" class="editable-field"></div>
-          <div class="form-group"><label>年齡：</label><input type="text" id="field-age" class="editable-field"></div>
-          <div class="form-group"><label>種族：</label><input type="text" id="field-race" class="editable-field"></div>
+          <div class="form-group"><label>名字：</label><input type="text" id="field-name" class="editable-field" oninput="updateTimeRangeTag(); handleFieldInput();"></div>
+          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>出生日期：</label><input type="text" id="field-dob" class="editable-field" placeholder="DD/MM/YY" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>身份：</label><input type="text" id="field-identity" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>能力：</label><input type="text" id="field-ability" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>年齡：</label><input type="text" id="field-age" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>種族：</label><input type="text" id="field-race" class="editable-field" oninput="handleFieldInput()"></div>
           
           <div class="form-group vertical">
             <label>性格：</label>
@@ -435,9 +452,9 @@
             </div>
           </div>
 
-          <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat" class="editable-field"></div>
-          <div class="form-group"><label>喜好：</label><input type="text" id="field-like" class="editable-field"></div>
-          <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike" class="editable-field"></div>
+          <div class="form-group"><label>身高/體重：</label><input type="text" id="field-stat" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>喜好：</label><input type="text" id="field-like" class="editable-field" oninput="handleFieldInput()"></div>
+          <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike" class="editable-field" oninput="handleFieldInput()"></div>
           
           <div class="form-group vertical">
             <label>關鍵詞：</label>
@@ -500,7 +517,7 @@
       <div class="section-box" style="margin-top: 12px; margin-bottom: 12px;">
         <div class="section-title">
           <span>重要的人</span>
-          <button type="button" class="add-btn edit-only-btn" onclick="addPersonCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addPersonCard(); autoSaveDraft();">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="person-grid"></div>
       </div>
@@ -509,7 +526,7 @@
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>重要信物</span>
-          <button type="button" class="add-btn edit-only-btn" onclick="addKeepCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addKeepCard(); autoSaveDraft();">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="keep-grid"></div>
       </div>
@@ -520,9 +537,9 @@
           <span>成長時間線</span>
           <div class="timeline-range-tag">
             <span>記錄始自</span>
-            <input type="number" id="startYearInput" class="editable-field" value="2000" onchange="updateTimeRangeTag()">
+            <input type="number" id="startYearInput" class="editable-field" value="2000" onchange="updateTimeRangeTag(); handleFieldInput();">
             <span>至</span>
-            <input type="number" id="endYearInput" class="editable-field" value="2026" onchange="updateTimeRangeTag()">
+            <input type="number" id="endYearInput" class="editable-field" value="2026" onchange="updateTimeRangeTag(); handleFieldInput();">
             <span>年（歷經 <strong id="totalYearsDisplay">27</strong> 年）</span>
           </div>
         </div>
@@ -559,7 +576,7 @@
       <div class="section-box" style="margin-bottom: 12px;">
         <div class="section-title">
           <span>衣服穿搭</span>
-          <button type="button" class="add-btn edit-only-btn" onclick="addOutfitCard()">+ 增加更多</button>
+          <button type="button" class="add-btn edit-only-btn" onclick="addOutfitCard(); autoSaveDraft();">+ 增加更多</button>
         </div>
         <div class="cards-grid" id="outfit-grid"></div>
       </div>
@@ -627,15 +644,31 @@
   };
 
   /* ==========================================================================
-     2. 即時全員廣播通知 (WebSocket Live Broadcast)
+     2. 即時全員廣播通知與選單同步 (WebSocket Live Broadcast & Menu Sync)
      ========================================================================== */
   function initLiveNotificationListener() {
     broadcastChannel.onmessage = (event) => {
       const data = event.data;
-      if (data && data.type === 'USER_JOINED') {
-        showToastNotification(`🔔 即時提示：[${data.userName}] 加入了共享資料夾「${data.folderName}」`);
+      if (!data) return;
+
+      if (data.type === 'USER_JOINED') {
+        showToastNotification(`🔔 即時通知：[${data.userName}] 加入了共享資料夾「${data.folderName}」`);
+      } else if (data.type === 'FOLDER_SYNC' && data.targetFolder) {
+        // 同步選單：如果其他用戶更新了共享資料夾內容，實時更新本地樹
+        syncSharedFolderToLocal(data.targetFolder);
       }
     };
+  }
+
+  function syncSharedFolderToLocal(targetFolder) {
+    let existingIndex = appData.tree.findIndex(item => item.id === targetFolder.id);
+    if (existingIndex !== -1) {
+      appData.tree[existingIndex] = targetFolder;
+    } else {
+      appData.tree.push(targetFolder);
+    }
+    saveToLocalStorage();
+    renderTree();
   }
 
   function showToastNotification(text) {
@@ -653,7 +686,55 @@
   }
 
   /* ==========================================================================
-     3. 雲端帳號保存與持久化登入 (Cloud Auth)
+     3. 24小時未保存數據暫存機制 (24-Hour Draft Auto-Save)
+     ========================================================================== */
+  function getDraftStorageKey(pageId) {
+    return `oc_draft_${currentUser ? currentUser.username : 'guest'}_${pageId}`;
+  }
+
+  function handleFieldInput() {
+    autoSaveDraft();
+  }
+
+  function autoSaveDraft() {
+    if (!activePageId || currentPageOwnerId !== (currentUser ? currentUser.username : "")) return;
+
+    const draftData = {
+      timestamp: Date.now(),
+      data: collectCurrentFormData()
+    };
+    localStorage.setItem(getDraftStorageKey(activePageId), JSON.stringify(draftData));
+    document.getElementById('draftBadge').style.display = 'inline-block';
+  }
+
+  function clearDraft(pageId) {
+    localStorage.removeItem(getDraftStorageKey(pageId));
+    document.getElementById('draftBadge').style.display = 'none';
+  }
+
+  function checkAndLoadDraft(pageId) {
+    const key = getDraftStorageKey(pageId);
+    const draftStr = localStorage.getItem(key);
+    if (!draftStr) return null;
+
+    try {
+      const draftObj = JSON.parse(draftStr);
+      const currentTime = Date.now();
+      const hoursDiff = (currentTime - draftObj.timestamp) / (1000 * 60 * 60);
+
+      if (hoursDiff > 24) {
+        // 超過 24 小時，自動過期並清除
+        localStorage.removeItem(key);
+        return null;
+      }
+      return draftObj.data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ==========================================================================
+     4. 雲端帳號保存與持久化登入 (Cloud Auth)
      ========================================================================== */
   function loadUsersDbFromStorage() {
     const saved = localStorage.getItem('oc_system_users_db');
@@ -700,7 +781,7 @@
         {
           id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1,
           children: [
-            { id: "p_1", name: "主角 A", type: "page", ownerId: user, data: {} }
+            { id: "p_1", name: "主角 A", type: "page", ownerId: user, data: { name: "主角 A" } }
           ]
         }
       ]
@@ -760,7 +841,7 @@
   }
 
   /* ==========================================================================
-     4. 側邊欄邊框可拖曳 (Resizable Sidebar)
+     5. 側邊欄邊框可拖曳 (Resizable Sidebar)
      ========================================================================== */
   function initSidebarResizable() {
     const sidebar = document.getElementById('sidebar');
@@ -793,7 +874,7 @@
   }
 
   /* ==========================================================================
-     5. 共享資料夾加入與即時通知 (Shared Folder & Broadcaster)
+     6. 共享資料夾加入與即時通知 (Shared Folder & Broadcaster)
      ========================================================================== */
   function joinSharedFolderFromSidebar() {
     const code = document.getElementById("sidebarInviteInput").value.trim();
@@ -801,16 +882,43 @@
 
     const targetFolderName = `共享企劃資料夾 (${code})`;
 
-    // 直接在當前登入帳號的選單裡增加共享資料夾
+    // 加入共享資料夾：包含資料夾內所有已經在裡面的角色資料頁內容
     const newSharedFolder = {
-      id: "shared_f_" + Date.now(),
+      id: "shared_f_" + code,
       name: targetFolderName,
       type: "folder",
       collapsed: false,
       shareCount: 2,
       isShared: true,
       children: [
-        { id: "shared_p_" + Date.now(), name: "企劃共享角色 A", type: "page", ownerId: "shared_user", data: {} }
+        { 
+          id: "shared_p1_" + code, 
+          name: "企劃資深角色 A", 
+          type: "page", 
+          ownerId: "creator_master", 
+          data: { 
+            name: "企劃資深角色 A", 
+            identity: "企劃核心引導者", 
+            color: "#e74c3c", 
+            age: "24",
+            personalityList: ["嚴肅", "沈穩"],
+            keywordsList: ["共享資料", "傳奇前輩"]
+          } 
+        },
+        { 
+          id: "shared_p2_" + code, 
+          name: "企劃角色 B", 
+          type: "page", 
+          ownerId: "creator_alice", 
+          data: { 
+            name: "企劃角色 B", 
+            identity: "調查員", 
+            color: "#9b59b6", 
+            age: "19",
+            personalityList: ["機敏"],
+            keywordsList: ["偵探"]
+          } 
+        }
       ]
     };
 
@@ -818,14 +926,20 @@
     saveToLocalStorage();
     renderTree();
 
-    // 廣播事件通知所有打開心頁的參與者
+    // 1. 即時廣播通知全員誰加入了共享資料夾
     broadcastChannel.postMessage({
       type: 'USER_JOINED',
       userName: currentUser.nickname,
       folderName: targetFolderName
     });
 
-    showToastNotification(`✅ 已成功加入共享資料夾「${targetFolderName}」！`);
+    // 2. 廣播同步資料頁顯示
+    broadcastChannel.postMessage({
+      type: 'FOLDER_SYNC',
+      targetFolder: newSharedFolder
+    });
+
+    showToastNotification(`✅ 成功加入！[${currentUser.nickname}] 已進入「${targetFolderName}」並載入完整內容！`);
     document.getElementById("sidebarInviteInput").value = "";
   }
 
@@ -838,7 +952,11 @@
   function checkPermissions() {
     const container = document.getElementById("mainContainer");
     const welcomeBanner = document.getElementById("welcomeBanner");
+    const creatorBadge = document.getElementById("creatorBadge");
     const isOwner = (currentPageOwnerId === currentUser.username);
+
+    // 右側實時顯示創作者名稱
+    creatorBadge.innerText = `👑 創建者: ${currentPageOwnerId || '未知'}`;
 
     if (isOwner) {
       container.classList.remove("readonly-mode");
@@ -851,6 +969,8 @@
 
   function saveCurrentPageToCloud(e) {
     saveCurrentPageData();
+    clearDraft(activePageId); // 清除草稿
+
     const saveButton = e ? e.target : document.querySelector('.submit-btn');
     const originalText = saveButton.innerText;
     
@@ -865,7 +985,7 @@
   }
 
   /* ==========================================================================
-     6. 樹狀選單邏輯 (Tree View Rendering)
+     7. 樹狀選單邏輯 (Tree View Rendering)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -989,7 +1109,7 @@
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
         const newId = "p_" + Date.now();
-        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.username, data: {} });
+        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.username, data: { name } });
         res.node.collapsed = false; saveToLocalStorage(); switchPage(newId);
       }
     }
@@ -1022,7 +1142,9 @@
   }
 
   function switchPage(pageId) { 
-    saveCurrentPageData(); 
+    if (activePageId && currentPageOwnerId === (currentUser ? currentUser.username : "")) {
+      saveCurrentPageData(); 
+    }
     activePageId = pageId;
     
     const res = findNodeAndParent(pageId);
@@ -1035,7 +1157,7 @@
   }
 
   /* ==========================================================================
-     7. 標籤與 HSV 調色盤控制
+     8. 標籤與 HSV 調色盤控制
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -1048,6 +1170,7 @@
         if (!keywordsList.includes(val)) { keywordsList.push(val); renderTags('keyword'); }
       }
       e.target.value = '';
+      autoSaveDraft();
     }
   }
 
@@ -1065,6 +1188,7 @@
   function removeTag(idx, type) {
     if (type === 'personality') { personalityList.splice(idx, 1); renderTags('personality'); }
     else { keywordsList.splice(idx, 1); renderTags('keyword'); }
+    autoSaveDraft();
   }
 
   function toggleColorPicker(e) {
@@ -1165,6 +1289,7 @@
     document.getElementById('field-color-hex').value = hex;
     drawColorWheel();
     saveColorToActivePage();
+    autoSaveDraft();
   }
 
   function manualColorInput(hex) {
@@ -1174,6 +1299,7 @@
       currentH = hsv.h; currentS = hsv.s; currentV = Math.max(hsv.v, 0.15);
       drawColorWheel();
       saveColorToActivePage();
+      autoSaveDraft();
     }
   }
 
@@ -1230,7 +1356,7 @@
   }
 
   /* ==========================================================================
-     8. 圖片上傳與 Modal 檢視
+     9. 圖片上傳與 Modal 檢視
      ========================================================================== */
   function triggerInitialUpload(id) {
     if (!uploadedFilesStore[id]) triggerUpload(id);
@@ -1248,6 +1374,7 @@
         const fileData = e.target.result;
         uploadedFilesStore[id] = { name: file.name, type: file.type, data: fileData };
         displayUploadedFile(id);
+        autoSaveDraft();
       };
       reader.readAsDataURL(file);
     }
@@ -1333,7 +1460,7 @@
   }
 
   /* ==========================================================================
-     9. 時間軸與垂直堆疊 × 符號
+     10. 時間軸與垂直堆疊 × 符號
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -1429,6 +1556,7 @@
     } else {
       delete timelineData[currentYear];
     }
+    autoSaveDraft();
   }
 
   function promptAddEvent() {
@@ -1447,7 +1575,7 @@
       desc: desc || ''
     });
 
-    saveCurrentPageData();
+    autoSaveDraft();
     renderMajorEvents();
     renderLineTimeline();
   }
@@ -1498,13 +1626,13 @@
 
   function removeEvent(idx) {
     majorEvents.splice(idx, 1);
-    saveCurrentPageData();
+    autoSaveDraft();
     renderMajorEvents();
     renderLineTimeline();
   }
 
   /* ==========================================================================
-     10. 動態多卡片網格
+     11. 動態多卡片網格
      ========================================================================== */
   function createCardUploaderHtml(cardId) {
     return `
@@ -1531,8 +1659,8 @@
     div.innerHTML = `
       <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-name editable-field" placeholder="名字" value="${data.name || ''}">
-      <input type="text" class="card-rel editable-field" placeholder="關係敘述" value="${data.rel || ''}">
+      <input type="text" class="card-name editable-field" placeholder="名字" value="${data.name || ''}" oninput="handleFieldInput()">
+      <input type="text" class="card-rel editable-field" placeholder="關係敘述" value="${data.rel || ''}" oninput="handleFieldInput()">
     `;
     grid.appendChild(div);
 
@@ -1550,8 +1678,8 @@
     div.innerHTML = `
       <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title editable-field" placeholder="信物名稱" value="${data.title || ''}">
-      <textarea class="card-desc editable-field" rows="2" placeholder="說明描述">${data.desc || ''}</textarea>
+      <input type="text" class="card-title editable-field" placeholder="信物名稱" value="${data.title || ''}" oninput="handleFieldInput()">
+      <textarea class="card-desc editable-field" rows="2" placeholder="說明描述" oninput="handleFieldInput()">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
 
@@ -1569,8 +1697,8 @@
     div.innerHTML = `
       <button type="button" class="delete-card-btn edit-only-btn" onclick="removeCardItem('${id}')">✕</button>
       ${createCardUploaderHtml(id)}
-      <input type="text" class="card-title editable-field" placeholder="穿搭名稱" value="${data.title || ''}">
-      <textarea class="card-desc editable-field" rows="3" placeholder="文字敘述說明...">${data.desc || ''}</textarea>
+      <input type="text" class="card-title editable-field" placeholder="穿搭名稱" value="${data.title || ''}" oninput="handleFieldInput()">
+      <textarea class="card-desc editable-field" rows="3" placeholder="文字敘述說明..." oninput="handleFieldInput()">${data.desc || ''}</textarea>
     `;
     grid.appendChild(div);
 
@@ -1583,16 +1711,14 @@
   function removeCardItem(cardId) {
     document.getElementById(cardId).remove();
     delete uploadedFilesStore[cardId];
+    autoSaveDraft();
   }
 
   /* ==========================================================================
-     11. 資料儲存與載入 (Data Management)
+     12. 資料儲存與載入 (Data Management)
      ========================================================================== */
-  function saveCurrentPageData() {
-    const res = findNodeAndParent(activePageId);
-    if (!res || !res.node) return;
-
-    const data = {
+  function collectCurrentFormData() {
+    return {
       name: document.getElementById('field-name').value,
       alias: document.getElementById('field-alias').value,
       dob: document.getElementById('field-dob').value,
@@ -1615,7 +1741,13 @@
       keeps: getCardData('keep-grid', ['.card-title', '.card-desc'], ['title', 'desc']),
       outfits: getCardData('outfit-grid', ['.card-title', '.card-desc'], ['title', 'desc'])
     };
+  }
 
+  function saveCurrentPageData() {
+    const res = findNodeAndParent(activePageId);
+    if (!res || !res.node) return;
+
+    const data = collectCurrentFormData();
     res.node.data = data;
     if (data.name) res.node.name = data.name;
     saveToLocalStorage();
@@ -1641,8 +1773,18 @@
     const res = findNodeAndParent(pageId);
     if (!res || !res.node) return;
 
-    const data = res.node.data || {};
+    // 先讀取正式雲端數據
+    let data = res.node.data || {};
     currentPageOwnerId = res.node.ownerId || (currentUser ? currentUser.username : "");
+
+    // 檢查是否有 24 小時內的未保存草稿
+    const draftData = checkAndLoadDraft(pageId);
+    if (draftData && currentPageOwnerId === (currentUser ? currentUser.username : "")) {
+      data = draftData;
+      document.getElementById('draftBadge').style.display = 'inline-block';
+    } else {
+      document.getElementById('draftBadge').style.display = 'none';
+    }
     
     document.getElementById('field-name').value = data.name || res.node.name || '';
     document.getElementById('field-alias').value = data.alias || '';

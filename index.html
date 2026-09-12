@@ -43,14 +43,42 @@
     .submit-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
     /* ==========================================================================
-       2. 權限 UI 與 × 符號微調
+       2. 登入 / 註冊 彈窗 (Auth Modals)
        ========================================================================== */
+    .auth-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center;
+      z-index: 9999; backdrop-filter: blur(4px);
+    }
+    .auth-box {
+      background: #ffffff; padding: 30px; border-radius: 12px; width: 90%; max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center;
+    }
+    .auth-box h3 { margin-top: 0; margin-bottom: 20px; color: #2c3e50; font-size: 1.4em; }
+    .auth-form-group { margin-bottom: 15px; text-align: left; }
+    .auth-form-group label { display: block; font-size: 0.85em; margin-bottom: 5px; font-weight: bold; color: #555; }
+    .auth-form-group input {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em;
+    }
+    .auth-btn {
+      width: 100%; padding: 10px; background: var(--primary-color); color: white;
+      border: none; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; margin-top: 10px;
+    }
+    .auth-switch { margin-top: 15px; font-size: 0.85em; color: #666; }
+    .auth-switch a { color: var(--accent-color); text-decoration: underline; cursor: pointer; }
+
+    /* 個人頁面「歡迎回來。」標語 */
+    .welcome-banner {
+      font-size: 1.25em; font-weight: bold; color: #2c3e50; margin-bottom: 8px;
+      padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* 唯讀模式與權限 UI */
     .readonly-badge {
       display: none; background: #e2e8f0; color: #4a5568;
       padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;
     }
 
-    /* 觀看非本人資料頁時僅檢閱（Read-only 模式控制） */
     .readonly-mode .editable-field, 
     .readonly-mode input, 
     .readonly-mode textarea, 
@@ -69,19 +97,11 @@
 
     .readonly-mode .readonly-badge { display: inline-block; }
 
-    /* 背景長線與標題刪除 × 符號定位 */
     .timeline-line-container { position: relative; padding-top: 15px; margin-bottom: 15px; }
     .timeline-long-line {
       position: absolute; top: 25px; left: 0; width: 100%; height: 2px;
       background-color: #888888; z-index: 1;
     }
-
-    .close-btn {
-      position: absolute; top: 12px; right: 15px; width: 28px; height: 28px;
-      font-size: 32px; font-weight: 900; line-height: 28px; color: #e74c3c;
-      cursor: pointer; z-index: 2; text-align: center; user-select: none;
-    }
-    .close-btn:hover { color: #c0392b; transform: scale(1.15); }
 
     /* ==========================================================================
        3. 左側樹狀選單與共享設定區 (Sidebar & Tree)
@@ -93,6 +113,7 @@
     }
     .sidebar.closed { transform: translateX(-100%); }
     .sidebar-header { padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-user-info { padding: 10px 15px; background: #243342; font-size: 0.85em; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #34495e; }
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
     .sidebar-tools { padding: 10px; background: #34495e; display: flex; gap: 5px; flex-wrap: wrap; }
     .sidebar-tools button { flex: 1; padding: 6px; font-size: 0.8em; background: #16a085; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
@@ -110,9 +131,9 @@
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
 
-    /* 共享標記與隱藏頁數計數標籤 */
+    /* 共享標記與隱藏頁數（最右側純數字標籤） */
     .share-member-count { font-size: 0.75em; background: #16a085; color: white; padding: 1px 5px; border-radius: 10px; }
-    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 5px; border-radius: 10px; margin-left: 4px; }
+    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; }
 
     .sub-tree { list-style: none; padding-left: 18px; margin: 0; }
     .sub-tree.collapsed { display: none; }
@@ -276,6 +297,47 @@
 </head>
 <body>
 
+<!-- 帳號登入 / 註冊彈窗 -->
+<div class="auth-overlay" id="authOverlay">
+  <!-- 登入表單 -->
+  <div class="auth-box" id="loginBox">
+    <h3>用戶登入</h3>
+    <div class="auth-form-group">
+      <label>帳號：</label>
+      <input type="text" id="loginUsername" placeholder="輸入帳號 (無字數/類型限制)">
+    </div>
+    <div class="auth-form-group">
+      <label>密碼：</label>
+      <input type="password" id="loginPassword" placeholder="輸入密碼">
+    </div>
+    <button class="auth-btn" onclick="handleLogin()">登入</button>
+    <div class="auth-switch">
+      還沒有帳號？ <a onclick="switchAuthBox('register')">點此註冊</a>
+    </div>
+  </div>
+
+  <!-- 註冊表單 -->
+  <div class="auth-box" id="registerBox" style="display:none;">
+    <h3>註冊新帳號</h3>
+    <div class="auth-form-group">
+      <label>設定暱稱：</label>
+      <input type="text" id="regNickname" placeholder="例如：創作者小明">
+    </div>
+    <div class="auth-form-group">
+      <label>帳號：</label>
+      <input type="text" id="regUsername" placeholder="設定帳號 (無字數/類型限制)">
+    </div>
+    <div class="auth-form-group">
+      <label>密碼：</label>
+      <input type="password" id="regPassword" placeholder="設定密碼">
+    </div>
+    <button class="auth-btn" style="background:var(--success-color);" onclick="handleRegister()">完成註冊並登入</button>
+    <div class="auth-switch">
+      已有帳號？ <a onclick="switchAuthBox('login')">返回登入</a>
+    </div>
+  </div>
+</div>
+
 <button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">☰ 選單</button>
 
 <!-- 左側目錄選單 -->
@@ -283,6 +345,10 @@
   <div class="sidebar-header">
     <span class="sidebar-title">📁 角色卡系統</span>
     <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="sidebar-user-info">
+    <span>👤 <strong id="sidebarNickname">訪客</strong></span>
+    <button style="background:#e74c3c; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;" onclick="handleLogout()">登出</button>
   </div>
   <div class="sidebar-tools">
     <button onclick="promptAddFolder()">+ 新增根資料夾</button>
@@ -311,15 +377,20 @@
 <div class="main-wrapper">
   <div class="card-container" id="mainContainer">
 
-    <!-- 頂部功能按鈕與背景長線微調容器 -->
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <!-- 個人角色頁面歡迎語標頭 -->
+    <div class="welcome-banner" id="welcomeBanner" style="display: none;">
+      ✨ 歡迎回來。
+    </div>
+
+    <!-- 頂部功能按鈕與背景長線 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
       <h2 style="margin: 5px 0;">角色資料頁 <span class="readonly-badge" id="readOnlyBadge">🔒 僅供檢閱 (非本人建立)</span></h2>
       <button type="button" class="btn btn-success edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
     </div>
 
     <div class="timeline-line-container">
       <div class="timeline-long-line"></div>
-      <div class="close-btn edit-only-btn" onclick="removeCharacterPage()" title="刪除頁面">×</div>
+      <!-- 已成功刪除右上角的刪除 × 按鈕 -->
     </div>
 
     <form id="ocForm">
@@ -494,24 +565,14 @@
 
 <script>
   /* ==========================================================================
-     1. 系統與使用者全域狀態 (Globals & Users)
+     1. 帳號與全域狀態管理 (Auth System & Globals)
      ========================================================================== */
-  const currentUser = { id: "user_001", name: "Alice" };
+  let usersDb = {}; // 儲存用戶資料: { username: { password, nickname, appData } }
+  let currentUser = null; // 當前登入用戶 { username, nickname }
 
-  let appData = {
-    tree: [
-      {
-        id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 3,
-        children: [
-          { id: "p_1", name: "主角 A", type: "page", ownerId: "user_001", data: {} },
-          { id: "p_2", name: "配角 B", type: "page", ownerId: "user_001", data: {} }
-        ]
-      }
-    ]
-  };
-
-  let activePageId = "p_1";
-  let currentPageOwnerId = "user_001";
+  let appData = { tree: [] };
+  let activePageId = "";
+  let currentPageOwnerId = "";
   let timelineData = {}; 
   let majorEvents = [];
   let personalityList = [];
@@ -524,9 +585,8 @@
   let currentZoom = 1;
 
   window.onload = function() {
-    loadFromLocalStorage();
-    renderTree();
-    loadPageData(activePageId);
+    loadUsersDbFromStorage();
+    checkSession();
     setupZoomAndPan();
     initColorWheel();
 
@@ -539,14 +599,107 @@
     });
   };
 
-  function saveToLocalStorage() {
-    localStorage.setItem('oc_system_data', JSON.stringify(appData));
+  function loadUsersDbFromStorage() {
+    const saved = localStorage.getItem('oc_system_users_db');
+    if (saved) {
+      try { usersDb = JSON.parse(saved); } catch(e) { console.error(e); }
+    }
   }
 
-  function loadFromLocalStorage() {
-    const saved = localStorage.getItem('oc_system_data');
-    if (saved) {
-      try { appData = JSON.parse(saved); } catch(e) { console.error(e); }
+  function saveUsersDbToStorage() {
+    localStorage.setItem('oc_system_users_db', JSON.stringify(usersDb));
+  }
+
+  function checkSession() {
+    const session = localStorage.getItem('oc_system_current_session');
+    if (session && usersDb[session]) {
+      currentUser = { username: session, nickname: usersDb[session].nickname };
+      document.getElementById('authOverlay').style.display = 'none';
+      initUserAppData();
+    } else {
+      document.getElementById('authOverlay').style.display = 'flex';
+    }
+  }
+
+  function switchAuthBox(type) {
+    if (type === 'register') {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('registerBox').style.display = 'block';
+    } else {
+      document.getElementById('registerBox').style.display = 'none';
+      document.getElementById('loginBox').style.display = 'block';
+    }
+  }
+
+  function handleRegister() {
+    const nick = document.getElementById('regNickname').value.trim();
+    const user = document.getElementById('regUsername').value.trim();
+    const pass = document.getElementById('regPassword').value;
+
+    if (!nick || !user || !pass) { alert("請填寫所有欄位"); return; }
+    if (usersDb[user]) { alert("該帳號名稱已被使用，請更換帳號名稱"); return; }
+
+    const defaultData = {
+      tree: [
+        {
+          id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1,
+          children: [
+            { id: "p_1", name: "主角 A", type: "page", ownerId: user, data: {} }
+          ]
+        }
+      ]
+    };
+
+    usersDb[user] = { password: pass, nickname: nick, appData: defaultData };
+    saveUsersDbToStorage();
+
+    currentUser = { username: user, nickname: nick };
+    localStorage.setItem('oc_system_current_session', user);
+    
+    document.getElementById('authOverlay').style.display = 'none';
+    initUserAppData();
+  }
+
+  function handleLogin() {
+    const user = document.getElementById('loginUsername').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+
+    if (!user || !pass) { alert("請輸入帳號與密碼"); return; }
+    if (!usersDb[user] || usersDb[user].password !== pass) { alert("帳號或密碼錯誤！"); return; }
+
+    currentUser = { username: user, nickname: usersDb[user].nickname };
+    localStorage.setItem('oc_system_current_session', user);
+
+    document.getElementById('authOverlay').style.display = 'none';
+    initUserAppData();
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('oc_system_current_session');
+    location.reload();
+  }
+
+  function initUserAppData() {
+    document.getElementById('sidebarNickname').innerText = currentUser.nickname;
+    appData = usersDb[currentUser.username].appData || { tree: [] };
+    
+    let firstPage = findFirstPage(appData.tree);
+    if (firstPage) {
+      activePageId = firstPage.id;
+    } else {
+      const newPageId = "p_" + Date.now();
+      appData.tree = [{ id: "f_1", name: "主要角色庫", type: "folder", collapsed: false, shareCount: 1, children: [{ id: newPageId, name: "新角色", type: "page", ownerId: currentUser.username, data: {} }] }];
+      activePageId = newPageId;
+    }
+
+    renderTree();
+    loadPageData(activePageId);
+  }
+
+  function saveToLocalStorage() {
+    if (currentUser && usersDb[currentUser.username]) {
+      usersDb[currentUser.username].appData = appData;
+      saveUsersDbToStorage();
     }
   }
 
@@ -561,7 +714,7 @@
       currentPageOwnerId = "user_999";
       document.getElementById("sidebarRoleStatus").innerText = "身分：協同者 (唯讀模式)";
     } else {
-      currentPageOwnerId = currentUser.id;
+      currentPageOwnerId = currentUser.username;
       document.getElementById("sidebarRoleStatus").innerText = "身分：建立者 (可編輯)";
     }
 
@@ -577,12 +730,15 @@
 
   function checkPermissions() {
     const container = document.getElementById("mainContainer");
-    const isOwner = (currentPageOwnerId === currentUser.id);
+    const welcomeBanner = document.getElementById("welcomeBanner");
+    const isOwner = (currentPageOwnerId === currentUser.username);
 
     if (isOwner) {
       container.classList.remove("readonly-mode");
+      welcomeBanner.style.display = "flex";
     } else {
       container.classList.add("readonly-mode");
+      welcomeBanner.style.display = "none";
     }
   }
 
@@ -604,14 +760,8 @@
     }, 600);
   }
 
-  function removeCharacterPage() {
-    if (confirm("確定要刪除此角色資料頁嗎？")) {
-      deleteNode(activePageId);
-    }
-  }
-
   /* ==========================================================================
-     4. 樹狀選單邏輯 (Tree View - 人數標記與隱藏頁數計數)
+     4. 樹狀選單邏輯 (Tree View - 最右側僅顯示純數字標籤)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -656,7 +806,7 @@
       const colorDotHtml = node.type === 'page' && node.data && node.data.color
         ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
 
-      // 資料夾共享人數與折疊頁數顯示
+      // 資料夾隱藏時，最右側僅顯示純數字標籤
       let shareBadge = '';
       let hiddenCountBadge = '';
       if (node.type === 'folder') {
@@ -664,16 +814,17 @@
         shareBadge = `<span class="share-member-count" title="${shareNum} 人參與共享資料夾">👥 ${shareNum}</span>`;
         if (node.collapsed) {
           const totalPages = countPagesInFolder(node);
-          hiddenCountBadge = `<span class="hidden-page-count" title="包含 ${totalPages} 個資料頁">📄 ${totalPages}</span>`;
+          hiddenCountBadge = `<span class="hidden-page-count" title="包含 ${totalPages} 個資料頁">${totalPages}</span>`;
         }
       }
 
       header.innerHTML = `
         <span class="drag-handle">☰</span> ${toggleBtnHtml}
         <span class="item-title">
-          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadge} ${node.name} ${hiddenCountBadge}
+          ${colorDotHtml}${node.type === 'folder' ? '📁' : '📄'} ${shareBadge} ${node.name}
         </span>
-        <div class="item-btns">
+        ${hiddenCountBadge}
+        <div class="item-btns" style="margin-left: 6px;">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
           ${node.type === 'folder' ? `<button title="新增子資料夾" onclick="event.stopPropagation(); promptAddSubFolder('${node.id}')">📁+</button>` : ''}
           ${node.type === 'folder' ? `<button title="新增資料頁" onclick="event.stopPropagation(); promptAddPage('${node.id}')">📄+</button>` : ''}
@@ -735,7 +886,7 @@
       const res = findNodeAndParent(parentId);
       if (res && res.node.type === 'folder') {
         const newId = "p_" + Date.now();
-        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.id, data: {} });
+        res.node.children.push({ id: newId, name, type: "page", ownerId: currentUser.username, data: {} });
         res.node.collapsed = false; saveToLocalStorage(); switchPage(newId);
       }
     }
@@ -773,7 +924,7 @@
     
     const res = findNodeAndParent(pageId);
     if (res && res.node) {
-      currentPageOwnerId = res.node.ownerId || currentUser.id;
+      currentPageOwnerId = res.node.ownerId || currentUser.username;
     }
     
     renderTree(); 
@@ -781,7 +932,7 @@
   }
 
   /* ==========================================================================
-     5. 標籤與 HSV 調色盤控制 (Tags & HSV Palette)
+     5. 標籤與 HSV 調色盤控制
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -976,7 +1127,7 @@
   }
 
   /* ==========================================================================
-     6. 圖片上傳與 Modal 檢視 (Image Upload & Viewer)
+     6. 圖片上傳與 Modal 檢視
      ========================================================================== */
   function triggerInitialUpload(id) {
     if (!uploadedFilesStore[id]) triggerUpload(id);
@@ -1079,7 +1230,7 @@
   }
 
   /* ==========================================================================
-     7. 時間軸與垂直堆疊 × 符號 (Vertical Stacked Marks & Event Sync)
+     7. 時間軸與垂直堆疊 × 符號
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -1106,8 +1257,6 @@
     const totalYears = Math.max(1, endYear - startYear);
 
     const siblingPages = getSiblingPagesOfActivePage();
-
-    // 依年份搜集所有角色的事件標記
     const yearEventsMap = {};
 
     siblingPages.forEach(p => {
@@ -1130,7 +1279,6 @@
       });
     });
 
-    // 渲染垂直堆疊 × 符號
     Object.keys(yearEventsMap).forEach(yStr => {
       const yNum = parseInt(yStr);
       const percent = ((yNum - startYear) / totalYears) * 100;
@@ -1253,7 +1401,7 @@
   }
 
   /* ==========================================================================
-     8. 動態多卡片網格 (Dynamic Cards Grid)
+     8. 動態多卡片網格
      ========================================================================== */
   function createCardUploaderHtml(cardId) {
     return `
@@ -1391,7 +1539,7 @@
     if (!res || !res.node) return;
 
     const data = res.node.data || {};
-    currentPageOwnerId = res.node.ownerId || currentUser.id;
+    currentPageOwnerId = res.node.ownerId || (currentUser ? currentUser.username : "");
     
     document.getElementById('field-name').value = data.name || res.node.name || '';
     document.getElementById('field-alias').value = data.alias || '';
@@ -1418,7 +1566,6 @@
     majorEvents = data.majorEvents || [];
     uploadedFilesStore = data.uploadedFiles || {};
 
-    // 恢復證件照
     ['avatar1', 'avatar2'].forEach(id => {
       if (uploadedFilesStore[id]) {
         displayUploadedFile(id);
@@ -1430,7 +1577,6 @@
       }
     });
 
-    // 清空與重載動態卡片
     document.getElementById('person-grid').innerHTML = '';
     (data.persons || []).forEach(p => addPersonCard(p));
 
@@ -1451,7 +1597,7 @@
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", "OC_System_Data.json");
+    dlAnchorElem.setAttribute("download", `OC_Data_${currentUser ? currentUser.username : 'export'}.json`);
     dlAnchorElem.click();
   }
 
@@ -1478,6 +1624,7 @@
   }
 
   function findFirstPage(nodes) {
+    if (!nodes) return null;
     for (let node of nodes) {
       if (node.type === 'page') return node;
       if (node.children) {

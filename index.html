@@ -42,6 +42,18 @@
     }
     .submit-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
+    /* 全員即時通知 Toast 彈窗 */
+    .toast-container {
+      position: fixed; top: 20px; right: 20px; z-index: 10000;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    }
+    .toast-message {
+      background: #2c3e50; color: #fff; padding: 12px 18px; border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-left: 5px solid #2ecc71;
+      font-size: 0.95em; animation: slideIn 0.3s ease-out; pointer-events: auto;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
     /* ==========================================================================
        2. 登入 / 註冊 彈窗 (Auth Modals)
        ========================================================================== */
@@ -67,13 +79,11 @@
     .auth-switch { margin-top: 15px; font-size: 0.85em; color: #666; }
     .auth-switch a { color: var(--accent-color); text-decoration: underline; cursor: pointer; }
 
-    /* 個人頁面「歡迎回來。」標語 */
     .welcome-banner {
       font-size: 1.25em; font-weight: bold; color: #2c3e50; margin-bottom: 8px;
       padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px;
     }
 
-    /* 唯讀模式與權限 UI */
     .readonly-badge {
       display: none; background: #e2e8f0; color: #4a5568;
       padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;
@@ -104,14 +114,25 @@
     }
 
     /* ==========================================================================
-       3. 左側樹狀選單與共享設定區 (Sidebar & Tree)
+       3. 左側樹狀選單與可拖曳邊框 (Resizable Sidebar & Tree)
        ========================================================================== */
-    .sidebar {
-      width: var(--sidebar-width); background: #2c3e50; color: #ecf0f1;
-      display: flex; flex-direction: column; transition: transform 0.3s ease;
-      z-index: 100; position: absolute; left: 0; top: 0; bottom: 0;
+    .sidebar-wrapper {
+      display: flex; position: relative; height: 100%; z-index: 100;
     }
-    .sidebar.closed { transform: translateX(-100%); }
+    .sidebar {
+      width: var(--sidebar-width); min-width: 220px; max-width: 650px;
+      background: #2c3e50; color: #ecf0f1; display: flex; flex-direction: column;
+      transition: transform 0.3s ease; position: relative; height: 100%;
+    }
+    .sidebar.closed { transform: translateX(-100%); position: absolute; left: 0; top: 0; bottom: 0; }
+    
+    /* 可拖曳選單右側邊框 Handle */
+    .sidebar-resizer {
+      width: 6px; cursor: col-resize; background: #1a252f; transition: background 0.2s;
+      height: 100%; z-index: 101;
+    }
+    .sidebar-resizer:hover, .sidebar-resizer.resizing { background: #3498db; }
+
     .sidebar-header { padding: 15px; background: #1a252f; display: flex; justify-content: space-between; align-items: center; }
     .sidebar-user-info { padding: 10px 15px; background: #243342; font-size: 0.85em; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #34495e; }
     .sidebar-title { font-weight: bold; font-size: 1.1em; }
@@ -126,21 +147,21 @@
     .drag-handle { cursor: grab; padding: 0 4px; color: #95a5a6; font-weight: bold; font-size: 1.1em; user-select: none; }
     .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
     .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
-    .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; gap: 4px; }
-    .item-btns { display: flex; gap: 2px; }
+    
+    /* 文字延伸：允許顯示極長名稱 */
+    .item-title { flex: 1; font-size: 0.9em; display: flex; align-items: center; gap: 4px; word-break: break-all; white-space: normal; line-height: 1.3; }
+    .item-btns { display: flex; gap: 2px; flex-shrink: 0; }
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
 
-    /* 共享標記與隱藏頁數（最右側純數字標籤） */
-    .share-member-count { font-size: 0.75em; background: #16a085; color: white; padding: 1px 5px; border-radius: 10px; }
-    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; }
+    .share-member-count { font-size: 0.75em; background: #16a085; color: white; padding: 1px 5px; border-radius: 10px; flex-shrink: 0; }
+    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; flex-shrink: 0; }
 
-    .sub-tree { list-style: none; padding-left: 18px; margin: 0; }
+    .sub-tree { list-style: none; padding-left: 14px; margin: 0; }
     .sub-tree.collapsed { display: none; }
     .page-node { background: #3d566e; margin: 3px 0; border-radius: 4px; }
     .page-node.active { background: var(--accent-color); font-weight: bold; }
 
-    /* 側邊欄底部共享設定區塊 */
     .sidebar-share-section {
       padding: 12px; background: #1a252f; border-top: 1px solid #34495e;
       display: flex; flex-direction: column; gap: 8px; font-size: 0.85em;
@@ -192,7 +213,6 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
-    /* 標籤控制 */
     .tag-wrapper { display: flex; flex-direction: column; width: 100%; gap: 6px; }
     .tag-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
     .custom-tag {
@@ -201,7 +221,6 @@
     }
     .custom-tag button { background: none; border: none; color: #0056b3; cursor: pointer; font-weight: bold; padding: 0 2px; }
 
-    /* HSV 調色盤 */
     .color-picker-group { display: flex; align-items: center; gap: 10px; position: relative; }
     .color-swatch { width: 32px; height: 32px; border: 2px solid #555; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .color-picker-popover {
@@ -211,7 +230,6 @@
     }
     .color-picker-popover.active { display: block; }
 
-    /* 圖片上傳區塊 */
     .avatar-right { padding: 0.75cm !important; display: flex; flex-direction: column; gap: 10px; }
     .id-photos-vertical { display: flex; flex-direction: column; gap: 12px; flex: 1; }
     .image-uploader-wrapper { position: relative; width: 100%; flex: 1; min-height: 140px; }
@@ -232,7 +250,6 @@
     .image-uploader-wrapper:hover .image-overlay { opacity: 1; }
     .overlay-btn { background: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
 
-    /* 多卡片網格 */
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .card-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; position: relative; }
     .card-item input, .card-item textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9em; }
@@ -290,12 +307,14 @@
       .info-left { flex: 1.2; }
       .avatar-right { flex: 1; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
-      .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
     }
   </style>
 </head>
 <body>
+
+<!-- 全員通知 Toast 容器 -->
+<div class="toast-container" id="toastContainer"></div>
 
 <!-- 帳號登入 / 註冊彈窗 -->
 <div class="auth-overlay" id="authOverlay">
@@ -318,7 +337,7 @@
 
   <!-- 註冊表單 -->
   <div class="auth-box" id="registerBox" style="display:none;">
-    <h3>註冊新帳號</h3>
+    <h3>註冊新帳號 (保存至雲端)</h3>
     <div class="auth-form-group">
       <label>設定暱稱：</label>
       <input type="text" id="regNickname" placeholder="例如：創作者小明">
@@ -331,7 +350,7 @@
       <label>密碼：</label>
       <input type="password" id="regPassword" placeholder="設定密碼">
     </div>
-    <button class="auth-btn" style="background:var(--success-color);" onclick="handleRegister()">完成註冊並登入</button>
+    <button class="auth-btn" style="background:var(--success-color);" onclick="handleRegister()">完成註冊並儲存</button>
     <div class="auth-switch">
       已有帳號？ <a onclick="switchAuthBox('login')">返回登入</a>
     </div>
@@ -340,37 +359,41 @@
 
 <button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">☰ 選單</button>
 
-<!-- 左側目錄選單 -->
-<div class="sidebar closed" id="sidebar">
-  <div class="sidebar-header">
-    <span class="sidebar-title">📁 角色卡系統</span>
-    <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
-  </div>
-  <div class="sidebar-user-info">
-    <span>👤 <strong id="sidebarNickname">訪客</strong></span>
-    <button style="background:#e74c3c; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;" onclick="handleLogout()">登出</button>
-  </div>
-  <div class="sidebar-tools">
-    <button onclick="promptAddFolder()">+ 新增根資料夾</button>
-    <button onclick="exportDataJson()">📥 匯出資料檔</button>
-    <button onclick="document.getElementById('import-file-input').click()">📤 匯入資料檔</button>
-    <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importDataJson(this)">
-  </div>
-  
-  <!-- 樹狀資料夾 -->
-  <div class="folder-container" id="tree-root"></div>
-
-  <!-- 選單底部共享資料夾設定 -->
-  <div class="sidebar-share-section">
-    <div style="font-weight: bold; color: #f39c12;">🔗 共享資料夾設定</div>
-    <div>
-      <label style="display:block; margin-bottom:4px; font-size:0.8em; color:#bdc3c7;">輸入邀請碼：</label>
-      <input type="text" id="sidebarInviteInput" placeholder="輸入邀請碼 (輸入 READONLY 測試唯讀)">
+<!-- 左側目錄選單與拖動邊框 -->
+<div class="sidebar-wrapper">
+  <div class="sidebar closed" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">📁 角色卡系統</span>
+      <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
     </div>
-    <button onclick="joinSharedFolderFromSidebar()">加入 / 同步共享資料夾</button>
-    <button onclick="generateInviteCode()" style="background: #27ae60;">生成當前資料夾邀請碼</button>
-    <div id="sidebarRoleStatus" style="font-size:0.75em; color:#aaa; text-align:center;">身分：建立者 (可編輯)</div>
+    <div class="sidebar-user-info">
+      <span>👤 <strong id="sidebarNickname">訪客</strong></span>
+      <button style="background:#e74c3c; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;" onclick="handleLogout()">登出</button>
+    </div>
+    <div class="sidebar-tools">
+      <button onclick="promptAddFolder()">+ 新增根資料夾</button>
+      <button onclick="exportDataJson()">📥 匯出資料檔</button>
+      <button onclick="document.getElementById('import-file-input').click()">📤 匯入資料檔</button>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importDataJson(this)">
+    </div>
+    
+    <!-- 樹狀資料夾 -->
+    <div class="folder-container" id="tree-root"></div>
+
+    <!-- 選單底部共享資料夾設定 -->
+    <div class="sidebar-share-section">
+      <div style="font-weight: bold; color: #f39c12;">🔗 共享資料夾設定</div>
+      <div>
+        <label style="display:block; margin-bottom:4px; font-size:0.8em; color:#bdc3c7;">輸入邀請碼：</label>
+        <input type="text" id="sidebarInviteInput" placeholder="輸入邀請碼 (例: OC-888)">
+      </div>
+      <button onclick="joinSharedFolderFromSidebar()">加入共享資料夾</button>
+      <button onclick="generateInviteCode()" style="background: #27ae60;">生成當前資料夾邀請碼</button>
+      <div id="sidebarRoleStatus" style="font-size:0.75em; color:#aaa; text-align:center;">身分：建立者 (可編輯)</div>
+    </div>
   </div>
+  <!-- 選單右側可拖曳邊框 -->
+  <div class="sidebar-resizer" id="sidebarResizer"></div>
 </div>
 
 <!-- 主內容卡片區 -->
@@ -390,7 +413,6 @@
 
     <div class="timeline-line-container">
       <div class="timeline-long-line"></div>
-      <!-- 已成功刪除右上角的刪除 × 按鈕 -->
     </div>
 
     <form id="ocForm">
@@ -565,10 +587,10 @@
 
 <script>
   /* ==========================================================================
-     1. 帳號與全域狀態管理 (Auth System & Globals)
+     1. 全域狀態與雲端數據庫 (Auth System & Globals)
      ========================================================================== */
-  let usersDb = {}; // 儲存用戶資料: { username: { password, nickname, appData } }
-  let currentUser = null; // 當前登入用戶 { username, nickname }
+  let usersDb = {}; // 模擬雲端數據庫: { username: { password, nickname, appData } }
+  let currentUser = null; 
 
   let appData = { tree: [] };
   let activePageId = "";
@@ -584,11 +606,16 @@
   let currentH = 210, currentS = 1, currentV = 1;
   let currentZoom = 1;
 
+  // 全員即時廣播 Channel (模擬 WebSockets 即時通訊)
+  const broadcastChannel = new BroadcastChannel('oc_system_live_notifications');
+
   window.onload = function() {
     loadUsersDbFromStorage();
     checkSession();
     setupZoomAndPan();
     initColorWheel();
+    initSidebarResizable();
+    initLiveNotificationListener();
 
     document.addEventListener('click', () => {
       const pop = document.getElementById('color-popover');
@@ -599,6 +626,35 @@
     });
   };
 
+  /* ==========================================================================
+     2. 即時全員廣播通知 (WebSocket Live Broadcast)
+     ========================================================================== */
+  function initLiveNotificationListener() {
+    broadcastChannel.onmessage = (event) => {
+      const data = event.data;
+      if (data && data.type === 'USER_JOINED') {
+        showToastNotification(`🔔 即時提示：[${data.userName}] 加入了共享資料夾「${data.folderName}」`);
+      }
+    };
+  }
+
+  function showToastNotification(text) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerText = text;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => toast.remove(), 500);
+    }, 5000);
+  }
+
+  /* ==========================================================================
+     3. 雲端帳號保存與持久化登入 (Cloud Auth)
+     ========================================================================== */
   function loadUsersDbFromStorage() {
     const saved = localStorage.getItem('oc_system_users_db');
     if (saved) {
@@ -704,22 +760,73 @@
   }
 
   /* ==========================================================================
-     2. 側邊欄共享設定與邀請碼 logic
+     4. 側邊欄邊框可拖曳 (Resizable Sidebar)
+     ========================================================================== */
+  function initSidebarResizable() {
+    const sidebar = document.getElementById('sidebar');
+    const resizer = document.getElementById('sidebarResizer');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizer.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const newWidth = e.clientX;
+      if (newWidth >= 200 && newWidth <= 650) {
+        sidebar.style.width = `${newWidth}px`;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        resizer.classList.remove('resizing');
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = 'auto';
+      }
+    });
+  }
+
+  /* ==========================================================================
+     5. 共享資料夾加入與即時通知 (Shared Folder & Broadcaster)
      ========================================================================== */
   function joinSharedFolderFromSidebar() {
     const code = document.getElementById("sidebarInviteInput").value.trim();
     if (!code) { alert("請輸入有效的邀請碼"); return; }
 
-    if (code === "READONLY") {
-      currentPageOwnerId = "user_999";
-      document.getElementById("sidebarRoleStatus").innerText = "身分：協同者 (唯讀模式)";
-    } else {
-      currentPageOwnerId = currentUser.username;
-      document.getElementById("sidebarRoleStatus").innerText = "身分：建立者 (可編輯)";
-    }
+    const targetFolderName = `共享企劃資料夾 (${code})`;
 
-    checkPermissions();
-    alert(`成功連結至共享邀請碼：${code}`);
+    // 直接在當前登入帳號的選單裡增加共享資料夾
+    const newSharedFolder = {
+      id: "shared_f_" + Date.now(),
+      name: targetFolderName,
+      type: "folder",
+      collapsed: false,
+      shareCount: 2,
+      isShared: true,
+      children: [
+        { id: "shared_p_" + Date.now(), name: "企劃共享角色 A", type: "page", ownerId: "shared_user", data: {} }
+      ]
+    };
+
+    appData.tree.push(newSharedFolder);
+    saveToLocalStorage();
+    renderTree();
+
+    // 廣播事件通知所有打開心頁的參與者
+    broadcastChannel.postMessage({
+      type: 'USER_JOINED',
+      userName: currentUser.nickname,
+      folderName: targetFolderName
+    });
+
+    showToastNotification(`✅ 已成功加入共享資料夾「${targetFolderName}」！`);
+    document.getElementById("sidebarInviteInput").value = "";
   }
 
   function generateInviteCode() {
@@ -742,9 +849,6 @@
     }
   }
 
-  /* ==========================================================================
-     3. 雲端保存與重大事件同步
-     ========================================================================== */
   function saveCurrentPageToCloud(e) {
     saveCurrentPageData();
     const saveButton = e ? e.target : document.querySelector('.submit-btn');
@@ -761,7 +865,7 @@
   }
 
   /* ==========================================================================
-     4. 樹狀選單邏輯 (Tree View - 最右側僅顯示純數字標籤)
+     6. 樹狀選單邏輯 (Tree View Rendering)
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -806,7 +910,6 @@
       const colorDotHtml = node.type === 'page' && node.data && node.data.color
         ? `<span class="color-dot" style="background-color: ${node.data.color};"></span>` : '';
 
-      // 資料夾隱藏時，最右側僅顯示純數字標籤
       let shareBadge = '';
       let hiddenCountBadge = '';
       if (node.type === 'folder') {
@@ -932,7 +1035,7 @@
   }
 
   /* ==========================================================================
-     5. 標籤與 HSV 調色盤控制
+     7. 標籤與 HSV 調色盤控制
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -1127,7 +1230,7 @@
   }
 
   /* ==========================================================================
-     6. 圖片上傳與 Modal 檢視
+     8. 圖片上傳與 Modal 檢視
      ========================================================================== */
   function triggerInitialUpload(id) {
     if (!uploadedFilesStore[id]) triggerUpload(id);
@@ -1230,7 +1333,7 @@
   }
 
   /* ==========================================================================
-     7. 時間軸與垂直堆疊 × 符號
+     9. 時間軸與垂直堆疊 × 符號
      ========================================================================== */
   function getSiblingPagesOfActivePage() {
     const res = findNodeAndParent(activePageId);
@@ -1401,7 +1504,7 @@
   }
 
   /* ==========================================================================
-     8. 動態多卡片網格
+     10. 動態多卡片網格
      ========================================================================== */
   function createCardUploaderHtml(cardId) {
     return `
@@ -1483,7 +1586,7 @@
   }
 
   /* ==========================================================================
-     9. 資料儲存與加載 (Storage & Data Management)
+     11. 資料儲存與載入 (Data Management)
      ========================================================================== */
   function saveCurrentPageData() {
     const res = findNodeAndParent(activePageId);

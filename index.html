@@ -181,7 +181,11 @@
     .toggle-icon { cursor: pointer; padding: 0 4px; font-size: 0.8em; color: #f39c12; user-select: none; }
     .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
     
-    .item-title { flex: 1; font-size: 0.9em; display: flex; align-items: center; gap: 4px; word-break: break-all; white-space: normal; line-height: 1.3; }
+    .item-title { flex: 1; font-size: 0.9em; display: flex; align-items: center; gap: 6px; word-break: break-all; white-space: normal; line-height: 1.3; }
+    .invite-code-tag {
+      font-size: 0.72em; background: #8e44ad; color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: normal; font-family: monospace;
+    }
+
     .item-btns { display: flex; gap: 2px; flex-shrink: 0; }
     .item-btns button { background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.85em; padding: 2px 4px; }
     .item-btns button:hover { color: #fff; }
@@ -191,8 +195,6 @@
       border-radius: 10px; flex-shrink: 0; cursor: pointer; position: relative;
     }
     .share-member-count:hover { background: #1abc9c; }
-
-    .hidden-page-count { font-size: 0.75em; background: #e67e22; color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; flex-shrink: 0; }
 
     .sub-tree { list-style: none; padding-left: 14px; margin: 0; }
     .sub-tree.collapsed { display: none; }
@@ -319,13 +321,13 @@
     .events-bar { margin-top: 15px; padding: 10px; background: #eef2f7; border-radius: 8px; border: 1px dashed #b8c7d9; }
     .events-title { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     .char-filter-box { margin-bottom: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid #ddd; font-size: 0.82em; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .events-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .events-list { display: flex; flex-wrap: wrap; gap: 8px; }
     .event-chip {
-      border-radius: 16px; padding: 4px 12px; font-size: 0.85em;
+      border-radius: 16px; padding: 6px 12px; font-size: 0.85em;
       display: flex; align-items: center; gap: 6px; cursor: pointer;
       font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); color: #fff;
     }
-    .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.8; }
+    .event-chip button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 0.85em; opacity: 0.85; }
 
     /* Modals */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
@@ -353,6 +355,14 @@
       .avatar-right { flex: 1; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
+    }
+
+    /* 列印與 Export 樣式 */
+    @media print {
+      body { background: white; color: black; }
+      .sidebar-wrapper, .toggle-sidebar-btn, .toast-container, .edit-only-btn, .submit-btn, .dialog-box, .zoom-controls { display: none !important; }
+      .main-wrapper { padding: 0; margin: 0; width: 100%; }
+      .card-container { border: none; box-shadow: none; width: 100%; max-width: 100%; }
     }
   </style>
 </head>
@@ -436,7 +446,7 @@
       <div style="font-weight: bold; color: #f39c12;">🔗 共享資料夾設定</div>
       <div>
         <label style="display:block; margin-bottom:4px; font-size:0.8em; color:#bdc3c7;">輸入邀請碼：</label>
-        <input type="text" id="sidebarInviteInput" placeholder="輸入邀請碼 (例: OC-888)">
+        <input type="text" id="sidebarInviteInput" placeholder="輸入邀請碼 (例: OC-8888)">
       </div>
       <button onclick="joinSharedFolderFromSidebar()">加入共享資料夾</button>
       <button onclick="generateInviteCode()" style="background: #27ae60;">生成當前資料夾邀請碼</button>
@@ -463,10 +473,12 @@
         <span class="draft-badge" id="draftBadge">⚠️ 載入未保存草稿 (24H暫存)</span>
       </h2>
       
-      <!-- 顯示創建者與權限 Badge -->
-      <div style="display:flex; align-items:center; gap:8px;">
+      <!-- 顯示創建者與權限 Badge 及 匯出/保存 按鈕 -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span class="creator-info-badge" id="creatorBadge">👑 創建者: --</span>
         <span class="readonly-badge" id="readOnlyBadge">🔒 僅供檢閱 (非本人建立)</span>
+        <button type="button" class="btn btn-primary" onclick="exportToPDF()">📄 匯出 PDF</button>
+        <button type="button" class="btn" style="background:#8e44ad; color:white;" onclick="exportToPNG()">🖼️ 匯出 PNG</button>
         <button type="button" class="btn btn-success edit-only-btn" onclick="saveCurrentPageToCloud(event)">保存當前資料頁</button>
       </div>
     </div>
@@ -593,7 +605,7 @@
 
         <div class="events-bar">
           <div class="events-title">
-            <span>重大事件節點（跨角色雲端同步）</span>
+            <span>重大事件節點（快捷鍵更改內容：年份 / 年齡 / 敘述）</span>
             <button type="button" class="add-btn edit-only-btn" style="padding: 2px 8px; font-size: 0.75em;" onclick="promptAddEvent()">+ 新增節點</button>
           </div>
           
@@ -662,11 +674,11 @@
     <div id="savedAccountsList" style="margin-bottom: 15px;"></div>
     
     <div style="border-top: 1px solid #eee; padding-top: 12px;">
-      <h4 style="margin: 0 0 8px 0; font-size: 0.95em;">【新增 / 保存其他帳號】</h4>
+      <h4 style="margin: 0 0 8px 0; font-size: 0.95em;">【新增 / 保存其他帳號憑證】</h4>
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <input type="text" id="addAccUsername" placeholder="輸入帳號" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;">
         <input type="password" id="addAccPassword" placeholder="輸入密碼" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;">
-        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="addNewAccountToSavedList()">儲存帳號憑證</button>
+        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="addNewAccountToSavedList()">儲存帳號憑證（自動雙向同步）</button>
       </div>
     </div>
   </div>
@@ -732,7 +744,7 @@
   };
 
   /* ==========================================================================
-     2. 即時通知功能與 15 秒/14 秒滑鼠鍵盤移動檢測 (含時間追蹤與預估)
+     2. 即時通知功能與滑鼠鍵盤移動檢測
      ========================================================================== */
   function initLiveNotificationListener() {
     broadcastChannel.onmessage = (event) => {
@@ -744,8 +756,10 @@
 
       if (data.type === 'USER_JOINED') {
         showToastNotification(`🔔 即時通知：[${data.userName}] 加入了共享資料夾「${data.folderName}」`, elapsedMs);
+        refreshAllSharedFolderCounts();
       } else if (data.type === 'FOLDER_SYNC' && data.targetFolder) {
         syncSharedFolderToLocal(data.targetFolder);
+        refreshAllSharedFolderCounts();
       } else if (data.type === 'INVITE_RECEIVED' && currentUser && data.targetUser === currentUser.username) {
         showToastNotification(`✉️ 收到來自 [${data.senderNick}] 的共享資料夾邀請！`, elapsedMs);
         updateMailboxBadge();
@@ -755,7 +769,7 @@
           updateMailboxBadge();
         }
       } else if (data.type === 'ACCOUNT_DELETED') {
-        showToastNotification(`📢 [即時通知] 用戶 [${data.userNick}] 已刪除帳號，所有共享權限已自動更動。`, elapsedMs);
+        showToastNotification(`📢 [即時通知] 用戶 [${data.userNick}] 已刪除帳號，所有共享權限與憑證已自動更動。`, elapsedMs);
         loadUsersDbFromStorage();
         if (currentUser) {
           appData = usersDb[currentUser.username].appData || { tree: [] };
@@ -781,11 +795,9 @@
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     
-    // 預估需要多久才能檢測到新內容並應用 (例：假設固定極短延遲或1分鐘內檢測)
     const estimatedMinutes = 1;
     const latencySec = (elapsedMs / 1000).toFixed(2);
 
-    // 內文包含「需要（數字）分鐘后才能檢測到新内容並應用」及雲端到客戶端歷時
     toast.innerHTML = `
       <div>${text}</div>
       <div class="toast-delay-info">⏱️ 需要 <strong>${estimatedMinutes}</strong> 分鐘后才能檢測到新內容並應用</div>
@@ -795,26 +807,15 @@
     container.appendChild(toast);
 
     let hasUserMoved = false;
-    let timer14 = null;
-    let timer15 = null;
-
-    // 滑鼠與鍵盤移動事件檢測
-    const onUserActivity = () => {
-      hasUserMoved = true;
-    };
+    const onUserActivity = () => { hasUserMoved = true; };
 
     window.addEventListener('mousemove', onUserActivity);
     window.addEventListener('keydown', onUserActivity);
 
-    // 14 秒後檢查是否有移動
-    timer14 = setTimeout(() => {
+    setTimeout(() => {
       if (hasUserMoved) {
-        // 若 14 秒內有移動，則在 15 秒到達時自動消失
-        timer15 = setTimeout(() => {
-          removeToast();
-        }, 1000);
+        setTimeout(() => removeToast(), 1000);
       } else {
-        // 若 14 秒內無任何移動，則一直保留直到偵測到移動
         const checkMovementInterval = setInterval(() => {
           if (hasUserMoved) {
             clearInterval(checkMovementInterval);
@@ -834,12 +835,12 @@
   }
 
   /* ==========================================================================
-     3. 信箱系統與邀請 / 投票管理 (投票時效 24 小時)
+     3. 信箱系統與邀請 / 投票管理
      ========================================================================== */
   function cleanExpiredVotes() {
     if (!currentUser || !usersDb[currentUser.username]) return;
     const now = Date.now();
-    const VOTE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24小時時效
+    const VOTE_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
     let userVotes = usersDb[currentUser.username].votes || [];
     usersDb[currentUser.username].votes = userVotes.filter(v => (now - (v.createdTime || now)) < VOTE_EXPIRY_MS);
@@ -884,7 +885,6 @@
       return;
     }
 
-    // 渲染邀請
     invs.forEach((inv, index) => {
       const item = document.createElement('div');
       item.className = 'invite-item';
@@ -901,7 +901,6 @@
       list.appendChild(item);
     });
 
-    // 渲染投票
     votes.forEach((v, index) => {
       const item = document.createElement('div');
       item.className = 'invite-item';
@@ -931,25 +930,16 @@
       }
       if (!inv.folderData.members.some(m => m.username === currentUser.username)) {
         inv.folderData.members.push({ username: currentUser.username, nickname: currentUser.nickname, role: 'member' });
-        inv.folderData.shareCount = inv.folderData.members.length;
       }
       appData.tree.push(inv.folderData);
-      
-      if (usersDb[inv.senderUser] && usersDb[inv.senderUser].appData) {
-        let senderFolder = usersDb[inv.senderUser].appData.tree.find(f => f.id === inv.folderData.id);
-        if (senderFolder) {
-          senderFolder.members = inv.folderData.members;
-          senderFolder.shareCount = inv.folderData.shareCount;
-        }
-      }
     }
 
     invs.splice(index, 1);
     saveUsersDbToStorage();
     saveToLocalStorage();
-    renderTree();
-    renderMailboxList();
-    updateMailboxBadge();
+    
+    // 即時同步並更新所有參與者的資料夾成員計數
+    refreshAllSharedFolderCounts();
 
     broadcastChannel.postMessage({
       type: 'USER_JOINED',
@@ -974,7 +964,6 @@
     const vote = userObj.votes[voteIndex];
     if (!vote) return;
 
-    // 檢查投票是否過期 (24小時)
     if (Date.now() - (vote.createdTime || 0) > 24 * 60 * 60 * 1000) {
       alert("該投票已超過 24 小時時效，自動失效！");
       userObj.votes.splice(voteIndex, 1);
@@ -983,7 +972,6 @@
       return;
     }
 
-    // 尋找目標資料夾
     const res = findNodeAndParent(vote.folderId);
     if (!res || !res.node) {
       alert("該資料夾已不存在！");
@@ -1005,24 +993,20 @@
       return;
     }
 
-    // 記錄個人投票
     voteRecord.votedUsers[currentUser.username] = isAgree;
     if (isAgree) voteRecord.agreeCount++;
     else voteRecord.disagreeCount++;
 
-    // 移除收件匣中的該項投票
     userObj.votes.splice(voteIndex, 1);
     saveUsersDbToStorage();
 
-    // 檢測投票是否已達成過半標準 (>50%)
     const totalMembers = folder.members ? folder.members.length : 1;
     const requiredVotes = Math.floor(totalMembers / 2) + 1;
 
     if (voteRecord.agreeCount >= requiredVotes) {
-      // 投票通過
       if (vote.type === 'delete_member') {
         folder.members = folder.members.filter(m => m.username !== vote.targetUser);
-        folder.shareCount = folder.members.length;
+        refreshAllSharedFolderCounts();
         showToastNotification(`🎉 投票通過！成員 [${vote.targetUserNick}] 已從「${folder.name}」中刪除。`);
       } else if (vote.type === 'delete_folder') {
         deleteNode(folder.id, true);
@@ -1030,7 +1014,6 @@
       }
       delete folder.activeVotes[vote.voteId];
     } else if (voteRecord.disagreeCount > (totalMembers - requiredVotes)) {
-      // 投票否決
       showToastNotification(`❌ 關於「${folder.name}」的 ${vote.type === 'delete_member' ? '刪除成員' : '刪除資料夾'} 投票未獲半數通過，發起失敗。`);
       delete folder.activeVotes[vote.voteId];
     }
@@ -1042,7 +1025,7 @@
   }
 
   /* ==========================================================================
-     4. 成員名單彈窗與【刪除/退出成員】與【刪除資料夾】投票處理 (時效 24小時)
+     4. 成員名單與同步更新成員數量
      ========================================================================== */
   function openMembersModal(folderId) {
     const res = findNodeAndParent(folderId);
@@ -1093,6 +1076,26 @@
     });
   }
 
+  // 跨所有用戶同步更新資料夾參與者數量
+  function refreshAllSharedFolderCounts() {
+    for (let u in usersDb) {
+      if (usersDb[u].appData && usersDb[u].appData.tree) {
+        updateFolderMembersInTree(usersDb[u].appData.tree);
+      }
+    }
+    saveUsersDbToStorage();
+    renderTree();
+  }
+
+  function updateFolderMembersInTree(nodes) {
+    nodes.forEach(n => {
+      if (n.type === 'folder' && n.members) {
+        n.shareCount = n.members.length;
+      }
+      if (n.children) updateFolderMembersInTree(n.children);
+    });
+  }
+
   function exitFromSharedFolder(folderId) {
     const res = findNodeAndParent(folderId);
     if (!res) return;
@@ -1100,11 +1103,9 @@
 
     const folder = res.node;
     folder.members = (folder.members || []).filter(m => m.username !== currentUser.username);
-    folder.shareCount = folder.members.length;
 
     res.list.splice(res.index, 1);
-    saveToLocalStorage();
-    renderTree();
+    refreshAllSharedFolderCounts();
     closeMembersModal();
     showToastNotification(`已成功退出共享資料夾「${folder.name}」`);
   }
@@ -1118,9 +1119,7 @@
     if (members.length <= 2) {
       if (confirm(`確定要將 [${targetNickname}] 從資料夾移除嗎？`)) {
         folder.members = members.filter(m => m.username !== targetUsername);
-        folder.shareCount = folder.members.length;
-        saveToLocalStorage();
-        renderTree();
+        refreshAllSharedFolderCounts();
         renderMembersList();
         showToastNotification(`已將 [${targetNickname}] 從共享資料夾移除`);
       }
@@ -1232,7 +1231,7 @@
   }
 
   /* ==========================================================================
-     5. 多帳號保存與切換帳號功能 (Switch Account & Saved Credentials)
+     5. 多帳號保存與切換帳號（互通憑證/雙向與多向關聯同步儲存）
      ========================================================================== */
   function getSavedAccounts() {
     if (!currentUser || !usersDb[currentUser.username]) return [];
@@ -1254,7 +1253,6 @@
 
     const saved = getSavedAccounts();
 
-    // 亦將當前帳號提示在上方
     const currentInfo = document.createElement('div');
     currentInfo.style.cssText = "padding:8px; background:#e0f2fe; border-radius:6px; margin-bottom:10px; font-size:0.85em;";
     currentInfo.innerHTML = `當前登入：<strong>${currentUser.nickname}</strong> (${currentUser.username})`;
@@ -1286,6 +1284,7 @@
     });
   }
 
+  // 雙向與多向互通儲存憑證邏輯（例：a存b,c，b存a,c，c存a,b）
   function addNewAccountToSavedList() {
     const u = document.getElementById('addAccUsername').value.trim();
     const p = document.getElementById('addAccPassword').value.trim();
@@ -1295,30 +1294,66 @@
       return;
     }
 
+    if (u === currentUser.username) {
+      alert("不能加入您目前正在登入的帳號！");
+      return;
+    }
+
     if (!usersDb[u] || usersDb[u].password !== p) {
       alert("帳號或密碼驗證錯誤，無法儲存無效的憑證！");
       return;
     }
 
-    const saved = getSavedAccounts();
-    if (saved.some(a => a.username === u)) {
-      alert("該帳號已在保存名單中！");
-      return;
-    }
+    // 1. 建立包含當前帳號、新帳號以及各自原本已關聯帳號的【全集憑證清單】
+    let allRelatedCredentials = [];
+    
+    // 加入當前用戶憑證
+    allRelatedCredentials.push({
+      username: currentUser.username,
+      password: usersDb[currentUser.username].password,
+      nickname: currentUser.nickname
+    });
 
-    saved.push({ username: u, password: p, nickname: usersDb[u].nickname });
-    usersDb[currentUser.username].savedAccounts = saved;
+    // 加入目標新用戶憑證
+    allRelatedCredentials.push({
+      username: u,
+      password: p,
+      nickname: usersDb[u].nickname
+    });
+
+    // 收集當前用戶既有的憑證
+    (usersDb[currentUser.username].savedAccounts || []).forEach(acc => {
+      if (!allRelatedCredentials.some(c => c.username === acc.username)) {
+        allRelatedCredentials.push(acc);
+      }
+    });
+
+    // 收集目標用戶既有的憑證
+    (usersDb[u].savedAccounts || []).forEach(acc => {
+      if (!allRelatedCredentials.some(c => c.username === acc.username)) {
+        allRelatedCredentials.push(acc);
+      }
+    });
+
+    // 2. 將此【全集憑證清單】同步賦予給全集中出現的所有帳號（互相儲存彼此，排除自己）
+    allRelatedCredentials.forEach(targetAcc => {
+      if (usersDb[targetAcc.username]) {
+        usersDb[targetAcc.username].savedAccounts = allRelatedCredentials.filter(c => c.username !== targetAcc.username);
+      }
+    });
+
     saveUsersDbToStorage();
 
     document.getElementById('addAccUsername').value = '';
     document.getElementById('addAccPassword').value = '';
 
     renderSavedAccountsList();
-    showToastNotification(`✅ 已成功保存帳號 [${usersDb[u].nickname}] 的登入憑證！`);
+    showToastNotification(`✅ 已成功關聯帳號 [${usersDb[u].nickname}]！憑證已同步儲存在所有相關帳號中。`);
   }
 
   function removeSavedAccount(idx) {
     const saved = getSavedAccounts();
+    const removedAcc = saved[idx];
     saved.splice(idx, 1);
     usersDb[currentUser.username].savedAccounts = saved;
     saveUsersDbToStorage();
@@ -1346,13 +1381,12 @@
   }
 
   /* ==========================================================================
-     6. 禁止二次加入相同共享資料夾 (Duplicate Join Prevention)
+     6. 禁止二次加入相同共享資料夾
      ========================================================================== */
   function joinSharedFolderFromSidebar() {
     const code = document.getElementById('sidebarInviteInput').value.trim();
     if (!code) { alert("請輸入邀請碼！"); return; }
 
-    // 全局尋找邀請碼對應資料夾
     let targetFolder = null;
     let ownerNick = "";
     for (let u in usersDb) {
@@ -1371,7 +1405,6 @@
       return;
     }
 
-    // 檢查是否已在自己的樹狀結構中，禁止二次加入
     let isAlreadyJoined = appData.tree.some(f => f.id === targetFolder.id);
     if (isAlreadyJoined) {
       alert("⚠️ 您已經加入過該共享資料夾，禁止二次重複加入！");
@@ -1386,11 +1419,8 @@
       targetFolder.members.push({ username: currentUser.username, nickname: currentUser.nickname, role: 'member' });
     }
 
-    targetFolder.shareCount = targetFolder.members.length;
-
     appData.tree.push(targetFolder);
-    saveToLocalStorage();
-    renderTree();
+    refreshAllSharedFolderCounts();
     document.getElementById('sidebarInviteInput').value = '';
 
     broadcastChannel.postMessage({
@@ -1404,13 +1434,15 @@
   }
 
   /* ==========================================================================
-     7. 重大事件節點跨資料頁同步 (無需即時通知，但自動廣播/刷新檢視)
+     7. 重大事件節點快捷鍵編輯功能（年份 / 年齡 / 敘述）
      ========================================================================== */
   function promptAddEvent() {
     const title = prompt("輸入重大事件標題：");
     if (!title) return;
     const year = prompt("輸入發生年份 (數值)：", currentYear);
     if (!year || isNaN(parseInt(year))) return;
+    const age = prompt("輸入發生時角色年齡 (選填/數值)：", "");
+    const note = prompt("輸入詳細敘述/備忘說明 (選填)：", "");
 
     const pageRes = findNodeAndParent(activePageId);
     let charName = "未知角色";
@@ -1421,7 +1453,9 @@
     const newEvt = {
       id: "evt_" + Date.now(),
       year: parseInt(year),
+      age: age || "",
       title: title,
+      note: note || "",
       charName: charName,
       pageId: activePageId
     };
@@ -1431,8 +1465,36 @@
     renderEventsList();
     autoSaveDraft();
 
-    // 更新重大事件節點後同步到所有可以檢視的使用者，無需即時通知
     syncMajorEventsToSharedUsers();
+  }
+
+  // 重大事件快捷鍵編輯功能
+  function editEvent(evtId) {
+    const evt = majorEvents.find(e => e.id === evtId);
+    if (!evt) return;
+
+    const newTitle = prompt("【編輯重大事件】修改事件標題：", evt.title);
+    if (newTitle === null) return;
+
+    const newYear = prompt("【編輯重大事件】修改發生年份：", evt.year);
+    if (newYear === null || isNaN(parseInt(newYear))) return;
+
+    const newAge = prompt("【編輯重大事件】修改角色年齡：", evt.age || "");
+    if (newAge === null) return;
+
+    const newNote = prompt("【編輯重大事件】修改敘述/備忘：", evt.note || "");
+    if (newNote === null) return;
+
+    evt.title = newTitle.trim();
+    evt.year = parseInt(newYear);
+    evt.age = newAge.trim();
+    evt.note = newNote.trim();
+
+    renderTimelineTrack();
+    renderEventsList();
+    autoSaveDraft();
+    syncMajorEventsToSharedUsers();
+    showToastNotification(`✏️ 已更新重大事件「${evt.title}」之內容！`);
   }
 
   function removeEvent(evtId) {
@@ -1444,10 +1506,8 @@
   }
 
   function syncMajorEventsToSharedUsers() {
-    // 找出當前頁面所屬的共享資料夾成員
     const parentFolderRes = getParentFolderOfPage(activePageId);
     if (parentFolderRes && parentFolderRes.members) {
-      // 在本地已寫入最新 majorEvents，若需跨瀏覽器廣播，發送靜默同步消息
       broadcastChannel.postMessage({
         type: 'MAJOR_EVENTS_SYNC',
         pageId: activePageId,
@@ -1471,7 +1531,7 @@
   }
 
   /* ==========================================================================
-     8. 刪除帳號與懲罰鎖定機制
+     8. 刪除帳號與同步清理所有帳號中的登入憑證
      ========================================================================== */
   function countCreatedPagesForUser(username) {
     let count = 0;
@@ -1525,9 +1585,15 @@
   function performAccountDeletion(username) {
     const nick = usersDb[username].nickname;
 
+    // 1. 從所有共享資料夾成員中移除該用戶
     for (let u in usersDb) {
       if (usersDb[u].appData && usersDb[u].appData.tree) {
         removeUserFromTreeMembers(usersDb[u].appData.tree, username);
+      }
+      
+      // 2. 同步清理所有帳號中儲存的該帳號登入憑證
+      if (usersDb[u].savedAccounts) {
+        usersDb[u].savedAccounts = usersDb[u].savedAccounts.filter(acc => acc.username !== username);
       }
     }
 
@@ -1540,7 +1606,7 @@
       sentTime: Date.now()
     });
 
-    alert("帳號已成功刪除。即將返回登入畫面。");
+    alert("帳號已成功刪除，所有關聯的登入憑證與共享權限已被完全清理。即將返回登入畫面。");
     handleLogout();
   }
 
@@ -1555,7 +1621,7 @@
   }
 
   /* ==========================================================================
-     9. 基礎 Auth 驗證與用戶資料庫 (Auth Framework)
+     9. 基礎 Auth 驗證與用戶資料庫
      ========================================================================== */
   function loadUsersDbFromStorage() {
     const data = localStorage.getItem('oc_users_db');
@@ -1658,7 +1724,7 @@
   }
 
   /* ==========================================================================
-     10. 樹狀資料夾結構與 UI 邏輯
+     10. 樹狀資料夾結構（含邀請碼顯示與動態人數更新）
      ========================================================================== */
   function renderTree() {
     const rootEl = document.getElementById('tree-root');
@@ -1672,11 +1738,13 @@
       item.className = 'tree-item';
       
       if (node.type === 'folder') {
-        const shareCount = node.members ? node.members.length : 1;
+        const shareCount = node.members ? node.members.length : (node.shareCount || 1);
+        const inviteTagHtml = node.inviteCode ? `<span class="invite-code-tag" title="共享邀請碼">🔑 ${node.inviteCode}</span>` : '';
+        
         item.innerHTML = `
           <div class="item-header" onclick="toggleFolder('${node.id}')">
             <span class="toggle-icon">${node.collapsed ? '▶' : '▼'}</span>
-            <span class="item-title">📁 ${node.name}</span>
+            <span class="item-title">📁 ${node.name} ${inviteTagHtml}</span>
             <span class="share-member-count" onclick="event.stopPropagation(); openMembersModal('${node.id}')">👥 ${shareCount}人</span>
             <div class="item-btns">
               <button onclick="event.stopPropagation(); promptAddPage('${node.id}')">+頁</button>
@@ -1716,10 +1784,12 @@
   function promptAddFolder() {
     const name = prompt("輸入新資料夾名稱：");
     if (!name) return;
+    const invCode = "OC-" + Math.floor(1000 + Math.random() * 9000);
     appData.tree.push({
       id: "folder_" + Date.now(),
       type: 'folder',
       name: name,
+      inviteCode: invCode,
       collapsed: false,
       ownerId: currentUser.username,
       members: [{ username: currentUser.username, nickname: currentUser.nickname, role: 'owner' }],
@@ -1791,7 +1861,7 @@
   }
 
   /* ==========================================================================
-     11. 角色頁面資料載入、權限控制與編輯 (Page Data & Field Handlers)
+     11. 角色頁面資料載入、權限與編輯
      ========================================================================== */
   function loadPage(pageId) {
     activePageId = pageId;
@@ -1804,7 +1874,6 @@
     document.getElementById('pageTitleText').innerText = page.name;
     document.getElementById('creatorBadge').innerText = `👑 創建者: ${currentPageOwnerId}`;
     
-    // 權限控制
     const isOwner = (currentPageOwnerId === currentUser.username);
     const container = document.getElementById('mainContainer');
     
@@ -1816,7 +1885,6 @@
       document.getElementById('readOnlyBadge').style.display = 'inline-block';
     }
 
-    // 載入表單數據
     const d = page.data || {};
     document.getElementById('field-name').value = d.name || page.name;
     document.getElementById('field-alias').value = d.alias || '';
@@ -1841,21 +1909,19 @@
     document.getElementById('field-color-hex').value = col;
     document.getElementById('color-swatch').style.backgroundColor = col;
 
-    // 載入證件照
     uploadedFilesStore['avatar1'] = d.avatar1 || null;
     uploadedFilesStore['avatar2'] = d.avatar2 || null;
     updateAvatarUI('avatar1');
     updateAvatarUI('avatar2');
 
-    // 載入動態卡片
     renderGridCards('person-grid', d.persons || []);
     renderGridCards('keep-grid', d.keeps || []);
     renderGridCards('outfit-grid', d.outfits || []);
 
-    // 載入時間線與事件
     timelineData = d.timelineNotes || {};
     majorEvents = d.majorEvents || [];
     updateTimeRangeTag();
+    renderEventsList();
     renderTree();
   }
 
@@ -1903,16 +1969,11 @@
     showToastNotification("💾 角色資料頁已成功保存至雲端！");
   }
 
-  function autoSaveDraft() {
-    // 24H 暫存草稿機制
-  }
-
-  function handleFieldInput() {
-    autoSaveDraft();
-  }
+  function autoSaveDraft() {}
+  function handleFieldInput() { autoSaveDraft(); }
 
   /* ==========================================================================
-     12. 標籤 (Tags) 與 色彩選取器 (Color Picker)
+     12. 標籤與色彩選取器
      ========================================================================== */
   function handleTagInput(e, type) {
     if (e.key === 'Enter') {
@@ -2060,7 +2121,7 @@
   }
 
   /* ==========================================================================
-     14. 動態卡片與成長時間線 (Grid Cards & Timeline)
+     14. 動態卡片與成長時間線
      ========================================================================== */
   function addPersonCard(data = {}) {
     const grid = document.getElementById('person-grid');
@@ -2144,7 +2205,10 @@
         const mark = document.createElement('div');
         mark.className = 'line-mark-stack';
         mark.style.left = `${pct}%`;
-        mark.innerHTML = `<span class="line-mark-x" title="${evt.year}: ${evt.title}">📍</span>`;
+        
+        const ageStr = evt.age ? ` (${evt.age}歲)` : '';
+        const descStr = evt.note ? `\n敘述: ${evt.note}` : '';
+        mark.innerHTML = `<span class="line-mark-x" title="${evt.year}年${ageStr}: ${evt.title}${descStr}" onclick="editEvent('${evt.id}')">📍</span>`;
         track.appendChild(mark);
       }
     });
@@ -2157,7 +2221,14 @@
       const chip = document.createElement('div');
       chip.className = 'event-chip';
       chip.style.backgroundColor = '#2980b9';
-      chip.innerHTML = `<span>${evt.year}年 - ${evt.title} (${evt.charName})</span><button type="button" class="edit-only-btn" onclick="removeEvent('${evt.id}')">✕</button>`;
+      
+      const ageText = evt.age ? ` [${evt.age}歲]` : '';
+      const noteText = evt.note ? ` - ${evt.note}` : '';
+      chip.innerHTML = `
+        <span onclick="editEvent('${evt.id}')" title="點擊快捷編輯內容">${evt.year}年${ageText} - ${evt.title}${noteText} (${evt.charName})</span>
+        <button type="button" class="edit-only-btn" onclick="editEvent('${evt.id}')" title="快捷編輯">✏️</button>
+        <button type="button" class="edit-only-btn" onclick="removeEvent('${evt.id}')" title="刪除">✕</button>
+      `;
       list.appendChild(chip);
     });
   }
@@ -2173,7 +2244,7 @@
   }
 
   /* ==========================================================================
-     15. 選單拖曳調整與 JSON 匯入匯出 (Sidebar Resizer & JSON I/O)
+     15. 選單拖曳調整、JSON 匯入匯出與 Export PDF/PNG 功能
      ========================================================================== */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
@@ -2219,6 +2290,10 @@
   }
 
   function generateInviteCode() {
+    if (!currentActiveFolderForModal && appData.tree.length === 0) {
+      alert("請先建立或選擇一個資料夾！");
+      return;
+    }
     const code = "OC-" + Math.floor(1000 + Math.random() * 9000);
     prompt("請複製以下資料夾邀請碼發送給朋友：", code);
   }
@@ -2264,6 +2339,53 @@
 
     alert(`已向 [${targetUserObj.nickname}] 發送共享邀請信件！`);
     document.getElementById('inviteMemberInput').value = '';
+  }
+
+  /* Export 匯出 PDF 與 PNG 功能 */
+  function exportToPDF() {
+    window.print();
+  }
+
+  function exportToPNG() {
+    const cardContainer = document.getElementById('mainContainer');
+    showToastNotification("🖼️ 正在生成高解析度 PNG 圖片，請稍候...");
+
+    // 動態建構 SVG 外觀轉換並繪製到 Canvas 下載
+    const clone = cardContainer.cloneNode(true);
+    // 移除編輯按鈕與不必要元素以保持渲染整潔
+    clone.querySelectorAll('.edit-only-btn, button').forEach(b => b.remove());
+
+    const svgString = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${cardContainer.offsetWidth}" height="${cardContainer.offsetHeight}">
+        <foreignObject width="100%" height="100%">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="background:#fff; padding:15px; font-family:sans-serif;">
+            ${clone.innerHTML}
+          </div>
+        </foreignObject>
+      </svg>
+    `;
+
+    const img = new Image();
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = cardContainer.offsetWidth * 2; // 雙倍解析度
+      canvas.height = cardContainer.offsetHeight * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      const a = document.createElement('a');
+      a.download = `${document.getElementById('pageTitleText').innerText}_character_card.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
   }
 </script>
 </body>

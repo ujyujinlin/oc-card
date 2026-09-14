@@ -14,7 +14,7 @@
       --primary-color: #28a745;
       --accent-color: #007bff;
       --sidebar-width: 320px;
-      --right-sidebar-width: 300px;
+      --right-sidebar-width: 280px;
       --card-bg: #ffffff;
     }
 
@@ -159,22 +159,14 @@
       border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    /* ---------------- 右側好友與群組彈出式側邊欄 ---------------- */
-    .toggle-right-sidebar-btn {
-      position: absolute; top: 12px; right: 12px; z-index: 90;
-      background: #2c3e50; color: white; border: none; padding: 8px 12px;
-      border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
+    /* ---------------- 右側好友與群組 (固定在右側) ---------------- */
     .right-sidebar {
       width: var(--right-sidebar-width);
       background: #2c3e50; color: #ecf0f1;
       display: flex; flex-direction: column;
-      transition: transform 0.3s ease;
-      z-index: 100; position: absolute; right: 0; top: 0; bottom: 0;
-      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      z-index: 100; position: relative; flex-shrink: 0;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2); height: 100vh;
     }
-    .right-sidebar.closed { transform: translateX(100%); }
 
     .right-sidebar-header {
       padding: 12px 15px; background: #1a252f;
@@ -202,17 +194,18 @@
     }
     .friend-item:hover, .group-item:hover { background: #3d566e; }
 
+    .friend-actions { display: flex; gap: 4px; align-items: center; }
     .friend-actions button, .group-actions button {
       background: #007bff; color: white; border: none; padding: 3px 8px;
       border-radius: 4px; cursor: pointer; font-size: 0.8em;
     }
 
-    /* ---------------- 網頁內獨立聊天視窗 (可調整尺寸/位置) ---------------- */
+    /* ---------------- 網頁內獨立聊天視窗 (左/下/右邊框拖拽調整尺寸) ---------------- */
     .chat-window {
-      position: fixed; width: 380px; height: 500px; top: 80px; right: 320px;
+      position: fixed; width: 380px; height: 500px; top: 80px; right: 300px;
       background: #ffffff; border: 2px solid #2c3e50; border-radius: 10px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 4000;
-      display: flex; flex-direction: column; resize: both; overflow: hidden;
+      display: flex; flex-direction: column; overflow: hidden;
       min-width: 280px; min-height: 320px;
     }
 
@@ -254,6 +247,14 @@
       padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9em;
     }
 
+    /* 聊天室邊框拖拽 Resizers */
+    .chat-resizer { position: absolute; z-index: 4001; }
+    .chat-resizer-l { left: 0; top: 0; bottom: 0; width: 6px; cursor: w-resize; }
+    .chat-resizer-r { right: 0; top: 0; bottom: 0; width: 6px; cursor: e-resize; }
+    .chat-resizer-b { left: 0; bottom: 0; right: 0; height: 6px; cursor: s-resize; }
+    .chat-resizer-bl { left: 0; bottom: 0; width: 12px; height: 12px; cursor: sw-resize; z-index: 4002; }
+    .chat-resizer-br { right: 0; bottom: 0; width: 12px; height: 12px; cursor: se-resize; z-index: 4002; }
+
     /* ---------------- 右側主頁面 ---------------- */
     .main-wrapper {
       flex: 1; overflow-y: auto; padding: 15px; padding-top: 55px;
@@ -277,7 +278,7 @@
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
     }
 
-    /* 大頭照/立繪欄位：圖片自動適配填滿空間，不拉伸，邊緣為 0.5cm 空隙 */
+    /* 大頭照/立繪欄位 */
     .avatar-right {
       padding: 0.5cm !important;
       display: flex;
@@ -306,7 +307,7 @@
     }
 
     .avatar-right .image-uploader img {
-      width: 100%; height: 100%; object-fit: contain; /* 自動適配，填滿且不拉伸 */
+      width: 100%; height: 100%; object-fit: contain;
     }
 
     .form-group { display: flex; align-items: center; margin-bottom: 8px; }
@@ -408,7 +409,7 @@
     /* 交互彈窗 (Dialog Modal) */
     .dialog-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); z-index: 3500; justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.6); z-index: 5000; justify-content: center; align-items: center;
     }
     .dialog-card {
       background: #fff; border-radius: 10px; padding: 20px; width: 90%; max-width: 440px;
@@ -462,8 +463,6 @@
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
       .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
-      .right-sidebar { position: relative; }
-      .right-sidebar.closed { transform: translateX(100%); position: absolute; }
     }
   </style>
 </head>
@@ -474,9 +473,6 @@
 
 <!-- 左側選單切換按鈕 -->
 <button type="button" class="toggle-sidebar-btn" id="toggleSidebarBtn" onclick="toggleSidebar()">☰ 選單</button>
-
-<!-- 右側好友/群組切換按鈕 -->
-<button type="button" class="toggle-right-sidebar-btn" id="toggleRightSidebarBtn" onclick="toggleRightSidebar()">👥 好友/群組</button>
 
 <!-- 左側邊欄選單 -->
 <div class="sidebar closed" id="sidebar">
@@ -524,45 +520,6 @@
   <div class="folder-container" id="tree-root"></div>
 </div>
 
-<!-- 右側好友與群組彈出式側邊欄 -->
-<div class="right-sidebar closed" id="rightSidebar">
-  <div class="right-sidebar-header">
-    <span style="font-weight:bold; font-size:1em;">💬 好友與群組</span>
-    <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleRightSidebar()">✕</button>
-  </div>
-  <div class="right-sidebar-content">
-    <!-- 好友名單區塊 -->
-    <div>
-      <div class="right-section-title">
-        <span>🤝 我的好友</span>
-      </div>
-      <div class="friend-list-box" id="friend-list-container"></div>
-    </div>
-
-    <!-- 群組名單區塊 -->
-    <div>
-      <div class="right-section-title">
-        <span>👨‍👩‍👧‍👦 我的群組</span>
-        <button class="account-btn-sm" style="background:#27ae60; padding:2px 6px;" onclick="openCreateGroupModal()">+ 建立群組</button>
-      </div>
-      <div class="group-list-box" id="group-list-container"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 獨立聊天視窗 (動態生成於頁面) -->
-<div class="chat-window" id="chatWindow" style="display:none;">
-  <div class="chat-header" id="chatHeader">
-    <span id="chatTitle">💬 聊天室</span>
-    <button class="chat-close-btn" onclick="closeChatWindow()">✕</button>
-  </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-bar">
-    <input type="text" id="chatInputText" placeholder="輸入訊息..." onkeydown="if(event.key==='Enter') sendChatMessage()">
-    <button onclick="sendChatMessage()">發送</button>
-  </div>
-</div>
-
 <!-- 右側主內容 -->
 <div class="main-wrapper">
   <div class="card-container" id="cardContainer">
@@ -581,9 +538,18 @@
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           <div class="form-group"><label>關鍵詞：</label><input type="text" id="field-keywords"></div>
+          
+          <!-- 代表色選取一欄 -->
+          <div class="form-group">
+            <label>代表色：</label>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div id="color-picker-box" onclick="openColorPickerModal()" style="width:32px; height:32px; border-radius:6px; border:2px solid #ccc; background:#007bff; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15);" title="點擊選擇代表色"></div>
+              <input type="text" id="field-color" readonly onclick="openColorPickerModal()" style="width:90px; cursor:pointer; font-weight:bold; text-align:center;" value="#007bff">
+            </div>
+          </div>
         </div>
 
-        <!-- 大頭照 / 立繪（保留 0.5cm 邊緣空隙，圖片自動縮放適配不拉伸） -->
+        <!-- 大頭照 / 立繪 -->
         <div class="section-box avatar-right">
           <div class="section-title">大頭照 / 立繪</div>
           <div class="avatar-container-inner">
@@ -682,6 +648,51 @@
   </div>
 </div>
 
+<!-- 右側好友與群組 (固定在右側) -->
+<div class="right-sidebar" id="rightSidebar">
+  <div class="right-sidebar-header">
+    <span style="font-weight:bold; font-size:1em;">💬 好友與群組</span>
+  </div>
+  <div class="right-sidebar-content">
+    <!-- 好友名單區塊 -->
+    <div>
+      <div class="right-section-title">
+        <span>🤝 我的好友</span>
+      </div>
+      <div class="friend-list-box" id="friend-list-container"></div>
+    </div>
+
+    <!-- 群組名單區塊 -->
+    <div>
+      <div class="right-section-title">
+        <span>👨‍👩‍👧‍👦 我的群組</span>
+        <button class="account-btn-sm" style="background:#27ae60; padding:2px 6px;" onclick="openCreateGroupModal()">+ 建立群組</button>
+      </div>
+      <div class="group-list-box" id="group-list-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 獨立聊天視窗 (左/下/右邊框可拖拽調整尺寸) -->
+<div class="chat-window" id="chatWindow" style="display:none;">
+  <div class="chat-header" id="chatHeader">
+    <span id="chatTitle">💬 聊天室</span>
+    <button class="chat-close-btn" onclick="closeChatWindow()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-bar">
+    <input type="text" id="chatInputText" placeholder="輸入訊息..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+    <button onclick="sendChatMessage()">發送</button>
+  </div>
+  
+  <!-- 邊框拖拽調整尺寸 Handlers -->
+  <div class="chat-resizer chat-resizer-l" id="chatResizerL"></div>
+  <div class="chat-resizer chat-resizer-r" id="chatResizerR"></div>
+  <div class="chat-resizer chat-resizer-b" id="chatResizerB"></div>
+  <div class="chat-resizer chat-resizer-bl" id="chatResizerBL"></div>
+  <div class="chat-resizer chat-resizer-br" id="chatResizerBR"></div>
+</div>
+
 <!-- 圖片檢視 Modal -->
 <div id="imageModal" class="modal">
   <div class="modal-viewport" id="modalViewport">
@@ -694,6 +705,23 @@
     <button type="button" onclick="adjustZoom(-0.2)">－</button>
     <button type="button" onclick="resetZoom()">1:1</button>
     <button type="button" onclick="closeModal()">✕</button>
+  </div>
+</div>
+
+<!-- 色環倒三角代表色選擇器 Modal -->
+<div class="dialog-overlay" id="colorPickerModal">
+  <div class="dialog-card" style="width: auto; max-width: 340px; text-align: center;">
+    <h3 style="margin-bottom: 10px;">🎨 選擇代表色</h3>
+    <canvas id="colorCanvas" width="280" height="280" style="cursor: crosshair; touch-action: none; background: #fff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></canvas>
+    <div style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <span>選取顏色：</span>
+      <div id="modal-color-preview" style="width: 26px; height: 26px; border-radius: 6px; border: 1px solid #ccc; background: #007bff;"></div>
+      <input type="text" id="modal-color-hex" readonly style="width: 85px; text-align: center; font-weight: bold; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;" value="#007bff">
+    </div>
+    <div class="dialog-btns" style="margin-top: 15px; justify-content: center;">
+      <button class="btn-cancel" onclick="closeColorPickerModal()">取消</button>
+      <button class="btn-save" onclick="confirmColorPickerSelection()">確定</button>
+    </div>
   </div>
 </div>
 
@@ -713,7 +741,7 @@
   </div>
 </div>
 
-<!-- 註冊新賬號 Modal（包含暱稱設定） -->
+<!-- 註冊新賬號 Modal -->
 <div class="dialog-overlay" id="registerDialogModal">
   <div class="dialog-card">
     <h3>註冊新賬號</h3>
@@ -832,6 +860,7 @@
   let lastSyncTimestamp = 0;
   let isCurrentPageReadOnly = false;
   let currentMembersSfId = null;
+  let lastSeenChatMsgCount = {};
 
   window.onload = function() {
     initSidebarResizer();
@@ -845,6 +874,8 @@
     if (activePageId) loadPageData(activePageId);
     setupZoomAndPan();
     setupChatWindowDraggable();
+    setupChatWindowResizable();
+    initColorPickerCanvas();
     setupRealtimeSync();
   };
 
@@ -1042,35 +1073,12 @@
       }
     });
 
-    // 給所有已加入的共享資料夾成員發送通知
-    Object.values(sharedFoldersData).forEach(sf => {
-      if (sf.members && sf.members.includes(currAcc.username)) {
-        sf.members.forEach(mName => {
-          if (mName !== currAcc.username) {
-            const mAcc = findAccountByUsernameOrNickname(mName);
-            if (mAcc) {
-              if (!mAcc.inbox) mAcc.inbox = [];
-              const exists = mAcc.inbox.some(m => m.content === `【${oldNick}】已改名為【${newNick}】` && (Date.now() - m.timestamp < 5000));
-              if (!exists) {
-                mAcc.inbox.unshift({
-                  id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-                  type: "system_notice",
-                  content: `【${oldNick}】已改名為【${newNick}】`,
-                  timestamp: Date.now()
-                });
-              }
-            }
-          }
-        });
-      }
-    });
-
     saveAccountsToStorage();
     closeChangeNicknameModal();
     updateAccountUI();
     renderTree();
     if (activeChatId) renderChatMessages();
-    showNotification(`暱稱已成功修改為【${newNick}】，並已發送通知至相關好友與共享成員！`, 'success');
+    showNotification(`暱稱已成功修改為【${newNick}】！`, 'success');
   }
 
   function openAccountModal() { document.getElementById('accountDialogModal').style.display = 'flex'; }
@@ -1100,7 +1108,7 @@
     saveAccountsToStorage();
     closeAccountModal();
     updateAccountUI();
-    showNotification(`已成功關聯賬號 [${getUserNickname(name)}]，登入憑證已雙向同步！`, 'success');
+    showNotification(`已成功關聯賬號 [${getUserNickname(name)}]！`, 'success');
   }
 
   function switchAccount(accId) {
@@ -1123,7 +1131,7 @@
       return alert("系統至少需保留一個賬號！");
     }
     const nick = getUserNickname(accountsData[currentUser].username);
-    if (confirm(`確定要刪除當前賬號 [${nick}] 嗎？這將同步從所有關聯賬號中移除此憑證！`)) {
+    if (confirm(`確定要刪除當前賬號 [${nick}] 嗎？`)) {
       const delId = currentUser;
       delete accountsData[delId];
       localStorage.removeItem(`oc_app_data_${delId}`);
@@ -1139,11 +1147,11 @@
       loadFromLocalStorage();
       renderTree();
       updateAccountUI();
-      showNotification("賬號已刪除，並已同步從所有關聯賬號中清除登入憑證！", 'warning');
+      showNotification("賬號已刪除！", 'warning');
     }
   }
 
-  /* ---------------- 好友系統 (提交好友申請) ---------------- */
+  /* ---------------- 好友系統 (提交/刪除好友) ---------------- */
   function sendFriendRequest() {
     const input = document.getElementById('add-friend-input');
     const targetName = input.value.trim();
@@ -1151,7 +1159,6 @@
 
     const currAcc = accountsData[currentUser];
     const currUsername = currAcc.username;
-    const currNick = getUserNickname(currUsername);
 
     const targetAcc = findAccountByUsernameOrNickname(targetName);
     if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱或暱稱。`);
@@ -1217,11 +1224,27 @@
     updateInboxBadge();
   }
 
-  /* ---------------- 右側好友與群組 UI 渲染 ---------------- */
-  function toggleRightSidebar() {
-    document.getElementById('rightSidebar').classList.toggle('closed');
+  /* 刪除好友功能（刪除後無需通知/信箱） */
+  function deleteFriend(friendUsername) {
+    const friendNick = getUserNickname(friendUsername);
+    if (!confirm(`確定要刪除好友【${friendNick}】嗎？`)) return;
+
+    const currAcc = accountsData[currentUser];
+    if (currAcc && currAcc.friends) {
+      currAcc.friends = currAcc.friends.filter(f => f !== friendUsername);
+    }
+
+    const friendAcc = findAccountByUsernameOrNickname(friendUsername);
+    if (friendAcc && friendAcc.friends) {
+      friendAcc.friends = friendAcc.friends.filter(f => f !== currAcc.username);
+    }
+
+    saveAccountsToStorage();
+    renderFriendsAndGroups();
+    showNotification(`已刪除好友【${friendNick}】`, 'info');
   }
 
+  /* ---------------- 右側好友與群組 UI 渲染 ---------------- */
   function renderFriendsAndGroups() {
     const friendContainer = document.getElementById('friend-list-container');
     const groupContainer = document.getElementById('group-list-container');
@@ -1234,7 +1257,7 @@
     const friends = (currAcc && currAcc.friends) ? currAcc.friends : [];
 
     if (friends.length === 0) {
-      friendContainer.innerHTML = '<div style="font-size:0.8em; color:#95a5a6; padding:4px;">暫無好友，請上方加好友</div>';
+      friendContainer.innerHTML = '<div style="font-size:0.8em; color:#95a5a6; padding:4px;">暫無好友</div>';
     } else {
       friends.forEach(fName => {
         const nick = getUserNickname(fName);
@@ -1244,6 +1267,7 @@
           <span>👤 ${nick}</span>
           <div class="friend-actions">
             <button onclick="openChatWithFriend('${fName}')">💬 聊天</button>
+            <button class="account-btn-sm danger" style="padding: 3px 6px;" onclick="deleteFriend('${fName}')">🗑️ 刪除</button>
           </div>
         `;
         friendContainer.appendChild(item);
@@ -1328,6 +1352,10 @@
     if (rawGrp) groupsData = JSON.parse(rawGrp);
     const rawChat = localStorage.getItem('oc_chats_v2');
     if (rawChat) chatsData = JSON.parse(rawChat);
+
+    Object.keys(chatsData).forEach(cid => {
+      lastSeenChatMsgCount[cid] = chatsData[cid].length;
+    });
   }
 
   function saveGroupsAndChatsToStorage() {
@@ -1381,13 +1409,12 @@
       const senderNick = getUserNickname(msg.sender);
       const timeStr = formatChatTimestamp(msg.timestamp);
 
-      // 嚴格依照要求格式：【賬號昵稱】：【發送的内容】（【發送時間：HH/MM DD/MM/YY】）
       item.innerHTML = `<strong>【${senderNick}】</strong>：${escapeHtml(msg.content)} <span style="font-size:0.75em; color:#7f8c8d; margin-left:4px;">（【發送時間：${timeStr}】）</span>`;
-
       container.appendChild(item);
     });
 
     container.scrollTop = container.scrollHeight;
+    lastSeenChatMsgCount[activeChatId] = chatHistory.length;
   }
 
   function formatChatTimestamp(ts) {
@@ -1400,14 +1427,13 @@
     return `${hh}/${mm} ${DD}/${MM}/${YY}`;
   }
 
+  /* 新訊息發送 (僅給除自己以外的成員/目標好友發送即時通知) */
   function sendChatMessage() {
     const input = document.getElementById('chatInputText');
     const content = input.value.trim();
     if (!content || !activeChatId) return;
 
     const currUsername = getCurrentUsername();
-    const currNick = getUserNickname(currUsername);
-
     if (!chatsData[activeChatId]) chatsData[activeChatId] = [];
 
     const newMsg = {
@@ -1422,11 +1448,32 @@
 
     input.value = '';
     renderChatMessages();
-
-    // 發送即時通知給參與在內的成員：【賬號昵稱】：【發送的内容】
-    showNotification(`【${currNick}】：${content}`, 'info');
+    // 備註：發送者本人不調用 showNotification
   }
 
+  /* 檢查並給其他成員發送新消息即時通知 */
+  function checkAndNotifyNewChatMessages() {
+    const currUsername = getCurrentUsername();
+
+    Object.keys(chatsData).forEach(cid => {
+      const list = chatsData[cid] || [];
+      const prevCount = lastSeenChatMsgCount[cid] || 0;
+
+      if (list.length > prevCount) {
+        for (let i = prevCount; i < list.length; i++) {
+          const msg = list[i];
+          // 只針對發送者「非自己」的新消息進行即時通知
+          if (msg.sender !== currUsername) {
+            const senderNick = getUserNickname(msg.sender);
+            showNotification(`【${senderNick}】：${msg.content}`, 'info');
+          }
+        }
+        lastSeenChatMsgCount[cid] = list.length;
+      }
+    });
+  }
+
+  /* 聊天室視窗拖拽移動與尺寸改變 (左/下/右邊框拖拽) */
   function setupChatWindowDraggable() {
     const win = document.getElementById('chatWindow');
     const header = document.getElementById('chatHeader');
@@ -1460,8 +1507,270 @@
     });
   }
 
+  function setupChatWindowResizable() {
+    const win = document.getElementById('chatWindow');
+    const resizers = [
+      { el: document.getElementById('chatResizerL'), dir: 'l' },
+      { el: document.getElementById('chatResizerR'), dir: 'r' },
+      { el: document.getElementById('chatResizerB'), dir: 'b' },
+      { el: document.getElementById('chatResizerBL'), dir: 'bl' },
+      { el: document.getElementById('chatResizerBR'), dir: 'br' }
+    ];
+
+    resizers.forEach(({ el, dir }) => {
+      if (!el) return;
+      let isResizing = false;
+      let startX, startY, startWidth, startHeight, startLeft;
+
+      el.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = win.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        startLeft = rect.left;
+        document.body.style.userSelect = 'none';
+
+        const onMouseMove = (ev) => {
+          if (!isResizing) return;
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+
+          if (dir.includes('r')) {
+            const newW = Math.max(280, startWidth + dx);
+            win.style.width = newW + 'px';
+          }
+          if (dir.includes('l')) {
+            const newW = Math.max(280, startWidth - dx);
+            if (newW > 280) {
+              win.style.width = newW + 'px';
+              win.style.left = (startLeft + dx) + 'px';
+              win.style.right = 'auto';
+            }
+          }
+          if (dir.includes('b')) {
+            const newH = Math.max(320, startHeight + dy);
+            win.style.height = newH + 'px';
+          }
+        };
+
+        const onMouseUp = () => {
+          isResizing = false;
+          document.body.style.userSelect = '';
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    });
+  }
+
   function escapeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------------- 色環倒三角代表色選擇器 ---------------- */
+  let colorCtx = null;
+  let currentHue = 210;
+  let selectedColorHex = "#007bff";
+  let triangleVertices = {};
+
+  function openColorPickerModal() {
+    const curVal = document.getElementById('field-color').value || "#007bff";
+    selectedColorHex = curVal;
+    document.getElementById('modal-color-hex').value = curVal;
+    document.getElementById('modal-color-preview').style.background = curVal;
+    document.getElementById('colorPickerModal').style.display = 'flex';
+    drawColorPickerCanvas();
+  }
+
+  function closeColorPickerModal() {
+    document.getElementById('colorPickerModal').style.display = 'none';
+  }
+
+  function confirmColorPickerSelection() {
+    document.getElementById('field-color').value = selectedColorHex;
+    document.getElementById('color-picker-box').style.background = selectedColorHex;
+    closeColorPickerModal();
+  }
+
+  function initColorPickerCanvas() {
+    const canvas = document.getElementById('colorCanvas');
+    if (!canvas) return;
+    colorCtx = canvas.getContext('2d');
+
+    let isInteracting = false;
+
+    const handleInput = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const mx = clientX - rect.left;
+      const my = clientY - rect.top;
+
+      const cx = 140, cy = 140;
+      const rIn = 100, rOut = 135;
+      const dist = Math.hypot(mx - cx, my - cy);
+
+      // 色相環區域
+      if (dist >= rIn - 5 && dist <= rOut + 10 && !isInteractingTriangle) {
+        let angle = Math.atan2(my - cy, mx - cx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        currentHue = angle;
+        drawColorPickerCanvas();
+      } else {
+        // 倒三角形區域選擇顏色（極限限制只能在三角形內）
+        isInteractingTriangle = true;
+        selectColorFromTriangle(mx, my);
+      }
+    };
+
+    let isInteractingTriangle = false;
+
+    canvas.addEventListener('mousedown', (e) => { isInteracting = true; isInteractingTriangle = false; handleInput(e); });
+    canvas.addEventListener('mousemove', (e) => { if (isInteracting) handleInput(e); });
+    document.addEventListener('mouseup', () => { isInteracting = false; isInteractingTriangle = false; });
+
+    canvas.addEventListener('touchstart', (e) => { isInteracting = true; isInteractingTriangle = false; handleInput(e); });
+    canvas.addEventListener('touchmove', (e) => { if (isInteracting) handleInput(e); });
+    canvas.addEventListener('touchend', () => { isInteracting = false; isInteractingTriangle = false; });
+  }
+
+  function drawColorPickerCanvas() {
+    if (!colorCtx) return;
+    const ctx = colorCtx;
+    const W = 280, H = 280;
+    const cx = W / 2, cy = H / 2;
+    const rIn = 100, rOut = 130;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // 1. 繪製外層色相環
+    for (let angle = 0; angle < 360; angle += 1) {
+      const rad1 = angle * Math.PI / 180;
+      const rad2 = (angle + 1.5) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.arc(cx, cy, (rIn + rOut) / 2, rad1, rad2);
+      ctx.strokeStyle = `hsl(${angle}, 100%, 50%)`;
+      ctx.lineWidth = rOut - rIn;
+      ctx.stroke();
+    }
+
+    // 色相指標指示器
+    const hueRad = currentHue * Math.PI / 180;
+    const hx = cx + ((rIn + rOut) / 2) * Math.cos(hueRad);
+    const hy = cy + ((rIn + rOut) / 2) * Math.sin(hueRad);
+    ctx.beginPath();
+    ctx.arc(hx, hy, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    // 2. 倒三角形三個頂點
+    // 左頂點：白色 (White) 210度
+    // 右頂點：純度 (Pure Hue) 330度
+    // 下頂點：黑色 (Black) 90度
+    const rTri = 92;
+    const pLeft = { x: cx + rTri * Math.cos(210 * Math.PI / 180), y: cy + rTri * Math.sin(210 * Math.PI / 180) };
+    const pRight = { x: cx + rTri * Math.cos(330 * Math.PI / 180), y: cy + rTri * Math.sin(330 * Math.PI / 180) };
+    const pBottom = { x: cx + rTri * Math.cos(90 * Math.PI / 180), y: cy + rTri * Math.sin(90 * Math.PI / 180) };
+
+    triangleVertices = { pLeft, pRight, pBottom };
+
+    // 利用 ImageData 逐像素填充倒三角形（純度與明度線性插值）
+    const pureRGB = hslToRgb(currentHue / 360, 1.0, 0.5);
+    const imgData = ctx.createImageData(W, H);
+
+    for (let y = Math.floor(pLeft.y); y <= Math.ceil(pBottom.y); y++) {
+      for (let x = Math.floor(pLeft.x); x <= Math.ceil(pRight.x); x++) {
+        const weights = getBarycentric(x, y, pLeft, pRight, pBottom);
+        if (weights.wL >= 0 && weights.wR >= 0 && weights.wB >= 0) {
+          const idx = (y * W + x) * 4;
+          const r = Math.round(weights.wL * 255 + weights.wR * pureRGB.r + weights.wB * 0);
+          const g = Math.round(weights.wL * 255 + weights.wR * pureRGB.g + weights.wB * 0);
+          const b = Math.round(weights.wL * 255 + weights.wR * pureRGB.b + weights.wB * 0);
+
+          imgData.data[idx] = r;
+          imgData.data[idx + 1] = g;
+          imgData.data[idx + 2] = b;
+          imgData.data[idx + 3] = 255;
+        }
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // 三角形外框線
+    ctx.beginPath();
+    ctx.moveTo(pLeft.x, pLeft.y);
+    ctx.lineTo(pRight.x, pRight.y);
+    ctx.lineTo(pBottom.x, pBottom.y);
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function getBarycentric(x, y, pL, pR, pB) {
+    const denom = (pR.y - pB.y) * (pL.x - pB.x) + (pB.x - pR.x) * (pL.y - pB.y);
+    const wL = ((pR.y - pB.y) * (x - pB.x) + (pB.x - pR.x) * (y - pB.y)) / denom;
+    const wR = ((pB.y - pL.y) * (x - pB.x) + (pL.x - pB.x) * (y - pB.y)) / denom;
+    const wB = 1 - wL - wR;
+    return { wL, wR, wB };
+  }
+
+  /* 只能選取在倒三角形內的顏色 */
+  function selectColorFromTriangle(mx, my) {
+    const { pLeft, pRight, pBottom } = triangleVertices;
+    if (!pLeft) return;
+
+    let { wL, wR, wB } = getBarycentric(mx, my, pLeft, pRight, pBottom);
+
+    // 強制限制限制點在三角形內部
+    wL = Math.max(0, wL);
+    wR = Math.max(0, wR);
+    wB = Math.max(0, wB);
+    const sum = wL + wR + wB;
+    if (sum === 0) return;
+    wL /= sum; wR /= sum; wB /= sum;
+
+    const pureRGB = hslToRgb(currentHue / 360, 1.0, 0.5);
+    const r = Math.round(wL * 255 + wR * pureRGB.r + wB * 0);
+    const g = Math.round(wL * 255 + wR * pureRGB.g + wB * 0);
+    const b = Math.round(wL * 255 + wR * pureRGB.b + wB * 0);
+
+    selectedColorHex = rgbToHex(r, g, b);
+    document.getElementById('modal-color-hex').value = selectedColorHex;
+    document.getElementById('modal-color-preview').style.background = selectedColorHex;
+  }
+
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+  }
+
+  function rgbToHex(r, g, b) {
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
   }
 
   /* ---------------- 信箱與投票管理 ---------------- */
@@ -1501,8 +1810,6 @@
       return;
     }
 
-    const currUsername = getCurrentUsername();
-
     currAcc.inbox.forEach(msg => {
       const item = document.createElement('div');
       item.style.cssText = "background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; font-size:0.9em;";
@@ -1535,379 +1842,10 @@
             ` : `<span style="color:#7f8c8d; font-size:0.85em;">已${msg.status === 'accepted' ? '加入' : '拒絕'}</span>`}
           </div>
         `;
-      } else if (msg.type === 'kick_vote' || msg.type === 'delete_folder_vote') {
-        const vote = votesData[msg.voteId];
-        const isKick = msg.type === 'kick_vote';
-        const sf = sharedFoldersData[msg.folderId];
-        const totalMembers = vote ? vote.totalMembersAtStart : (sf ? sf.members.length : 0);
-        const fromNick = getUserNickname(msg.fromUser);
-        const targetNick = isKick ? getUserNickname(msg.targetUser) : '';
-
-        let approveCount = 0, rejectCount = 0;
-        let userVoted = null;
-        if (vote && vote.votes) {
-          Object.entries(vote.votes).forEach(([u, v]) => {
-            if (v === 'approve') approveCount++;
-            if (v === 'reject') rejectCount++;
-            if (u === currUsername) userVoted = v;
-          });
-        }
-
-        const voteStatusText = vote ? vote.status : 'ended';
-
-        item.innerHTML = `
-          <div>🗳️ <strong>【${fromNick}】</strong> 發起投票：${isKick ? `將成員【<strong>${targetNick}</strong>】踢出共享資料夾` : '刪除共享資料夾'} <strong>【${msg.folderName}】</strong></div>
-          <div style="font-size:0.8em; color:#555; background:#fff; padding:6px; border-radius:4px; border:1px solid #eee;">
-            當前票數：<span style="color:#27ae60; font-weight:bold;">贊成 (${approveCount})</span> | <span style="color:#e74c3c; font-weight:bold;">反對 (${rejectCount})</span> / 總人數: ${totalMembers}
-          </div>
-          <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
-            ${voteStatusText === 'active' ? (userVoted ? `<span style="color:#f39c12; font-size:0.85em;">您已投票：【${userVoted === 'approve' ? '贊成' : '反對'}】</span>` : `
-              <button onclick="castVote('${msg.voteId}', 'approve', '${msg.id}')" style="background:#2ecc71; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【贊成】</button>
-              <button onclick="castVote('${msg.voteId}', 'reject', '${msg.id}')" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【反對】</button>
-            `) : `<span style="color:#7f8c8d; font-size:0.85em;">投票已結束 (${voteStatusText === 'passed' ? '已通過' : '未通過'})</span>`}
-          </div>
-        `;
       }
 
       container.appendChild(item);
     });
-  }
-
-  /* ---------------- 投票相關邏輯 ---------------- */
-  function loadVotesFromStorage() {
-    const rawVotes = localStorage.getItem('oc_votes_v2');
-    if (rawVotes) votesData = JSON.parse(rawVotes);
-  }
-
-  function saveVotesToStorage() {
-    localStorage.setItem('oc_votes_v2', JSON.stringify(votesData));
-    localStorage.setItem('oc_sync_ts', Date.now().toString());
-  }
-
-  function castVote(voteId, choice, msgId) {
-    const vote = votesData[voteId];
-    if (!vote || vote.status !== 'active') {
-      showNotification("該投票已結束或失效", "warning");
-      return;
-    }
-
-    const currUsername = getCurrentUsername();
-    vote.votes[currUsername] = choice;
-    saveVotesToStorage();
-
-    const currAcc = accountsData[currentUser];
-    if (currAcc && currAcc.inbox) {
-      const msg = currAcc.inbox.find(m => m.id === msgId || m.voteId === voteId);
-      if (msg) msg.status = 'voted';
-      saveAccountsToStorage();
-    }
-
-    checkVoteResult(voteId);
-    renderInboxUI();
-  }
-
-  function checkVoteResult(voteId) {
-    const vote = votesData[voteId];
-    if (!vote || vote.status !== 'active') return;
-
-    const sf = sharedFoldersData[vote.folderId];
-    if (!sf) {
-      vote.status = 'rejected';
-      saveVotesToStorage();
-      return;
-    }
-
-    const totalMembers = sf.members.length;
-    const votesObj = vote.votes || {};
-    let approveCount = 0;
-    let rejectCount = 0;
-
-    Object.values(votesObj).forEach(val => {
-      if (val === 'approve') approveCount++;
-      if (val === 'reject') rejectCount++;
-    });
-
-    const isPassed = totalMembers > 2 ? (approveCount / totalMembers > 0.5) : (approveCount / totalMembers >= 0.5);
-    const isRejected = (rejectCount / totalMembers >= 0.5);
-
-    if (isPassed) {
-      vote.status = 'passed';
-      if (vote.type === 'kick') {
-        const targetNick = getUserNickname(vote.targetUser);
-        sf.members = sf.members.filter(m => m !== vote.targetUser);
-        saveSharedFoldersToStorage();
-        showNotification(`投票通過！成員【${targetNick}】已被踢出共享資料夾【${sf.name}】`, 'warning');
-      } else if (vote.type === 'delete_folder') {
-        delete sharedFoldersData[vote.folderId];
-        saveSharedFoldersToStorage();
-        showNotification(`投票通過！共享資料夾【${vote.folderName}】已被成功刪除`, 'danger');
-      }
-    } else if (isRejected) {
-      vote.status = 'rejected';
-      showNotification(`投票未通過，該提案已被否決。`, 'info');
-    }
-
-    saveVotesToStorage();
-    reloadSharedAndRender();
-  }
-
-  function initiateKickVote(sfId, targetUsername) {
-    const sf = sharedFoldersData[sfId];
-    if (!sf) return;
-
-    const targetNick = getUserNickname(targetUsername);
-
-    const activeVote = Object.values(votesData).find(v => v.folderId === sfId && v.type === 'kick' && v.targetUser === targetUsername && v.status === 'active');
-    if (activeVote) {
-      return showNotification(`已有對【${targetNick}】的踢出投票進行中！`, 'warning');
-    }
-
-    const totalMembers = sf.members.length;
-
-    if (totalMembers <= 2) {
-      if (confirm(`確定將成員【${targetNick}】踢出共享資料夾【${sf.name}】嗎？`)) {
-        sf.members = sf.members.filter(m => m !== targetUsername);
-        saveSharedFoldersToStorage();
-        showNotification(`成員【${targetNick}】已被踢出共享資料夾！`, 'warning');
-        if (currentMembersSfId === sfId) renderFolderMembersList(sf);
-        renderTree();
-      }
-      return;
-    }
-
-    const voteId = "vote_kick_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-    const currUsername = getCurrentUsername();
-
-    votesData[voteId] = {
-      id: voteId,
-      type: 'kick',
-      folderId: sfId,
-      folderName: sf.name,
-      targetUser: targetUsername,
-      initiator: currUsername,
-      totalMembersAtStart: totalMembers,
-      votes: { [currUsername]: 'approve' },
-      status: 'active'
-    };
-
-    sf.members.forEach(mName => {
-      const acc = findAccountByUsernameOrNickname(mName);
-      if (acc) {
-        if (!acc.inbox) acc.inbox = [];
-        acc.inbox.unshift({
-          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-          type: "kick_vote",
-          voteId: voteId,
-          fromUser: currUsername,
-          targetUser: targetUsername,
-          folderId: sfId,
-          folderName: sf.name,
-          timestamp: Date.now(),
-          status: "pending"
-        });
-      }
-    });
-
-    saveVotesToStorage();
-    saveAccountsToStorage();
-    checkVoteResult(voteId);
-    showNotification(`已發起將【${targetNick}】踢出共享資料夾的投票！`, 'success');
-  }
-
-  function initiateDeleteFolderVote(sfId) {
-    const sf = sharedFoldersData[sfId];
-    if (!sf) return;
-
-    const activeVote = Object.values(votesData).find(v => v.folderId === sfId && v.type === 'delete_folder' && v.status === 'active');
-    if (activeVote) {
-      return showNotification("已有對該資料夾的刪除投票進行中！", "warning");
-    }
-
-    const totalMembers = sf.members.length;
-    const voteId = "vote_del_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-    const currUsername = getCurrentUsername();
-
-    votesData[voteId] = {
-      id: voteId,
-      type: 'delete_folder',
-      folderId: sfId,
-      folderName: sf.name,
-      initiator: currUsername,
-      totalMembersAtStart: totalMembers,
-      votes: { [currUsername]: 'approve' },
-      status: 'active'
-    };
-
-    sf.members.forEach(mName => {
-      const acc = findAccountByUsernameOrNickname(mName);
-      if (acc) {
-        if (!acc.inbox) acc.inbox = [];
-        acc.inbox.unshift({
-          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-          type: "delete_folder_vote",
-          voteId: voteId,
-          fromUser: currUsername,
-          folderId: sfId,
-          folderName: sf.name,
-          timestamp: Date.now(),
-          status: "pending"
-        });
-      }
-    });
-
-    saveVotesToStorage();
-    saveAccountsToStorage();
-    checkVoteResult(voteId);
-    showNotification("已發起刪除共享資料夾投票，已發送至全體成員信箱！", "info");
-  }
-
-  /* ---------------- 共享資料夾成員名單與邀請/退出 ---------------- */
-  function openFolderMembersModal(sfId) {
-    currentMembersSfId = sfId;
-    const sf = sharedFoldersData[sfId];
-    if (!sf) return;
-
-    document.getElementById('members-modal-title').innerText = `👥 共享資料夾【${sf.name}】成員 (${sf.members.length}人)`;
-    const inviteBtn = document.getElementById('invite-member-btn');
-    inviteBtn.onclick = () => sendFolderInviteFromModal(sfId);
-
-    renderFolderMembersList(sf);
-    document.getElementById('folderMembersModal').style.display = 'flex';
-  }
-
-  function closeFolderMembersModal() {
-    document.getElementById('folderMembersModal').style.display = 'none';
-    currentMembersSfId = null;
-  }
-
-  function renderFolderMembersList(sf) {
-    const container = document.getElementById('members-list-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const currUsername = getCurrentUsername();
-
-    sf.members.forEach(mName => {
-      const row = document.createElement('div');
-      row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:8px 10px;";
-
-      const isSelf = (mName === currUsername);
-      const nick = getUserNickname(mName);
-
-      row.innerHTML = `
-        <span style="font-size:0.9em; font-weight:${isSelf ? 'bold' : 'normal'};">👤 ${nick} ${isSelf ? '<span style="color:#007bff; font-size:0.8em;">(您自己)</span>' : ''}</span>
-        <div>
-          ${isSelf ? `
-            <button onclick="leaveSharedFolder('${sf.id}')" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">【退出】</button>
-          ` : `
-            <button onclick="initiateKickVote('${sf.id}', '${mName}')" style="background:#e67e22; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">發起踢出成員</button>
-          `}
-        </div>
-      `;
-
-      container.appendChild(row);
-    });
-  }
-
-  function leaveSharedFolder(sfId) {
-    const sf = sharedFoldersData[sfId];
-    if (!sf) return;
-
-    const currUsername = getCurrentUsername();
-    if (!confirm(`確定要退出共享資料夾【${sf.name}】嗎？`)) return;
-
-    sf.members = sf.members.filter(m => m !== currUsername);
-    appData.tree = appData.tree.filter(n => !(n.type === 'shared_ref' && n.folderId === sfId));
-    
-    if (sf.members.length === 0) {
-      delete sharedFoldersData[sfId];
-    }
-
-    saveSharedFoldersToStorage();
-    saveToLocalStorage();
-    closeFolderMembersModal();
-    renderTree();
-    showNotification(`已退出共享資料夾【${sf.name}】`, 'info');
-  }
-
-  function sendFolderInviteFromModal(sfId) {
-    const input = document.getElementById('invite-member-input');
-    const targetName = input ? input.value.trim() : '';
-    if (!targetName) return alert("請輸入使用者暱稱或名稱！");
-
-    const sf = sharedFoldersData[sfId];
-    if (!sf) return;
-
-    const targetAcc = findAccountByUsernameOrNickname(targetName);
-    if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱。`);
-
-    if (sf.members.includes(targetAcc.username)) return alert(`【${getUserNickname(targetAcc.username)}】已經是此共享資料夾的成員！`);
-
-    const currUsername = getCurrentUsername();
-    if (!targetAcc.inbox) targetAcc.inbox = [];
-
-    targetAcc.inbox.unshift({
-      id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-      type: "shared_folder_invite",
-      fromUser: currUsername,
-      folderId: sfId,
-      folderName: sf.name,
-      code: sf.code,
-      timestamp: Date.now(),
-      status: "pending"
-    });
-
-    saveAccountsToStorage();
-    input.value = '';
-    showNotification(`已發送加入申請至【${getUserNickname(targetAcc.username)}】的信箱！`, 'success');
-  }
-
-  function acceptFolderInvite(msgId) {
-    const currAcc = accountsData[currentUser];
-    if (!currAcc || !currAcc.inbox) return;
-
-    const msg = currAcc.inbox.find(m => m.id === msgId);
-    if (!msg) return;
-
-    const sf = sharedFoldersData[msg.folderId];
-    if (!sf) {
-      alert("該共享資料夾已被刪除或不存在！");
-      msg.status = 'rejected';
-      saveAccountsToStorage();
-      renderInboxUI();
-      return;
-    }
-
-    const currUsername = getCurrentUsername();
-    if (!sf.members.includes(currUsername)) {
-      sf.members.push(currUsername);
-      saveSharedFoldersToStorage();
-    }
-
-    if (!appData.tree.some(n => n.id === sf.id || n.folderId === sf.id)) {
-      appData.tree.push({ id: sf.id, type: "shared_ref", folderId: sf.id });
-      saveToLocalStorage();
-    }
-
-    msg.status = 'accepted';
-    saveAccountsToStorage();
-    renderTree();
-    showNotification(`已成功加入共享資料夾【${sf.name}】！`, 'success');
-    renderInboxUI();
-    updateInboxBadge();
-  }
-
-  function rejectFolderInvite(msgId) {
-    const currAcc = accountsData[currentUser];
-    if (!currAcc || !currAcc.inbox) return;
-
-    const msg = currAcc.inbox.find(m => m.id === msgId);
-    if (msg) msg.status = 'rejected';
-
-    saveAccountsToStorage();
-    showNotification("已拒絕加入共享資料夾", "info");
-    renderInboxUI();
-    updateInboxBadge();
   }
 
   /* ---------------- 共享文件夾與實時監控 ---------------- */
@@ -1967,12 +1905,12 @@
     const rawAcc = localStorage.getItem('oc_accounts_v2');
     if (rawAcc) accountsData = JSON.parse(rawAcc);
 
-    loadVotesFromStorage();
     loadGroupsAndChatsFromStorage();
 
     renderTree();
     renderFriendsAndGroups();
     updateInboxBadge();
+    checkAndNotifyNewChatMessages();
 
     if (activePageId) {
       const pageRes = findNodeAndParent(activePageId);
@@ -1981,15 +1919,6 @@
 
     if (activeChatId) {
       renderChatMessages();
-    }
-
-    if (document.getElementById('inboxDialogModal').style.display === 'flex') {
-      renderInboxUI();
-    }
-    if (currentMembersSfId && document.getElementById('folderMembersModal').style.display === 'flex') {
-      const sf = sharedFoldersData[currentMembersSfId];
-      if (sf) renderFolderMembersList(sf);
-      else closeFolderMembersModal();
     }
   }
 
@@ -2058,7 +1987,7 @@
         : '';
 
       const sharedTagHtml = node.isShared 
-        ? ` [共享] <span class="shared-code-tag">[邀請碼: ${node.code}]</span><span class="shared-count-tag" onclick="event.stopPropagation(); openFolderMembersModal('${node.id}')" title="點擊檢視成員名單">(${node.membersCount}人 👥)</span>` 
+        ? ` [共享] <span class="shared-code-tag">[邀請碼: ${node.code}]</span>` 
         : '';
 
       const isNonCreatorPage = node.type === 'page' && node.creatorId && node.creatorId !== currentUser;
@@ -2132,20 +2061,11 @@
   function renameNode(id) {
     const res = findNodeAndParent(id);
     if (res) {
-      const isNonCreator = res.node.type === 'page' && res.node.creatorId && res.node.creatorId !== currentUser;
-      if (isNonCreator) {
-        showNotification("【權限限制】非自己創作的資料頁不得修改！", "danger");
-        return;
-      }
       const newName = prompt("請輸入新名稱：", res.node.name);
       if (newName) {
         res.node.name = newName;
-        if (res.isShared || res.node.creatorId) {
-          saveSharedFoldersToStorage();
-          showNotification("項目已重命名並同步狀態！", "success");
-        } else {
-          saveToLocalStorage();
-        }
+        if (res.isShared) saveSharedFoldersToStorage();
+        else saveToLocalStorage();
         renderTree();
       }
     }
@@ -2154,76 +2074,9 @@
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
     if (!name) return;
-    const isShared = confirm("是否建立為【共享文件夾】？（其它使用者可憑邀請碼加入）");
-    
-    const currUsername = getCurrentUsername();
-
-    if (isShared) {
-      let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
-      if (customCode !== null) customCode = customCode.trim();
-      if (!customCode) customCode = "SF-" + Math.floor(1000 + Math.random() * 9000);
-
-      const codeExists = Object.values(sharedFoldersData).some(sf => sf.code === customCode);
-      if (codeExists) {
-        return alert("該邀請碼已被使用，請重新建立並選擇不同的邀請碼！");
-      }
-
-      const sfId = "sf_" + Date.now();
-      sharedFoldersData[sfId] = {
-        id: sfId,
-        name: name,
-        code: customCode,
-        creatorId: currentUser,
-        members: [currUsername],
-        children: [{ id: "p_" + Date.now(), name: "未命名 OC", type: "page", creatorId: currentUser, data: {} }],
-        lastModified: Date.now()
-      };
-      saveSharedFoldersToStorage();
-      appData.tree.push({ id: sfId, type: "shared_ref", folderId: sfId });
-      saveToLocalStorage();
-      showNotification(`共享資料夾已建立！邀請碼：${customCode}`, 'success');
-    } else {
-      appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
-      saveToLocalStorage();
-    }
-    renderTree();
-  }
-
-  function convertToSharedFolder(folderId) {
-    const res = findNodeAndParent(folderId);
-    if (!res || res.node.type !== 'folder' || res.isShared) return;
-
-    if (!confirm(`確定要將資料夾【${res.node.name}】轉為共享資料夾嗎？`)) return;
-
-    let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
-    if (customCode !== null) customCode = customCode.trim();
-    if (!customCode) customCode = "SF-" + Math.floor(1000 + Math.random() * 9000);
-
-    const codeExists = Object.values(sharedFoldersData).some(sf => sf.code === customCode);
-    if (codeExists) {
-      return alert("該邀請碼已被使用，請使用不同的邀請碼！");
-    }
-
-    const sfId = "sf_" + Date.now();
-    const folderData = res.node;
-    const currUsername = getCurrentUsername();
-
-    sharedFoldersData[sfId] = {
-      id: sfId,
-      name: folderData.name,
-      code: customCode,
-      creatorId: currentUser,
-      members: [currUsername],
-      children: folderData.children || [],
-      lastModified: Date.now()
-    };
-    saveSharedFoldersToStorage();
-
-    res.list[res.index] = { id: sfId, type: "shared_ref", folderId: sfId };
+    appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
     saveToLocalStorage();
-
     renderTree();
-    showNotification(`已將【${folderData.name}】轉為共享資料夾！邀請碼：${customCode}`, 'success');
   }
 
   function promptAddPage(parentId) {
@@ -2235,11 +2088,8 @@
       res.node.children.push({ id: newId, name, type: "page", creatorId: currentUser, data: {} });
       res.node.collapsed = false;
 
-      if (res.isShared || sharedFoldersData[parentId]) {
-        saveSharedFoldersToStorage();
-      } else {
-        saveToLocalStorage();
-      }
+      if (res.isShared) saveSharedFoldersToStorage();
+      else saveToLocalStorage();
       switchPage(newId);
     }
   }
@@ -2247,43 +2097,11 @@
   function deleteNode(id) {
     const res = findNodeAndParent(id);
     if (!res) return;
-
-    if (res.node.type === 'page' && res.node.creatorId && res.node.creatorId !== currentUser) {
-      showNotification("【權限限制】非自己創作的資料頁不得刪除！", "danger");
-      return;
-    }
-
-    if (res.isShared || (res.node.type === 'folder' && sharedFoldersData[id])) {
-      const sf = sharedFoldersData[id];
-      if (sf) {
-        const members = sf.members || [];
-        if (members.length <= 1) {
-          if (confirm("確定要刪除共享資料夾【" + sf.name + "】嗎？")) {
-            delete sharedFoldersData[id];
-            res.list.splice(res.index, 1);
-            saveSharedFoldersToStorage();
-            saveToLocalStorage();
-            renderTree();
-            showNotification("共享資料夾已刪除！", "info");
-          }
-        } else {
-          if (confirm("刪除共享資料夾【" + sf.name + "】需要發起投票，確定發起投票嗎？")) {
-            initiateDeleteFolderVote(id);
-          }
-        }
-        return;
-      }
-    }
-
     if (confirm("確定要刪除？此操作不可逆！")) {
       res.list.splice(res.index, 1);
-      if (res.isShared) {
-        saveSharedFoldersToStorage();
-      } else {
-        saveToLocalStorage();
-      }
+      if (res.isShared) saveSharedFoldersToStorage();
+      else saveToLocalStorage();
       renderTree();
-      showNotification("項目已成功刪除！", "info");
     }
   }
 
@@ -2292,10 +2110,6 @@
     const targetRes = findNodeAndParent(targetId);
 
     if (draggedRes && targetRes) {
-      if (draggedRes.node.type === 'page' && draggedRes.node.creatorId && draggedRes.node.creatorId !== currentUser) {
-        showNotification("【權限限制】非自己創作的資料頁不得移動！", "danger");
-        return;
-      }
       draggedRes.list.splice(draggedRes.index, 1);
       if (targetRes.node.type === 'folder') {
         targetRes.node.children.push(draggedRes.node);
@@ -2314,498 +2128,214 @@
     loadPageData(pageId);
   }
 
-  /* ---------------- 時間軸與重大事件控制 ---------------- */
+  /* ---------------- 時間軸控制 ---------------- */
   function updateSliderMax(maxVal) {
     maxVal = parseInt(maxVal) || 100;
     const slider = document.getElementById('timelineSlider');
     slider.max = maxVal;
     document.getElementById('sliderMaxLabel').innerText = maxVal;
-    if (parseInt(slider.value) > maxVal) jumpToTimeline(maxVal);
   }
 
   function jumpToTimeline(val) {
     val = parseInt(val) || 0;
-    saveTimelineNote();
-    currentProgress = val;
-
     const slider = document.getElementById('timelineSlider');
     if (val > parseInt(slider.max)) updateSliderMax(val);
-
     slider.value = val;
     document.getElementById('jumpInput').value = val;
-    document.getElementById('currentAgeTag').innerText = `${val} 歲時`;
+    document.getElementById('currentAgeTag').innerText = val + " 歲時";
     document.getElementById('timelineNote').value = timelineData[val] || '';
   }
 
   function onNoteInput() {
-    saveTimelineNote();
+    const age = document.getElementById('timelineSlider').value;
+    timelineData[age] = document.getElementById('timelineNote').value;
     updateMaxProgressTag();
   }
 
-  function saveTimelineNote() {
-    const note = document.getElementById('timelineNote').value;
-    if (note.trim() !== '') {
-      timelineData[currentProgress] = note;
-    } else {
-      delete timelineData[currentProgress];
-    }
-  }
-
   function updateMaxProgressTag() {
-    const keys = Object.keys(timelineData).map(Number).filter(n => !isNaN(n));
-    const maxVal = keys.length > 0 ? Math.max(...keys) : 0;
-    const charName = document.getElementById('field-name').value.trim() || "未命名角色";
-    document.getElementById('maxProgressTag').innerText = `記錄至 ${charName} ${maxVal} 歲時`;
+    let name = document.getElementById('field-name').value.trim() || '未命名角色';
+    let ages = Object.keys(timelineData).map(Number).filter(a => timelineData[a] && timelineData[a].trim() !== '');
+    let maxAge = ages.length > 0 ? Math.max(...ages) : 0;
+    currentProgress = maxAge;
+    document.getElementById('maxProgressTag').innerText = `記錄至 ${name} ${maxAge} 歲時`;
   }
 
-  /* ---------------- 重大事件節點 ---------------- */
-  function renderEvents() {
-    const list = document.getElementById('events-list');
-    list.innerHTML = '';
-    majorEvents.forEach((evt, idx) => {
-      const chip = document.createElement('div');
-      chip.className = 'event-chip';
-      const yearTag = evt.year ? `${evt.year} / ` : '';
-      chip.innerHTML = `
-        <span onclick="triggerEventClick(${idx})">📌 [${yearTag}${evt.age}歲] ${evt.name}</span>
-        ${!isCurrentPageReadOnly ? `<button type="button" onclick="openEventModal(${idx})" title="修改內容">✏️</button>` : ''}
-        ${!isCurrentPageReadOnly ? `<button type="button" onclick="deleteEvent(${idx})" title="刪除">✕</button>` : ''}
-      `;
-      list.appendChild(chip);
-    });
-  }
-
-  function triggerEventClick(idx) {
-    const evt = majorEvents[idx];
-    jumpToTimeline(evt.age);
-    if (evt.desc) {
-      showNotification(`📌【${evt.name}】(${evt.year || ''} ${evt.age}歲)：${evt.desc}`, 'info');
-    }
-  }
-
-  function openEventModal(idx) {
-    if (isCurrentPageReadOnly) return;
-    document.getElementById('event-edit-index').value = idx;
-    if (idx >= 0 && majorEvents[idx]) {
-      const evt = majorEvents[idx];
+  /* ---------------- 重大事件 Modal 控制 ---------------- */
+  function openEventModal(index = -1) {
+    document.getElementById('event-edit-index').value = index;
+    if (index >= 0 && majorEvents[index]) {
+      const ev = majorEvents[index];
       document.getElementById('event-dialog-title').innerText = "修改重大事件";
-      document.getElementById('event-input-year').value = evt.year || '';
-      document.getElementById('event-input-age').value = evt.age || 0;
-      document.getElementById('event-input-name').value = evt.name || '';
-      document.getElementById('event-input-desc').value = evt.desc || '';
+      document.getElementById('event-input-year').value = ev.year || '';
+      document.getElementById('event-input-age').value = ev.age || 0;
+      document.getElementById('event-input-name').value = ev.name || '';
+      document.getElementById('event-input-desc').value = ev.desc || '';
     } else {
       document.getElementById('event-dialog-title').innerText = "新增重大事件";
       document.getElementById('event-input-year').value = '';
-      document.getElementById('event-input-age').value = currentProgress;
+      document.getElementById('event-input-age').value = document.getElementById('timelineSlider').value;
       document.getElementById('event-input-name').value = '';
       document.getElementById('event-input-desc').value = '';
     }
     document.getElementById('eventDialogModal').style.display = 'flex';
   }
 
-  function closeEventModal() { document.getElementById('eventDialogModal').style.display = 'none'; }
+  function closeEventModal() {
+    document.getElementById('eventDialogModal').style.display = 'none';
+  }
 
   function saveEventFromModal() {
-    if (isCurrentPageReadOnly) return;
     const idx = parseInt(document.getElementById('event-edit-index').value);
     const year = document.getElementById('event-input-year').value.trim();
     const age = parseInt(document.getElementById('event-input-age').value) || 0;
     const name = document.getElementById('event-input-name').value.trim();
     const desc = document.getElementById('event-input-desc').value.trim();
 
-    if (!name) return alert("請輸入事件名稱！");
+    if (!name) return alert("請輸入事件標題！");
 
-    const eventObj = { id: Date.now(), year, age, name, desc };
-    if (idx >= 0) {
-      majorEvents[idx] = eventObj;
-    } else {
-      majorEvents.push(eventObj);
-    }
+    const eventObj = { year, age, name, desc };
+    if (idx >= 0) majorEvents[idx] = eventObj;
+    else majorEvents.push(eventObj);
 
+    majorEvents.sort((a, b) => a.age - b.age);
+    renderMajorEvents();
     closeEventModal();
-    renderEvents();
-    showNotification("重大事件已更新！", "success");
   }
 
-  function deleteEvent(idx) {
-    if (isCurrentPageReadOnly) return;
-    majorEvents.splice(idx, 1);
-    renderEvents();
-  }
-
-  /* ---------------- 圖片轉 Base64 ---------------- */
-  function uploadImageBase64(input, id) {
-    if (isCurrentPageReadOnly) return;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) { setImgSrc(id, e.target.result); };
-      reader.readAsDataURL(file);
+  function deleteEvent(index) {
+    if (confirm("確定要刪除此重大事件？")) {
+      majorEvents.splice(index, 1);
+      renderMajorEvents();
     }
   }
 
-  function triggerInitialUpload(id) {
-    if (isCurrentPageReadOnly) return;
-    const img = document.getElementById(id + '-preview');
-    if (!img.src || img.style.display === 'none') triggerUpload(id);
-  }
-  function triggerUpload(id) { 
-    if (isCurrentPageReadOnly) return;
-    document.getElementById(id + '-input').click(); 
-  }
-
-  function setImgSrc(id, src) {
-    const img = document.getElementById(id + '-preview');
-    const text = document.getElementById(id + '-text');
-    const overlay = document.getElementById(id + '-overlay');
-    img.src = src; img.style.display = 'block';
-    if(text) text.style.display = 'none';
-    if(overlay) overlay.style.display = 'flex';
-  }
-
-  /* ---------------- 設定唯讀狀態 ---------------- */
-  function applyReadOnlyMode(readOnly) {
-    isCurrentPageReadOnly = readOnly;
-    const form = document.getElementById('ocForm');
-    const inputs = form.querySelectorAll('input, textarea');
-    inputs.forEach(el => el.disabled = readOnly);
-
-    const submitBtn = document.getElementById('submit-btn');
-    submitBtn.disabled = readOnly;
-    submitBtn.innerText = readOnly ? "【唯讀模式】非創作本人不得修改" : "保存當前資料頁";
-
-    const editBtns = form.querySelectorAll('.edit-only-btn, .delete-card-btn');
-    editBtns.forEach(btn => {
-      btn.style.display = readOnly ? 'none' : '';
+  function renderMajorEvents() {
+    const container = document.getElementById('events-list');
+    container.innerHTML = '';
+    majorEvents.forEach((ev, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'event-chip';
+      chip.innerHTML = `
+        <span onclick="jumpToTimeline(${ev.age})">📌 ${ev.year ? ev.year + ' ' : ''}(${ev.age}歲) ${ev.name}</span>
+        <button type="button" onclick="openEventModal(${idx})">✏️</button>
+        <button type="button" onclick="deleteEvent(${idx})">✕</button>
+      `;
+      container.appendChild(chip);
     });
   }
 
-  /* ---------------- 頁面保存與載入 ---------------- */
-  function saveCurrentPageData(silent = false) {
-    if (!activePageId) return;
-
-    const res = findNodeAndParent(activePageId);
-    if (res && res.node.creatorId && res.node.creatorId !== currentUser) {
-      if (!silent) showNotification("【權限限制】非自己創作的資料頁不得修改！", "danger");
-      return;
-    }
-
-    saveTimelineNote();
-
-    const pageData = {
-      name: document.getElementById('field-name').value,
-      alias: document.getElementById('field-alias').value,
-      identity: document.getElementById('field-identity').value,
-      ability: document.getElementById('field-ability').value,
-      age: document.getElementById('field-age').value,
-      race: document.getElementById('field-race').value,
-      personality: document.getElementById('field-personality').value,
-      stat: document.getElementById('field-stat').value,
-      like: document.getElementById('field-like').value,
-      dislike: document.getElementById('field-dislike').value,
-      keywords: document.getElementById('field-keywords').value,
-      avatar1: document.getElementById('avatar1-preview').src,
-      avatar2: document.getElementById('avatar2-preview').src,
-      maxLimit: document.getElementById('maxLimitInput').value,
-      timeline: timelineData,
-      majorEvents: majorEvents,
-      persons: [], keepsakes: [], outfits: []
-    };
-
-    document.querySelectorAll('#person-grid .card-item').forEach(card => {
-      const img = card.querySelector('img').src;
-      const name = card.querySelector('.person-name').value;
-      const rel = card.querySelector('.person-rel').value;
-      pageData.persons.push({ img, name, rel });
-    });
-
-    document.querySelectorAll('#keepsake-grid .card-item').forEach(card => {
-      const img = card.querySelector('img').src;
-      const name = card.querySelector('.keepsake-name').value;
-      const desc = card.querySelector('.keepsake-desc').value;
-      pageData.keepsakes.push({ img, name, desc });
-    });
-
-    document.querySelectorAll('#outfit-grid .card-item').forEach(card => {
-      const img = card.querySelector('img').src;
-      const val = card.querySelector('input[type="text"]').value;
-      pageData.outfits.push({ img, val });
-    });
-
-    if (res) {
-      if (!res.node.creatorId) res.node.creatorId = currentUser;
-      res.node.data = pageData;
-      if (pageData.name) res.node.name = pageData.name;
-    }
-
-    saveToLocalStorage();
-    saveSharedFoldersToStorage();
-    renderTree();
-    if (!silent) showNotification("當前頁面已保存！", "success");
-  }
-
-  function loadPageData(pageId) {
-    const res = findNodeAndParent(pageId);
-    if (!res || !res.node.data) { resetForm(); return; }
-
-    if (!res.node.creatorId) {
-      res.node.creatorId = currentUser;
-    }
-
-    const isNonCreator = res.node.type === 'page' && res.node.creatorId !== currentUser;
-
-    const d = res.node.data;
-    document.getElementById('field-name').value = d.name || '';
-    document.getElementById('field-alias').value = d.alias || '';
-    document.getElementById('field-identity').value = d.identity || '';
-    document.getElementById('field-ability').value = d.ability || '';
-    document.getElementById('field-age').value = d.age || '';
-    document.getElementById('field-race').value = d.race || '';
-    document.getElementById('field-personality').value = d.personality || '';
-    document.getElementById('field-stat').value = d.stat || '';
-    document.getElementById('field-like').value = d.like || '';
-    document.getElementById('field-dislike').value = d.dislike || '';
-    document.getElementById('field-keywords').value = d.keywords || '';
-
-    if (d.avatar1 || d.avatar) setImgSrc('avatar1', d.avatar1 || d.avatar);
-    if (d.avatar2) setImgSrc('avatar2', d.avatar2);
-
-    timelineData = d.timeline || {};
-    majorEvents = d.majorEvents || [];
-
-    const maxLimit = d.maxLimit || 100;
-    document.getElementById('maxLimitInput').value = maxLimit;
-    updateSliderMax(maxLimit);
-
-    updateMaxProgressTag();
-    jumpToTimeline(0);
-
-    document.getElementById('person-grid').innerHTML = '';
-    document.getElementById('keepsake-grid').innerHTML = '';
-    document.getElementById('outfit-grid').innerHTML = '';
-    personCount = 0; keepsakeCount = 0; outfitCount = 0;
-
-    if (d.persons && d.persons.length) {
-      d.persons.forEach(p => addPersonCard(p.img, p.name || p.val || "", p.rel || ""));
-    } else { for(let i=0; i<3; i++) addPersonCard(); }
-
-    if (d.keepsakes && d.keepsakes.length) {
-      d.keepsakes.forEach(k => addKeepsakeCard(k.img, k.name || "", k.desc || ""));
-    } else { for(let i=0; i<3; i++) addKeepsakeCard(); }
-
-    if (d.outfits && d.outfits.length) {
-      d.outfits.forEach(o => addOutfitCard(o.img, o.val));
-    } else { for(let i=0; i<3; i++) addOutfitCard(); }
-
-    applyReadOnlyMode(isNonCreator);
-    renderEvents();
-
-    if (isNonCreator) {
-      showNotification("【唯讀模式】此資料頁由其他使用者創作，您無法修改或刪除。", "warning");
-    }
-  }
-
-  function resetForm() {
-    document.getElementById('ocForm').reset();
-    document.getElementById('person-grid').innerHTML = '';
-    document.getElementById('keepsake-grid').innerHTML = '';
-    document.getElementById('outfit-grid').innerHTML = '';
-    personCount = 0; keepsakeCount = 0; outfitCount = 0;
-    majorEvents = [];
-    applyReadOnlyMode(false);
-    renderEvents();
-    for(let i=0; i<3; i++) { addPersonCard(); addKeepsakeCard(); addOutfitCard(); }
-  }
-
-  /* ---------------- 動態卡片 ---------------- */
-  function addPersonCard(imgSrc = "", nameVal = "", relVal = "") {
-    personCount++; const id = `p${personCount}`;
-    const cardHtml = `
-      <div class="card-item" id="${id}-card">
-        ${personCount > 1 ? `<button type="button" class="delete-card-btn edit-only-btn" onclick="document.getElementById('${id}-card').remove()" style="${isCurrentPageReadOnly ? 'display:none' : ''}">✕</button>` : ''}
-        <div class="image-uploader-wrapper">
-          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
-            <img id="${id}-preview" src="${imgSrc}" style="${imgSrc ? 'display:block' : 'display:none'}">
-            <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 上傳照片</span>
-          </div>
-          <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視/縮放</button>
-            <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('${id}')" style="${isCurrentPageReadOnly ? 'display:none' : ''}">🔄 更換</button>
-          </div>
+  /* ---------------- 動態卡片與圖片上傳 ---------------- */
+  function addPersonCard(data = {}) {
+    personCount++;
+    const id = personCount;
+    const container = document.getElementById('person-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.id = `person-card-${id}`;
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove()">✕</button>
+      <input type="text" placeholder="姓名/稱呼" class="p-name" value="${data.name || ''}">
+      <input type="text" placeholder="關係" class="p-rel" value="${data.rel || ''}">
+      <div class="image-uploader-wrapper">
+        <div class="image-uploader" onclick="triggerInitialUpload('person-${id}')">
+          <img id="person-${id}-preview" src="${data.img || ''}" style="${data.img ? '' : 'display:none;'}">
+          <span id="person-${id}-text" style="${data.img ? 'display:none;' : ''}">📷 上傳照片</span>
         </div>
-        <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" class="person-name" placeholder="名字" value="${nameVal}" ${isCurrentPageReadOnly ? 'disabled' : ''}>
-        <input type="text" class="person-rel" placeholder="關係" value="${relVal}" ${isCurrentPageReadOnly ? 'disabled' : ''}>
-      </div>`;
-    document.getElementById('person-grid').insertAdjacentHTML('beforeend', cardHtml);
-  }
-
-  function addKeepsakeCard(imgSrc = "", nameVal = "", descVal = "") {
-    keepsakeCount++; const id = `k${keepsakeCount}`;
-    const cardHtml = `
-      <div class="card-item" id="${id}-card">
-        ${keepsakeCount > 1 ? `<button type="button" class="delete-card-btn edit-only-btn" onclick="document.getElementById('${id}-card').remove()" style="${isCurrentPageReadOnly ? 'display:none' : ''}">✕</button>` : ''}
-        <div class="image-uploader-wrapper">
-          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
-            <img id="${id}-preview" src="${imgSrc}" style="${imgSrc ? 'display:block' : 'display:none'}">
-            <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 上傳信物照片</span>
-          </div>
-          <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視/縮放</button>
-            <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('${id}')" style="${isCurrentPageReadOnly ? 'display:none' : ''}">🔄 更換</button>
-          </div>
+        <div class="image-overlay" id="person-${id}-overlay" style="${data.img ? '' : 'display:none;'}">
+          <button type="button" class="overlay-btn" onclick="openModalById('person-${id}-preview')">🔍 檢視/縮放</button>
+          <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('person-${id}')">🔄 更換</button>
         </div>
-        <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" class="keepsake-name" placeholder="信物名稱" value="${nameVal}" ${isCurrentPageReadOnly ? 'disabled' : ''}>
-        <input type="text" class="keepsake-desc" placeholder="信物說明 / 意義" value="${descVal}" ${isCurrentPageReadOnly ? 'disabled' : ''}>
-      </div>`;
-    document.getElementById('keepsake-grid').insertAdjacentHTML('beforeend', cardHtml);
+      </div>
+      <input type="file" id="person-${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'person-${id}')">
+      <input type="text" placeholder="補充說明" class="p-note" value="${data.note || ''}">
+    `;
+    container.appendChild(card);
   }
 
-  function addOutfitCard(imgSrc = "", val = "") {
-    outfitCount++; const id = `c${outfitCount}`;
-    const cardHtml = `
-      <div class="card-item" id="${id}-card">
-        ${outfitCount > 1 ? `<button type="button" class="delete-card-btn edit-only-btn" onclick="document.getElementById('${id}-card').remove()" style="${isCurrentPageReadOnly ? 'display:none' : ''}">✕</button>` : ''}
-        <div class="image-uploader-wrapper">
-          <div class="image-uploader" onclick="triggerInitialUpload('${id}')">
-            <img id="${id}-preview" src="${imgSrc}" style="${imgSrc ? 'display:block' : 'display:none'}">
-            <span id="${id}-text" style="${imgSrc ? 'display:none' : 'display:block'}">📷 套裝 ${outfitCount}</span>
-          </div>
-          <div class="image-overlay" id="${id}-overlay" style="${imgSrc ? 'display:flex' : 'display:none'}">
-            <button type="button" class="overlay-btn" onclick="openModalById('${id}-preview')">🔍 檢視/縮放</button>
-            <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('${id}')" style="${isCurrentPageReadOnly ? 'display:none' : ''}">🔄 更換</button>
-          </div>
+  function addKeepsakeCard(data = {}) {
+    keepsakeCount++;
+    const id = keepsakeCount;
+    const container = document.getElementById('keepsake-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.id = `keepsake-card-${id}`;
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove()">✕</button>
+      <input type="text" placeholder="信物名稱" class="k-name" value="${data.name || ''}">
+      <div class="image-uploader-wrapper">
+        <div class="image-uploader" onclick="triggerInitialUpload('keepsake-${id}')">
+          <img id="keepsake-${id}-preview" src="${data.img || ''}" style="${data.img ? '' : 'display:none;'}">
+          <span id="keepsake-${id}-text" style="${data.img ? 'display:none;' : ''}">📷 上傳照片</span>
         </div>
-        <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" placeholder="服裝描述" value="${val}" ${isCurrentPageReadOnly ? 'disabled' : ''}>
-      </div>`;
-    document.getElementById('outfit-grid').insertAdjacentHTML('beforeend', cardHtml);
+        <div class="image-overlay" id="keepsake-${id}-overlay" style="${data.img ? '' : 'display:none;'}">
+          <button type="button" class="overlay-btn" onclick="openModalById('keepsake-${id}-preview')">🔍 檢視/縮放</button>
+          <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('keepsake-${id}')">🔄 更換</button>
+        </div>
+      </div>
+      <input type="file" id="keepsake-${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'keepsake-${id}')">
+      <input type="text" placeholder="來源/意義說明" class="k-note" value="${data.note || ''}">
+    `;
+    container.appendChild(card);
   }
 
-  /* ---------------- 匯出 PDF / PNG ---------------- */
-  function exportToPNG() {
-    showNotification("正在產生角色卡 PNG 圖片...", "info");
-    const card = document.getElementById('cardContainer');
-    card.classList.add('export-readonly-mode');
-
-    html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
-      const link = document.createElement('a');
-      const name = document.getElementById('field-name').value.trim() || "OC角色卡";
-      link.download = `${name}_角色卡.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      showNotification("PNG 圖片匯出成功！", "success");
-    }).catch(() => {
-      showNotification("匯出 PNG 失敗，請重試", "danger");
-    }).finally(() => {
-      card.classList.remove('export-readonly-mode');
-    });
+  function addOutfitCard(data = {}) {
+    outfitCount++;
+    const id = outfitCount;
+    const container = document.getElementById('outfit-grid');
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    card.id = `outfit-card-${id}`;
+    card.innerHTML = `
+      <button type="button" class="delete-card-btn edit-only-btn" onclick="this.parentElement.remove()">✕</button>
+      <input type="text" placeholder="穿搭風格/名稱" class="o-name" value="${data.name || ''}">
+      <div class="image-uploader-wrapper">
+        <div class="image-uploader" onclick="triggerInitialUpload('outfit-${id}')">
+          <img id="outfit-${id}-preview" src="${data.img || ''}" style="${data.img ? '' : 'display:none;'}">
+          <span id="outfit-${id}-text" style="${data.img ? 'display:none;' : ''}">📷 上傳立繪照片</span>
+        </div>
+        <div class="image-overlay" id="outfit-${id}-overlay" style="${data.img ? '' : 'display:none;'}">
+          <button type="button" class="overlay-btn" onclick="openModalById('outfit-${id}-preview')">🔍 檢視/縮放</button>
+          <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('outfit-${id}')">🔄 更換</button>
+        </div>
+      </div>
+      <input type="file" id="outfit-${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'outfit-${id}')">
+      <input type="text" placeholder="場合/細節說明" class="o-note" value="${data.note || ''}">
+    `;
+    container.appendChild(card);
   }
 
-  function exportToPDF() {
-    showNotification("正在產生角色卡 PDF 檔案...", "info");
-    const card = document.getElementById('cardContainer');
-    card.classList.add('export-readonly-mode');
-
-    html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      const name = document.getElementById('field-name').value.trim() || "OC角色卡";
-      pdf.save(`${name}_角色卡.pdf`);
-      showNotification("PDF 檔案匯出成功！", "success");
-    }).catch(() => {
-      showNotification("匯出 PDF 失敗，請重試", "danger");
-    }).finally(() => {
-      card.classList.remove('export-readonly-mode');
-    });
+  function triggerInitialUpload(prefix) {
+    const img = document.getElementById(`${prefix}-preview`);
+    if (!img.src || img.style.display === 'none') {
+      document.getElementById(`${prefix}-input`).click();
+    }
   }
 
-  /* ---------------- 本地備份與 JSON 匯出匯入 ---------------- */
-  function exportDataJson() {
-    const exportBundle = { appData, accountsData, sharedFoldersData, votesData, groupsData, chatsData };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportBundle));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `OC_Backup_${new Date().toISOString().slice(0,10)}.json`);
-    dlAnchorElem.click();
+  function triggerUpload(prefix) {
+    document.getElementById(`${prefix}-input`).click();
   }
 
-  function importDataJson(input) {
+  function uploadImageBase64(input, prefix) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
-        try {
-          const bundle = JSON.parse(e.target.result);
-          if (bundle.appData) {
-            appData = bundle.appData;
-            if (bundle.accountsData) accountsData = bundle.accountsData;
-            if (bundle.sharedFoldersData) sharedFoldersData = bundle.sharedFoldersData;
-            if (bundle.votesData) votesData = bundle.votesData;
-            if (bundle.groupsData) groupsData = bundle.groupsData;
-            if (bundle.chatsData) chatsData = bundle.chatsData;
-          } else {
-            appData = bundle;
-          }
-          saveToLocalStorage();
-          saveAccountsToStorage();
-          saveSharedFoldersToStorage();
-          saveVotesToStorage();
-          saveGroupsAndChatsToStorage();
-          renderTree();
-          renderFriendsAndGroups();
-          updateInboxBadge();
-          if (appData.tree.length > 0) {
-            const firstPage = findFirstPage(appData.tree);
-            if (firstPage) switchPage(firstPage.id);
-          }
-          showNotification("資料檔匯入成功！", "success");
-        } catch(err) {
-          showNotification("格式錯誤，無法讀取檔案！", "danger");
-        }
+        const preview = document.getElementById(`${prefix}-preview`);
+        const text = document.getElementById(`${prefix}-text`);
+        const overlay = document.getElementById(`${prefix}-overlay`);
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        if (text) text.style.display = 'none';
+        if (overlay) overlay.style.display = 'flex';
       };
-      reader.readAsText(input.files[0]);
+      reader.readAsDataURL(input.files[0]);
     }
   }
 
-  function saveToLocalStorage() {
-    localStorage.setItem(`oc_app_data_${currentUser}`, JSON.stringify(appData));
-    localStorage.setItem('oc_sync_ts', Date.now().toString());
-  }
+  /* ---------------- 圖片檢視與縮放 ---------------- */
+  let currentScale = 1;
+  let isPanning = false;
+  let startX = 0, startY = 0, translateX = 0, translateY = 0;
 
-  function loadFromLocalStorage() {
-    const rawSF = localStorage.getItem('oc_shared_folders_v2');
-    if (rawSF) sharedFoldersData = JSON.parse(rawSF);
-
-    const local = localStorage.getItem(`oc_app_data_${currentUser}`);
-    if (local) {
-      appData = JSON.parse(local);
-    } else {
-      appData = {
-        tree: [
-          {
-            id: "f_1",
-            name: "預設資料夾",
-            type: "folder",
-            collapsed: false,
-            children: [
-              { id: "p_1", name: "未命名 OC", type: "page", creatorId: currentUser, data: {} }
-            ]
-          }
-        ]
-      };
-    }
-    const firstPage = findFirstPage(appData.tree);
-    if (firstPage) activePageId = firstPage.id;
-  }
-
-  /* ---------------- Modal 縮放與拖拽手勢 ---------------- */
-  let currentScale = 1, translateX = 0, translateY = 0, isDragging = false, startX = 0, startY = 0;
   function openModalById(imgId) {
     const src = document.getElementById(imgId).src;
     if (src) {
@@ -2820,7 +2350,7 @@
   }
 
   function adjustZoom(delta) {
-    currentScale = Math.max(0.2, Math.min(5, currentScale + delta));
+    currentScale = Math.max(0.5, Math.min(5, currentScale + delta));
     updateTransform();
   }
 
@@ -2831,42 +2361,237 @@
 
   function updateTransform() {
     const container = document.getElementById('modalImgContainer');
-    if (container) {
-      container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
-    }
+    container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
   }
 
   function setupZoomAndPan() {
     const viewport = document.getElementById('modalViewport');
-    if (!viewport) return;
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      adjustZoom(e.deltaY < 0 ? 0.2 : -0.2);
+    });
 
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.tagName === 'BUTTON') return;
-      isDragging = true;
+      isPanning = true;
       startX = e.clientX - translateX;
       startY = e.clientY - translateY;
       viewport.style.cursor = 'grabbing';
     });
 
-    document.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
       translateX = e.clientX - startX;
       translateY = e.clientY - startY;
       updateTransform();
     });
 
-    document.addEventListener('mouseup', () => {
-      if (isDragging) {
-        isDragging = false;
-        viewport.style.cursor = 'grab';
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+      viewport.style.cursor = 'grab';
+    });
+  }
+
+  /* ---------------- 資料保存與載入 ---------------- */
+  function loadFromLocalStorage() {
+    const rawData = localStorage.getItem(`oc_app_data_${currentUser}`);
+    if (rawData) {
+      appData = JSON.parse(rawData);
+    } else {
+      appData = {
+        tree: [{
+          id: "root_folder",
+          name: "我的第一個角色夾",
+          type: "folder",
+          collapsed: false,
+          children: [{ id: "p_default", name: "主角 OC 角色卡", type: "page", creatorId: currentUser, data: {} }]
+        }]
+      };
+      saveToLocalStorage();
+    }
+    const firstPage = findFirstPage(appData.tree);
+    if (firstPage) activePageId = firstPage.id;
+  }
+
+  function saveToLocalStorage() {
+    localStorage.setItem(`oc_app_data_${currentUser}`, JSON.stringify(appData));
+    localStorage.setItem('oc_sync_ts', Date.now().toString());
+  }
+
+  function loadPageData(pageId) {
+    const res = findNodeAndParent(pageId);
+    if (!res || res.node.type !== 'page') return;
+
+    const data = res.node.data || {};
+
+    const fields = ['name', 'alias', 'identity', 'ability', 'age', 'race', 'personality', 'stat', 'like', 'dislike', 'keywords'];
+    fields.forEach(f => {
+      document.getElementById(`field-${f}`).value = data[f] || '';
+    });
+
+    // 載入代表色
+    const colorVal = data.color || '#007bff';
+    document.getElementById('field-color').value = colorVal;
+    document.getElementById('color-picker-box').style.background = colorVal;
+
+    ['avatar1', 'avatar2'].forEach(av => {
+      const preview = document.getElementById(`${av}-preview`);
+      const text = document.getElementById(`${av}-text`);
+      const overlay = document.getElementById(`${av}-overlay`);
+      if (data[av]) {
+        preview.src = data[av]; preview.style.display = 'block';
+        if (text) text.style.display = 'none';
+        if (overlay) overlay.style.display = 'flex';
+      } else {
+        preview.src = ''; preview.style.display = 'none';
+        if (text) text.style.display = 'block';
+        if (overlay) overlay.style.display = 'none';
       }
     });
 
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.15 : -0.15;
-      adjustZoom(delta);
-    }, { passive: false });
+    document.getElementById('person-grid').innerHTML = ''; personCount = 0;
+    if (data.persons) data.persons.forEach(p => addPersonCard(p));
+
+    document.getElementById('keepsake-grid').innerHTML = ''; keepsakeCount = 0;
+    if (data.keepsakes) data.keepsakes.forEach(k => addKeepsakeCard(k));
+
+    document.getElementById('outfit-grid').innerHTML = ''; outfitCount = 0;
+    if (data.outfits) data.outfits.forEach(o => addOutfitCard(o));
+
+    timelineData = data.timelineData || {};
+    majorEvents = data.majorEvents || [];
+
+    updateSliderMax(data.maxLimit || 100);
+    jumpToTimeline(0);
+    renderMajorEvents();
+    updateMaxProgressTag();
+  }
+
+  function saveCurrentPageData(silent = false) {
+    if (!activePageId) return;
+    const res = findNodeAndParent(activePageId);
+    if (!res) return;
+
+    const data = {};
+    const fields = ['name', 'alias', 'identity', 'ability', 'age', 'race', 'personality', 'stat', 'like', 'dislike', 'keywords'];
+    fields.forEach(f => { data[f] = document.getElementById(`field-${f}`).value; });
+
+    // 保存代表色
+    data.color = document.getElementById('field-color').value || '#007bff';
+
+    ['avatar1', 'avatar2'].forEach(av => {
+      const img = document.getElementById(`${av}-preview`);
+      if (img.style.display !== 'none') data[av] = img.src;
+    });
+
+    data.persons = [];
+    document.querySelectorAll('#person-grid .card-item').forEach(card => {
+      const img = card.querySelector('img');
+      data.persons.push({
+        name: card.querySelector('.p-name').value,
+        rel: card.querySelector('.p-rel').value,
+        img: img.style.display !== 'none' ? img.src : '',
+        note: card.querySelector('.p-note').value
+      });
+    });
+
+    data.keepsakes = [];
+    document.querySelectorAll('#keepsake-grid .card-item').forEach(card => {
+      const img = card.querySelector('img');
+      data.keepsakes.push({
+        name: card.querySelector('.k-name').value,
+        img: img.style.display !== 'none' ? img.src : '',
+        note: card.querySelector('.k-note').value
+      });
+    });
+
+    data.outfits = [];
+    document.querySelectorAll('#outfit-grid .card-item').forEach(card => {
+      const img = card.querySelector('img');
+      data.outfits.push({
+        name: card.querySelector('.o-name').value,
+        img: img.style.display !== 'none' ? img.src : '',
+        note: card.querySelector('.o-note').value
+      });
+    });
+
+    data.timelineData = timelineData;
+    data.majorEvents = majorEvents;
+    data.maxLimit = document.getElementById('timelineSlider').max;
+
+    res.node.data = data;
+    if (data.name) res.node.name = data.name;
+
+    if (res.isShared) saveSharedFoldersToStorage();
+    else saveToLocalStorage();
+
+    renderTree();
+    if (!silent) showNotification("資料頁已成功保存！", 'success');
+  }
+
+  /* ---------------- 匯出與匯入 (PNG / PDF / JSON) ---------------- */
+  function exportDataJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `OC_Backup_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function importDataJson(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          appData = JSON.parse(e.target.result);
+          saveToLocalStorage();
+          renderTree();
+          const firstPage = findFirstPage(appData.tree);
+          if (firstPage) switchPage(firstPage.id);
+          showNotification("JSON 備份資料匯入成功！", 'success');
+        } catch(err) {
+          alert("無效的 JSON 檔案！");
+        }
+      };
+      reader.readAsText(input.files[0]);
+    }
+  }
+
+  function exportToPNG() {
+    saveCurrentPageData(true);
+    const element = document.getElementById('cardContainer');
+    document.body.classList.add('export-readonly-mode');
+    
+    html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `${document.getElementById('field-name').value || 'OC角色卡'}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      document.body.classList.remove('export-readonly-mode');
+      showNotification("已順利匯出高清 PNG 圖片！", 'success');
+    });
+  }
+
+  function exportToPDF() {
+    saveCurrentPageData(true);
+    const element = document.getElementById('cardContainer');
+    document.body.classList.add('export-readonly-mode');
+
+    html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${document.getElementById('field-name').value || 'OC角色卡'}.pdf`);
+      document.body.classList.remove('export-readonly-mode');
+      showNotification("已順利匯出 PDF 文件！", 'success');
+    });
   }
 </script>
 </body>

@@ -82,7 +82,7 @@
     }
     .sidebar-title { font-weight: bold; font-size: 1em; }
 
-    /* 賬號管理控制欄 */
+    /* 賬號管理控制欄與信箱/好友入口 */
     .account-bar {
       padding: 10px; background: #243342; border-bottom: 1px solid #34495e;
       display: flex; flex-direction: column; gap: 6px; font-size: 0.85em;
@@ -95,7 +95,8 @@
     }
     .account-btn-sm {
       background: #3498db; color: white; border: none; border-radius: 4px;
-      padding: 3px 6px; cursor: pointer; font-size: 0.8em; white-space: nowrap;
+      padding: 3px 8px; cursor: pointer; font-size: 0.8em; white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
     }
     .account-btn-sm.danger { background: #e74c3c; }
 
@@ -133,7 +134,12 @@
 
     .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85em; }
     .shared-code-tag { font-size: 0.75em; color: #f1c40f; margin-left: 4px; }
-    .shared-count-tag { font-size: 0.75em; color: #2ecc71; margin-left: 2px; }
+    .shared-count-tag {
+      font-size: 0.75em; color: #2ecc71; margin-left: 4px; background: rgba(46,204,113,0.15);
+      padding: 1px 5px; border-radius: 10px; border: 1px solid rgba(46,204,113,0.3);
+      cursor: pointer; text-decoration: underline;
+    }
+    .shared-count-tag:hover { color: #fff; background: #2ecc71; }
 
     .item-btns { display: flex; gap: 2px; }
     .item-btns button {
@@ -175,6 +181,38 @@
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
     }
 
+    /* 大頭照/立繪欄位：圖片自動適配填滿空間，不拉伸，保留 1.25cm 邊緣空隙 */
+    .avatar-right {
+      padding: 1.25cm !important;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .avatar-container-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25cm;
+      flex: 1;
+      height: 100%;
+    }
+
+    .avatar-right .image-uploader-wrapper {
+      flex: 1;
+      min-height: 160px;
+      position: relative;
+    }
+
+    .avatar-right .image-uploader {
+      width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; background: #fff; overflow: hidden; position: relative;
+    }
+
+    .avatar-right .image-uploader img {
+      width: 100%; height: 100%; object-fit: contain; /* 自動適配，填滿且不拉伸 */
+    }
+
     .form-group { display: flex; align-items: center; margin-bottom: 8px; }
     .form-group.vertical { flex-direction: column; align-items: flex-start; gap: 4px; }
     .form-group label { width: 100px; font-weight: bold; font-size: 0.9em; flex-shrink: 0; }
@@ -183,7 +221,6 @@
       border-radius: 6px; font-size: 0.95em; background: #fff;
     }
 
-    /* 圖片上傳區 */
     .image-uploader-wrapper { position: relative; width: 100%; height: 140px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
@@ -278,7 +315,7 @@
       background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center;
     }
     .dialog-card {
-      background: #fff; border-radius: 10px; padding: 20px; width: 90%; max-width: 420px;
+      background: #fff; border-radius: 10px; padding: 20px; width: 90%; max-width: 440px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #333;
     }
     .dialog-card h3 { margin-top: 0; margin-bottom: 12px; font-size: 1.1em; color: #2c3e50; }
@@ -298,7 +335,7 @@
       background: #95a5a6; cursor: not-allowed;
     }
 
-    /* ---------------- 匯出唯讀模式樣式 (純淨版面無按鈕) ---------------- */
+    /* ---------------- 匯出唯讀模式樣式 ---------------- */
     .export-readonly-mode .add-btn,
     .export-readonly-mode .delete-card-btn,
     .export-readonly-mode .image-overlay,
@@ -334,7 +371,7 @@
 </head>
 <body>
 
-<!-- 通知容器 (帶關閉按鈕) -->
+<!-- 通知容器 -->
 <div class="notification-container" id="notification-container"></div>
 
 <button type="button" class="toggle-sidebar-btn" id="toggleSidebarBtn" onclick="toggleSidebar()">☰ 選單</button>
@@ -347,15 +384,28 @@
     <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
   </div>
 
-  <!-- 賬號管理區 -->
+  <!-- 賬號管理與信箱/好友控制欄 -->
   <div class="account-bar">
     <div class="account-info">
       <span>👤 當前賬號: <strong id="current-user-display">未登入</strong></span>
-      <button class="account-btn-sm danger" onclick="confirmDeleteCurrentAccount()">刪除賬號</button>
+      <div style="display:flex; gap:4px; align-items:center;">
+        <button class="account-btn-sm" style="background:#8e44ad;" onclick="openInboxModal()">
+          ✉️ 信箱 <span id="inbox-badge" style="background:#e74c3c; color:white; border-radius:10px; padding:1px 6px; font-size:0.75em; display:none;">0</span>
+        </button>
+        <button class="account-btn-sm danger" onclick="confirmDeleteCurrentAccount()">刪除</button>
+      </div>
     </div>
+    
     <div class="account-select-wrap">
       <select id="linked-account-select" onchange="switchAccount(this.value)"></select>
+      <button class="account-btn-sm" style="background:#27ae60;" onclick="openRegisterModal()">+ 註冊</button>
       <button class="account-btn-sm" onclick="openAccountModal()">+ 關聯/切換</button>
+    </div>
+
+    <!-- 好友申請輸入框 -->
+    <div style="display:flex; gap:4px; margin-top:4px;">
+      <input type="text" id="add-friend-input" placeholder="輸入名字申請好友..." style="flex:1; padding:3px 6px; border-radius:4px; border:1px solid #4e6d8c; background:#34495e; color:#fff; font-size:0.8em;">
+      <button class="account-btn-sm" style="background:#e67e22;" onclick="sendFriendRequest()">+ 加好友</button>
     </div>
   </div>
 
@@ -391,35 +441,36 @@
           <div class="form-group"><label>關鍵詞：</label><input type="text" id="field-keywords"></div>
         </div>
 
-        <!-- 大頭照 (上下兩個上傳方格) -->
+        <!-- 大頭照 / 立繪（保留1.25cm邊緣空隙，圖片自動縮放適配不拉伸） -->
         <div class="section-box avatar-right">
           <div class="section-title">大頭照 / 立繪</div>
-          
-          <!-- 大頭照 1 -->
-          <div class="image-uploader-wrapper" style="margin-bottom: 10px;">
-            <div class="image-uploader" onclick="triggerInitialUpload('avatar1')">
-              <img id="avatar1-preview" src="" style="display:none;">
-              <span id="avatar1-text">📷 上傳大頭照 1</span>
+          <div class="avatar-container-inner">
+            <!-- 大頭照 1 -->
+            <div class="image-uploader-wrapper">
+              <div class="image-uploader" onclick="triggerInitialUpload('avatar1')">
+                <img id="avatar1-preview" src="" style="display:none;">
+                <span id="avatar1-text">📷 上傳大頭照 1</span>
+              </div>
+              <div class="image-overlay" id="avatar1-overlay" style="display:none;">
+                <button type="button" class="overlay-btn" onclick="openModalById('avatar1-preview')">🔍 檢視/縮放</button>
+                <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
+              </div>
             </div>
-            <div class="image-overlay" id="avatar1-overlay" style="display:none;">
-              <button type="button" class="overlay-btn" onclick="openModalById('avatar1-preview')">🔍 檢視/縮放</button>
-              <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
-            </div>
-          </div>
-          <input type="file" id="avatar1-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar1')">
+            <input type="file" id="avatar1-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar1')">
 
-          <!-- 大頭照 2 -->
-          <div class="image-uploader-wrapper">
-            <div class="image-uploader" onclick="triggerInitialUpload('avatar2')">
-              <img id="avatar2-preview" src="" style="display:none;">
-              <span id="avatar2-text">📷 上傳大頭照 2</span>
+            <!-- 大頭照 2 -->
+            <div class="image-uploader-wrapper">
+              <div class="image-uploader" onclick="triggerInitialUpload('avatar2')">
+                <img id="avatar2-preview" src="" style="display:none;">
+                <span id="avatar2-text">📷 上傳大頭照 2</span>
+              </div>
+              <div class="image-overlay" id="avatar2-overlay" style="display:none;">
+                <button type="button" class="overlay-btn" onclick="openModalById('avatar2-preview')">🔍 檢視/縮放</button>
+                <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
+              </div>
             </div>
-            <div class="image-overlay" id="avatar2-overlay" style="display:none;">
-              <button type="button" class="overlay-btn" onclick="openModalById('avatar2-preview')">🔍 檢視/縮放</button>
-              <button type="button" class="overlay-btn edit-only-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
-            </div>
+            <input type="file" id="avatar2-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar2')">
           </div>
-          <input type="file" id="avatar2-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar2')">
         </div>
       </div>
 
@@ -451,20 +502,17 @@
           </div>
         </div>
 
-        <!-- 跳轉與上限輸入 -->
         <div class="timeline-control-bar">
           <span>跳轉至 <input type="number" id="jumpInput" value="0" min="0" onchange="jumpToTimeline(this.value)"> 歲時</span>
           <span style="margin-left: auto;">設定上限歲數：<input type="number" id="maxLimitInput" value="100" min="1" onchange="updateSliderMax(this.value)"></span>
         </div>
 
-        <!-- 動態滑桿 -->
         <div style="display:flex; align-items:center; gap:10px;">
           <span>0</span>
           <input type="range" id="timelineSlider" style="flex:1;" min="0" max="100" value="0" oninput="jumpToTimeline(this.value)">
           <span id="sliderMaxLabel">100</span>
         </div>
 
-        <!-- 重大事件快捷鍵 -->
         <div class="events-bar">
           <div class="events-title">
             <span>重大事件節點</span>
@@ -492,7 +540,7 @@
   </div>
 </div>
 
-<!-- 高清圖片 Modal -->
+<!-- 圖片檢視 Modal -->
 <div id="imageModal" class="modal">
   <div class="modal-viewport" id="modalViewport">
     <div class="modal-img-container" id="modalImgContainer">
@@ -507,7 +555,7 @@
   </div>
 </div>
 
-<!-- 重大事件編輯 Modal -->
+<!-- 重大事件 Modal -->
 <div class="dialog-overlay" id="eventDialogModal">
   <div class="dialog-card">
     <h3 id="event-dialog-title">新增/修改重大事件</h3>
@@ -519,6 +567,19 @@
     <div class="dialog-btns">
       <button class="btn-cancel" onclick="closeEventModal()">取消</button>
       <button class="btn-save" onclick="saveEventFromModal()">保存事件</button>
+    </div>
+  </div>
+</div>
+
+<!-- 註冊新賬號 Modal -->
+<div class="dialog-overlay" id="registerDialogModal">
+  <div class="dialog-card">
+    <h3>註冊新賬號</h3>
+    <div class="form-group"><label>賬號名稱：</label><input type="text" id="reg-input-name" placeholder="請輸入使用者名稱"></div>
+    <div class="form-group"><label>登入密碼：</label><input type="password" id="reg-input-pass" placeholder="設定密碼 (選填)"></div>
+    <div class="dialog-btns">
+      <button class="btn-cancel" onclick="closeRegisterModal()">取消</button>
+      <button class="btn-save" style="background:#27ae60;" onclick="submitRegisterAccount()">註冊並登入</button>
     </div>
   </div>
 </div>
@@ -537,6 +598,35 @@
   </div>
 </div>
 
+<!-- 信箱 Modal -->
+<div class="dialog-overlay" id="inboxDialogModal">
+  <div class="dialog-card" style="max-width: 520px; max-height: 80vh; display: flex; flex-direction: column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:12px;">
+      <h3 style="margin:0;">✉️ 我的信箱</h3>
+      <button class="btn-cancel" style="padding:2px 8px;" onclick="closeInboxModal()">✕</button>
+    </div>
+    <div id="inbox-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px;"></div>
+  </div>
+</div>
+
+<!-- 共享資料夾成員名單 Modal -->
+<div class="dialog-overlay" id="folderMembersModal">
+  <div class="dialog-card" style="max-width: 480px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:12px;">
+      <h3 style="margin:0;" id="members-modal-title">👥 成員名單</h3>
+      <button class="btn-cancel" style="padding:2px 8px;" onclick="closeFolderMembersModal()">✕</button>
+    </div>
+    <div style="margin-bottom:12px; background:#f0f4f8; padding:10px; border-radius:6px;">
+      <label style="font-size:0.85em; font-weight:bold; color:#2c3e50;">➕ 邀請新成員：</label>
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        <input type="text" id="invite-member-input" placeholder="輸入使用者暱稱/名稱..." style="flex:1; padding:6px; border:1px solid #ccc; border-radius:4px; font-size:0.9em;">
+        <button class="account-btn-sm" style="background:#27ae60; padding:6px 12px;" id="invite-member-btn">+ 發送邀請</button>
+      </div>
+    </div>
+    <div id="members-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto;"></div>
+  </div>
+</div>
+
 <!-- 加入共享資料夾 Modal -->
 <div class="dialog-overlay" id="joinSharedModal">
   <div class="dialog-card">
@@ -551,9 +641,10 @@
 
 <script>
   /* ---------------- 全局數據與狀態控制 ---------------- */
-  let currentUser = "DefaultUser";
+  let currentUser = "User_Default";
   let accountsData = {};
   let sharedFoldersData = {};
+  let votesData = {};
   let appData = { tree: [] };
 
   let activePageId = "";
@@ -565,21 +656,37 @@
   let currentProgress = 0;
   let lastSyncTimestamp = 0;
   let isCurrentPageReadOnly = false;
+  let currentMembersSfId = null;
 
   window.onload = function() {
     initSidebarResizer();
     initAccountSystem();
     loadFromLocalStorage();
+    loadVotesFromStorage();
     renderTree();
+    updateInboxBadge();
     if (activePageId) loadPageData(activePageId);
     setupZoomAndPan();
     setupRealtimeSync();
   };
 
+  /* ---------------- 輔助函式：尋找賬號與使用者名稱 ---------------- */
+  function findAccountByUsername(name) {
+    if (!name) return null;
+    const trimmed = name.trim();
+    for (let id in accountsData) {
+      if (accountsData[id].username === trimmed) return accountsData[id];
+    }
+    return null;
+  }
+
+  function getCurrentUsername() {
+    return accountsData[currentUser] ? accountsData[currentUser].username : currentUser;
+  }
+
   /* ---------------- 選單寬度動態調整 ---------------- */
   function initSidebarResizer() {
     const resizer = document.getElementById('sidebarResizer');
-    const sidebar = document.getElementById('sidebar');
     let isResizing = false;
 
     const savedWidth = localStorage.getItem('oc_sidebar_width');
@@ -587,7 +694,7 @@
       document.documentElement.style.setProperty('--sidebar-width', savedWidth + 'px');
     }
 
-    resizer.addEventListener('mousedown', (e) => {
+    resizer.addEventListener('mousedown', () => {
       isResizing = true;
       resizer.classList.add('resizing');
       document.body.style.cursor = 'col-resize';
@@ -629,14 +736,14 @@
     }, 5000);
   }
 
-  /* ---------------- 賬號與憑證互通管理 ---------------- */
+  /* ---------------- 賬號與憑證管理 ---------------- */
   function initAccountSystem() {
     const rawAcc = localStorage.getItem('oc_accounts_v2');
     if (rawAcc) {
       accountsData = JSON.parse(rawAcc);
     } else {
       accountsData = {
-        "User_Default": { id: "User_Default", username: "預設賬號", pass: "123456", linkedUserIds: ["User_Default"] }
+        "User_Default": { id: "User_Default", username: "預設賬號", pass: "123456", linkedUserIds: ["User_Default"], friends: [], inbox: [] }
       };
       saveAccountsToStorage();
     }
@@ -652,11 +759,11 @@
   }
 
   function updateAccountUI() {
-    document.getElementById('current-user-display').innerText = accountsData[currentUser] ? accountsData[currentUser].username : currentUser;
+    const currAcc = accountsData[currentUser];
+    document.getElementById('current-user-display').innerText = currAcc ? currAcc.username : currentUser;
     const select = document.getElementById('linked-account-select');
     select.innerHTML = '';
     
-    const currAcc = accountsData[currentUser];
     const linkedIds = (currAcc && currAcc.linkedUserIds) ? currAcc.linkedUserIds : [currentUser];
 
     linkedIds.forEach(accId => {
@@ -668,6 +775,39 @@
         select.appendChild(opt);
       }
     });
+    updateInboxBadge();
+  }
+
+  /* 註冊新賬號功能 */
+  function openRegisterModal() { document.getElementById('registerDialogModal').style.display = 'flex'; }
+  function closeRegisterModal() { document.getElementById('registerDialogModal').style.display = 'none'; }
+
+  function submitRegisterAccount() {
+    const name = document.getElementById('reg-input-name').value.trim();
+    const pass = document.getElementById('reg-input-pass').value.trim();
+    if (!name) return alert("請輸入賬號名稱！");
+
+    if (findAccountByUsername(name)) {
+      return alert("該賬號名稱已被使用，請更換一個名稱！");
+    }
+
+    const newId = "acc_" + Date.now();
+    accountsData[newId] = {
+      id: newId,
+      username: name,
+      pass: pass || "123456",
+      linkedUserIds: [newId],
+      friends: [],
+      inbox: []
+    };
+
+    currentUser = newId;
+    saveAccountsToStorage();
+    closeRegisterModal();
+    loadFromLocalStorage();
+    renderTree();
+    updateAccountUI();
+    showNotification(`註冊成功！已切換至新賬號 [${name}]`, 'success');
   }
 
   function openAccountModal() { document.getElementById('accountDialogModal').style.display = 'flex'; }
@@ -681,7 +821,7 @@
     let targetId = Object.keys(accountsData).find(id => accountsData[id].username === name);
     if (!targetId) {
       targetId = "acc_" + Date.now();
-      accountsData[targetId] = { id: targetId, username: name, pass: pass || "123456", linkedUserIds: [targetId] };
+      accountsData[targetId] = { id: targetId, username: name, pass: pass || "123456", linkedUserIds: [targetId], friends: [], inbox: [] };
     }
 
     const currentGroup = accountsData[currentUser].linkedUserIds || [currentUser];
@@ -739,6 +879,512 @@
     }
   }
 
+  /* ---------------- 好友系統 (提交好友申請) ---------------- */
+  function sendFriendRequest() {
+    const input = document.getElementById('add-friend-input');
+    const targetName = input.value.trim();
+    if (!targetName) return alert("請輸入要添加的好友名字！");
+
+    const currName = getCurrentUsername();
+    if (targetName === currName) return alert("不能新增自己為好友！");
+
+    const targetAcc = findAccountByUsername(targetName);
+    if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱是否正確。`);
+
+    const currAcc = accountsData[currentUser];
+    if (!currAcc.friends) currAcc.friends = [];
+    if (currAcc.friends.includes(targetName)) return alert(`【${targetName}】已經是您的好友了！`);
+
+    if (!targetAcc.inbox) targetAcc.inbox = [];
+    const existingReq = targetAcc.inbox.find(m => m.type === 'friend_request' && m.fromUser === currName && m.status === 'pending');
+    if (existingReq) return alert("已發送過好友申請，請勿重複提交！");
+
+    targetAcc.inbox.unshift({
+      id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+      type: "friend_request",
+      fromUser: currName,
+      timestamp: Date.now(),
+      status: "pending"
+    });
+
+    saveAccountsToStorage();
+    input.value = '';
+    showNotification(`已成功向【${targetName}】提交好友申請！`, 'success');
+  }
+
+  function acceptFriendRequest(msgId) {
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox) return;
+
+    const msg = currAcc.inbox.find(m => m.id === msgId);
+    if (!msg) return;
+
+    msg.status = 'accepted';
+    const friendName = msg.fromUser;
+
+    if (!currAcc.friends) currAcc.friends = [];
+    if (!currAcc.friends.includes(friendName)) currAcc.friends.push(friendName);
+
+    const friendAcc = findAccountByUsername(friendName);
+    if (friendAcc) {
+      if (!friendAcc.friends) friendAcc.friends = [];
+      if (!friendAcc.friends.includes(currAcc.username)) friendAcc.friends.push(currAcc.username);
+    }
+
+    saveAccountsToStorage();
+    showNotification(`已與【${friendName}】成為好友！`, 'success');
+    renderInboxUI();
+    updateInboxBadge();
+  }
+
+  function rejectFriendRequest(msgId) {
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox) return;
+
+    const msg = currAcc.inbox.find(m => m.id === msgId);
+    if (msg) msg.status = 'rejected';
+
+    saveAccountsToStorage();
+    showNotification("已拒絕該好友申請", "info");
+    renderInboxUI();
+    updateInboxBadge();
+  }
+
+  /* ---------------- 信箱與投票管理 ---------------- */
+  function openInboxModal() {
+    renderInboxUI();
+    document.getElementById('inboxDialogModal').style.display = 'flex';
+  }
+  function closeInboxModal() {
+    document.getElementById('inboxDialogModal').style.display = 'none';
+  }
+
+  function updateInboxBadge() {
+    const badge = document.getElementById('inbox-badge');
+    if (!badge) return;
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox) {
+      badge.style.display = 'none';
+      return;
+    }
+    const pendingCount = currAcc.inbox.filter(m => m.status === 'pending').length;
+    if (pendingCount > 0) {
+      badge.innerText = pendingCount;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function renderInboxUI() {
+    const container = document.getElementById('inbox-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox || currAcc.inbox.length === 0) {
+      container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">信箱內暫無訊息</div>';
+      return;
+    }
+
+    const currName = getCurrentUsername();
+
+    currAcc.inbox.forEach(msg => {
+      const item = document.createElement('div');
+      item.style.cssText = "background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; font-size:0.9em;";
+
+      const timeStr = new Date(msg.timestamp).toLocaleString();
+
+      if (msg.type === 'friend_request') {
+        item.innerHTML = `
+          <div>🤝 <strong>【${msg.fromUser}】</strong> 向您發送了好友申請 <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
+          <div style="display:flex; justify-content:flex-end; gap:6px;">
+            ${msg.status === 'pending' ? `
+              <button onclick="acceptFriendRequest('${msg.id}')" style="background:#27ae60; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【接受】</button>
+              <button onclick="rejectFriendRequest('${msg.id}')" style="background:#95a5a6; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【拒絕】</button>
+            ` : `<span style="color:#7f8c8d; font-size:0.85em;">已${msg.status === 'accepted' ? '接受' : '拒絕'}</span>`}
+          </div>
+        `;
+      } else if (msg.type === 'shared_folder_invite') {
+        item.innerHTML = `
+          <div>📁 <strong>【${msg.fromUser}】</strong> 邀請您加入共享資料夾 <strong>【${msg.folderName}】</strong> <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
+          <div style="display:flex; justify-content:flex-end; gap:6px;">
+            ${msg.status === 'pending' ? `
+              <button onclick="acceptFolderInvite('${msg.id}')" style="background:#27ae60; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【加入】</button>
+              <button onclick="rejectFolderInvite('${msg.id}')" style="background:#95a5a6; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【拒絕】</button>
+            ` : `<span style="color:#7f8c8d; font-size:0.85em;">已${msg.status === 'accepted' ? '加入' : '拒絕'}</span>`}
+          </div>
+        `;
+      } else if (msg.type === 'kick_vote' || msg.type === 'delete_folder_vote') {
+        const vote = votesData[msg.voteId];
+        const isKick = msg.type === 'kick_vote';
+        const sf = sharedFoldersData[msg.folderId];
+        const totalMembers = vote ? vote.totalMembersAtStart : (sf ? sf.members.length : 0);
+
+        let approveCount = 0, rejectCount = 0;
+        let userVoted = null;
+        if (vote && vote.votes) {
+          Object.entries(vote.votes).forEach(([u, v]) => {
+            if (v === 'approve') approveCount++;
+            if (v === 'reject') rejectCount++;
+            if (u === currName) userVoted = v;
+          });
+        }
+
+        const voteStatusText = vote ? vote.status : 'ended';
+
+        item.innerHTML = `
+          <div>🗳️ <strong>【${msg.fromUser}】</strong> 發起投票：${isKick ? `將成員【<strong>${msg.targetUser}</strong>】踢出共享資料夾` : '刪除共享資料夾'} <strong>【${msg.folderName}】</strong></div>
+          <div style="font-size:0.8em; color:#555; background:#fff; padding:6px; border-radius:4px; border:1px solid #eee;">
+            當前票數：<span style="color:#27ae60; font-weight:bold;">贊成 (${approveCount})</span> | <span style="color:#e74c3c; font-weight:bold;">反對 (${rejectCount})</span> / 總人數: ${totalMembers}
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
+            ${voteStatusText === 'active' ? (userVoted ? `<span style="color:#f39c12; font-size:0.85em;">您已投票：【${userVoted === 'approve' ? '贊成' : '反對'}】</span>` : `
+              <button onclick="castVote('${msg.voteId}', 'approve', '${msg.id}')" style="background:#2ecc71; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【贊成】</button>
+              <button onclick="castVote('${msg.voteId}', 'reject', '${msg.id}')" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【反對】</button>
+            `) : `<span style="color:#7f8c8d; font-size:0.85em;">投票已結束 (${voteStatusText === 'passed' ? '已通過' : '未通過'})</span>`}
+          </div>
+        `;
+      }
+
+      container.appendChild(item);
+    });
+  }
+
+  /* ---------------- 投票相關邏輯 ---------------- */
+  function loadVotesFromStorage() {
+    const rawVotes = localStorage.getItem('oc_votes_v2');
+    if (rawVotes) votesData = JSON.parse(rawVotes);
+  }
+
+  function saveVotesToStorage() {
+    localStorage.setItem('oc_votes_v2', JSON.stringify(votesData));
+    localStorage.setItem('oc_sync_ts', Date.now().toString());
+  }
+
+  function castVote(voteId, choice, msgId) {
+    const vote = votesData[voteId];
+    if (!vote || vote.status !== 'active') {
+      showNotification("該投票已結束或失效", "warning");
+      return;
+    }
+
+    const currName = getCurrentUsername();
+    vote.votes[currName] = choice;
+    saveVotesToStorage();
+
+    const currAcc = accountsData[currentUser];
+    if (currAcc && currAcc.inbox) {
+      const msg = currAcc.inbox.find(m => m.id === msgId || m.voteId === voteId);
+      if (msg) msg.status = 'voted';
+      saveAccountsToStorage();
+    }
+
+    checkVoteResult(voteId);
+    renderInboxUI();
+  }
+
+  function checkVoteResult(voteId) {
+    const vote = votesData[voteId];
+    if (!vote || vote.status !== 'active') return;
+
+    const sf = sharedFoldersData[vote.folderId];
+    if (!sf) {
+      vote.status = 'rejected';
+      saveVotesToStorage();
+      return;
+    }
+
+    const totalMembers = sf.members.length;
+    const votesObj = vote.votes || {};
+    let approveCount = 0;
+    let rejectCount = 0;
+
+    Object.values(votesObj).forEach(val => {
+      if (val === 'approve') approveCount++;
+      if (val === 'reject') rejectCount++;
+    });
+
+    // 投票規則：人數 > 2 時，【贊成】得票50%以上 (i.e. > 50%)；人數 <= 2 時，>= 50%
+    const isPassed = totalMembers > 2 ? (approveCount / totalMembers > 0.5) : (approveCount / totalMembers >= 0.5);
+    const isRejected = (rejectCount / totalMembers >= 0.5);
+
+    if (isPassed) {
+      vote.status = 'passed';
+      if (vote.type === 'kick') {
+        sf.members = sf.members.filter(m => m !== vote.targetUser);
+        saveSharedFoldersToStorage();
+        showNotification(`投票通過！成員【${vote.targetUser}】已被踢出共享資料夾【${sf.name}】`, 'warning');
+      } else if (vote.type === 'delete_folder') {
+        delete sharedFoldersData[vote.folderId];
+        saveSharedFoldersToStorage();
+        showNotification(`投票通過！共享資料夾【${vote.folderName}】已被成功刪除`, 'danger');
+      }
+    } else if (isRejected) {
+      vote.status = 'rejected';
+      showNotification(`投票未通過，該提案已被否決。`, 'info');
+    }
+
+    saveVotesToStorage();
+    reloadSharedAndRender();
+  }
+
+  function initiateKickVote(sfId, targetUsername) {
+    const sf = sharedFoldersData[sfId];
+    if (!sf) return;
+
+    const activeVote = Object.values(votesData).find(v => v.folderId === sfId && v.type === 'kick' && v.targetUser === targetUsername && v.status === 'active');
+    if (activeVote) {
+      return showNotification(`已有對【${targetUsername}】的踢出投票進行中！`, 'warning');
+    }
+
+    const totalMembers = sf.members.length;
+
+    if (totalMembers <= 2) {
+      if (confirm(`確定將成員【${targetUsername}】踢出共享資料夾【${sf.name}】嗎？`)) {
+        sf.members = sf.members.filter(m => m !== targetUsername);
+        saveSharedFoldersToStorage();
+        showNotification(`成員【${targetUsername}】已被踢出共享資料夾！`, 'warning');
+        if (currentMembersSfId === sfId) renderFolderMembersList(sf);
+        renderTree();
+      }
+      return;
+    }
+
+    const voteId = "vote_kick_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+    const currName = getCurrentUsername();
+
+    votesData[voteId] = {
+      id: voteId,
+      type: 'kick',
+      folderId: sfId,
+      folderName: sf.name,
+      targetUser: targetUsername,
+      initiator: currName,
+      totalMembersAtStart: totalMembers,
+      votes: { [currName]: 'approve' },
+      status: 'active'
+    };
+
+    sf.members.forEach(mName => {
+      const acc = findAccountByUsername(mName);
+      if (acc) {
+        if (!acc.inbox) acc.inbox = [];
+        acc.inbox.unshift({
+          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+          type: "kick_vote",
+          voteId: voteId,
+          fromUser: currName,
+          targetUser: targetUsername,
+          folderId: sfId,
+          folderName: sf.name,
+          timestamp: Date.now(),
+          status: "pending"
+        });
+      }
+    });
+
+    saveVotesToStorage();
+    saveAccountsToStorage();
+    checkVoteResult(voteId);
+    showNotification(`已發起將【${targetUsername}】踢出共享資料夾的投票！`, 'success');
+  }
+
+  function initiateDeleteFolderVote(sfId) {
+    const sf = sharedFoldersData[sfId];
+    if (!sf) return;
+
+    const activeVote = Object.values(votesData).find(v => v.folderId === sfId && v.type === 'delete_folder' && v.status === 'active');
+    if (activeVote) {
+      return showNotification("已有對該資料夾的刪除投票進行中！", "warning");
+    }
+
+    const totalMembers = sf.members.length;
+    const voteId = "vote_del_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+    const currName = getCurrentUsername();
+
+    votesData[voteId] = {
+      id: voteId,
+      type: 'delete_folder',
+      folderId: sfId,
+      folderName: sf.name,
+      initiator: currName,
+      totalMembersAtStart: totalMembers,
+      votes: { [currName]: 'approve' },
+      status: 'active'
+    };
+
+    sf.members.forEach(mName => {
+      const acc = findAccountByUsername(mName);
+      if (acc) {
+        if (!acc.inbox) acc.inbox = [];
+        acc.inbox.unshift({
+          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+          type: "delete_folder_vote",
+          voteId: voteId,
+          fromUser: currName,
+          folderId: sfId,
+          folderName: sf.name,
+          timestamp: Date.now(),
+          status: "pending"
+        });
+      }
+    });
+
+    saveVotesToStorage();
+    saveAccountsToStorage();
+    checkVoteResult(voteId);
+    showNotification("已發起刪除共享資料夾投票，已發送至全體成員信箱！", "info");
+  }
+
+  /* ---------------- 共享資料夾成員名單與邀請/退出 ---------------- */
+  function openFolderMembersModal(sfId) {
+    currentMembersSfId = sfId;
+    const sf = sharedFoldersData[sfId];
+    if (!sf) return;
+
+    document.getElementById('members-modal-title').innerText = `👥 共享資料夾【${sf.name}】成員 (${sf.members.length}人)`;
+    const inviteBtn = document.getElementById('invite-member-btn');
+    inviteBtn.onclick = () => sendFolderInviteFromModal(sfId);
+
+    renderFolderMembersList(sf);
+    document.getElementById('folderMembersModal').style.display = 'flex';
+  }
+
+  function closeFolderMembersModal() {
+    document.getElementById('folderMembersModal').style.display = 'none';
+    currentMembersSfId = null;
+  }
+
+  function renderFolderMembersList(sf) {
+    const container = document.getElementById('members-list-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const currName = getCurrentUsername();
+
+    sf.members.forEach(mName => {
+      const row = document.createElement('div');
+      row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:8px 10px;";
+
+      const isSelf = (mName === currName);
+
+      row.innerHTML = `
+        <span style="font-size:0.9em; font-weight:${isSelf ? 'bold' : 'normal'};">👤 ${mName} ${isSelf ? '<span style="color:#007bff; font-size:0.8em;">(您自己)</span>' : ''}</span>
+        <div>
+          ${isSelf ? `
+            <button onclick="leaveSharedFolder('${sf.id}')" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">【退出】</button>
+          ` : `
+            <button onclick="initiateKickVote('${sf.id}', '${mName}')" style="background:#e67e22; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">發起踢出成員</button>
+          `}
+        </div>
+      `;
+
+      container.appendChild(row);
+    });
+  }
+
+  function leaveSharedFolder(sfId) {
+    const sf = sharedFoldersData[sfId];
+    if (!sf) return;
+
+    const currName = getCurrentUsername();
+    if (!confirm(`確定要退出共享資料夾【${sf.name}】嗎？`)) return;
+
+    sf.members = sf.members.filter(m => m !== currName);
+    appData.tree = appData.tree.filter(n => !(n.type === 'shared_ref' && n.folderId === sfId));
+    
+    if (sf.members.length === 0) {
+      delete sharedFoldersData[sfId];
+    }
+
+    saveSharedFoldersToStorage();
+    saveToLocalStorage();
+    closeFolderMembersModal();
+    renderTree();
+    showNotification(`已退出共享資料夾【${sf.name}】`, 'info');
+  }
+
+  function sendFolderInviteFromModal(sfId) {
+    const input = document.getElementById('invite-member-input');
+    const targetName = input ? input.value.trim() : '';
+    if (!targetName) return alert("請輸入使用者名字！");
+
+    const sf = sharedFoldersData[sfId];
+    if (!sf) return;
+
+    const targetAcc = findAccountByUsername(targetName);
+    if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱。`);
+
+    if (sf.members.includes(targetName)) return alert(`【${targetName}】已經是此共享資料夾的成員！`);
+
+    const currName = getCurrentUsername();
+    if (!targetAcc.inbox) targetAcc.inbox = [];
+
+    targetAcc.inbox.unshift({
+      id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+      type: "shared_folder_invite",
+      fromUser: currName,
+      folderId: sfId,
+      folderName: sf.name,
+      code: sf.code,
+      timestamp: Date.now(),
+      status: "pending"
+    });
+
+    saveAccountsToStorage();
+    input.value = '';
+    showNotification(`已發送加入申請至【${targetName}】的信箱！`, 'success');
+  }
+
+  function acceptFolderInvite(msgId) {
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox) return;
+
+    const msg = currAcc.inbox.find(m => m.id === msgId);
+    if (!msg) return;
+
+    const sf = sharedFoldersData[msg.folderId];
+    if (!sf) {
+      alert("該共享資料夾已被刪除或不存在！");
+      msg.status = 'rejected';
+      saveAccountsToStorage();
+      renderInboxUI();
+      return;
+    }
+
+    const currName = getCurrentUsername();
+    if (!sf.members.includes(currName)) {
+      sf.members.push(currName);
+      saveSharedFoldersToStorage();
+    }
+
+    if (!appData.tree.some(n => n.id === sf.id || n.folderId === sf.id)) {
+      appData.tree.push({ id: sf.id, type: "shared_ref", folderId: sf.id });
+      saveToLocalStorage();
+    }
+
+    msg.status = 'accepted';
+    saveAccountsToStorage();
+    renderTree();
+    showNotification(`已成功加入共享資料夾【${sf.name}】！`, 'success');
+    renderInboxUI();
+    updateInboxBadge();
+  }
+
+  function rejectFolderInvite(msgId) {
+    const currAcc = accountsData[currentUser];
+    if (!currAcc || !currAcc.inbox) return;
+
+    const msg = currAcc.inbox.find(m => m.id === msgId);
+    if (msg) msg.status = 'rejected';
+
+    saveAccountsToStorage();
+    showNotification("已拒絕加入共享資料夾", "info");
+    renderInboxUI();
+    updateInboxBadge();
+  }
+
   /* ---------------- 共享文件夾與實時監控 ---------------- */
   function openJoinSharedModal() { document.getElementById('joinSharedModal').style.display = 'flex'; }
   function closeJoinSharedModal() { document.getElementById('joinSharedModal').style.display = 'none'; }
@@ -751,20 +1397,21 @@
     if (!sfId) return alert("無效的共享邀請碼！");
 
     const folder = sharedFoldersData[sfId];
-    if (!folder.members.includes(currentUser)) {
-      folder.members.push(currentUser);
+    const currName = getCurrentUsername();
+    if (!folder.members.includes(currName)) {
+      folder.members.push(currName);
       folder.lastModified = Date.now();
       saveSharedFoldersToStorage();
     }
 
-    if (!appData.tree.some(n => n.id === sfId)) {
+    if (!appData.tree.some(n => n.id === sfId || n.folderId === sfId)) {
       appData.tree.push({ id: sfId, type: "shared_ref", folderId: sfId });
       saveToLocalStorage();
     }
 
     closeJoinSharedModal();
     renderTree();
-    showNotification(`已成功加入共享文件夾：${folder.name}`, 'success');
+    showNotification(`已成功加入共享資料夾：${folder.name}`, 'success');
   }
 
   function saveSharedFoldersToStorage() {
@@ -774,7 +1421,7 @@
 
   function setupRealtimeSync() {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'oc_sync_ts' || e.key === 'oc_shared_folders_v2') {
+      if (['oc_sync_ts', 'oc_shared_folders_v2', 'oc_accounts_v2', 'oc_votes_v2'].includes(e.key)) {
         reloadSharedAndRender();
       }
     });
@@ -785,20 +1432,37 @@
         lastSyncTimestamp = parseInt(ts);
         reloadSharedAndRender();
       }
-    }, 1500);
+    }, 1200);
   }
 
   function reloadSharedAndRender() {
     const rawSF = localStorage.getItem('oc_shared_folders_v2');
     if (rawSF) sharedFoldersData = JSON.parse(rawSF);
+
+    const rawAcc = localStorage.getItem('oc_accounts_v2');
+    if (rawAcc) accountsData = JSON.parse(rawAcc);
+
+    loadVotesFromStorage();
+
     renderTree();
+    updateInboxBadge();
+
     if (activePageId) {
       const pageRes = findNodeAndParent(activePageId);
       if (pageRes && pageRes.node.data) loadPageData(activePageId);
     }
+
+    if (document.getElementById('inboxDialogModal').style.display === 'flex') {
+      renderInboxUI();
+    }
+    if (currentMembersSfId && document.getElementById('folderMembersModal').style.display === 'flex') {
+      const sf = sharedFoldersData[currentMembersSfId];
+      if (sf) renderFolderMembersList(sf);
+      else closeFolderMembersModal();
+    }
   }
 
-  /* ---------------- 樹狀選單邏輯 (含共享轉換與自訂邀請碼) ---------------- */
+  /* ---------------- 樹狀選單邏輯 ---------------- */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
   function renderTree() {
@@ -818,7 +1482,7 @@
         isShared: true,
         code: sf.code,
         creatorId: sf.creatorId,
-        membersCount: sf.members.length,
+        membersCount: sf.members ? sf.members.length : 1,
         collapsed: node.collapsed || false,
         children: sf.children || []
       };
@@ -862,9 +1526,10 @@
         ? `<span class="toggle-icon" onclick="event.stopPropagation(); toggleFolderCollapse('${node.id}')">${node.collapsed ? '▶' : '▼'}</span>` 
         : '';
 
-      const sharedTagHtml = node.isShared ? ` [共享] <span class="shared-code-tag">[邀請碼: ${node.code}]</span><span class="shared-count-tag">(${node.membersCount}人)</span>` : '';
+      const sharedTagHtml = node.isShared 
+        ? ` [共享] <span class="shared-code-tag">[邀請碼: ${node.code}]</span><span class="shared-count-tag" onclick="event.stopPropagation(); openFolderMembersModal('${node.id}')" title="點擊檢視成員名單">(${node.membersCount}人 👥)</span>` 
+        : '';
 
-      // 檢查是否非自己創作的資料頁
       const isNonCreatorPage = node.type === 'page' && node.creatorId && node.creatorId !== currentUser;
 
       header.innerHTML = `
@@ -955,12 +1620,13 @@
     }
   }
 
-  /* 建立根資料夾（支援自訂邀請碼） */
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
     if (!name) return;
     const isShared = confirm("是否建立為【共享文件夾】？（其它使用者可憑邀請碼加入）");
     
+    const currName = getCurrentUsername();
+
     if (isShared) {
       let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
       if (customCode !== null) customCode = customCode.trim();
@@ -977,7 +1643,7 @@
         name: name,
         code: customCode,
         creatorId: currentUser,
-        members: [currentUser],
+        members: [currName],
         children: [{ id: "p_" + Date.now(), name: "未命名 OC", type: "page", creatorId: currentUser, data: {} }],
         lastModified: Date.now()
       };
@@ -992,7 +1658,6 @@
     renderTree();
   }
 
-  /* 將已有資料夾變成共享資料夾 */
   function convertToSharedFolder(folderId) {
     const res = findNodeAndParent(folderId);
     if (!res || res.node.type !== 'folder' || res.isShared) return;
@@ -1010,13 +1675,14 @@
 
     const sfId = "sf_" + Date.now();
     const folderData = res.node;
+    const currName = getCurrentUsername();
 
     sharedFoldersData[sfId] = {
       id: sfId,
       name: folderData.name,
       code: customCode,
       creatorId: currentUser,
-      members: [currentUser],
+      members: [currName],
       children: folderData.children || [],
       lastModified: Date.now()
     };
@@ -1047,6 +1713,7 @@
     }
   }
 
+  /* 刪除節點（共享資料夾刪除發起投票） */
   function deleteNode(id) {
     const res = findNodeAndParent(id);
     if (!res) return;
@@ -1054,6 +1721,28 @@
     if (res.node.type === 'page' && res.node.creatorId && res.node.creatorId !== currentUser) {
       showNotification("【權限限制】非自己創作的資料頁不得刪除！", "danger");
       return;
+    }
+
+    if (res.isShared || (res.node.type === 'folder' && sharedFoldersData[id])) {
+      const sf = sharedFoldersData[id];
+      if (sf) {
+        const members = sf.members || [];
+        if (members.length <= 1) {
+          if (confirm("確定要刪除共享資料夾【" + sf.name + "】嗎？")) {
+            delete sharedFoldersData[id];
+            res.list.splice(res.index, 1);
+            saveSharedFoldersToStorage();
+            saveToLocalStorage();
+            renderTree();
+            showNotification("共享資料夾已刪除！", "info");
+          }
+        } else {
+          if (confirm("刪除共享資料夾【" + sf.name + "】需要發起投票，確定發起投票嗎？")) {
+            initiateDeleteFolderVote(id);
+          }
+        }
+        return;
+      }
     }
 
     if (confirm("確定要刪除？此操作不可逆！")) {
@@ -1293,7 +1982,6 @@
       persons: [], keepsakes: [], outfits: []
     };
 
-    // 儲存重要的人（垂直兩個文字方格：名字與關係）
     document.querySelectorAll('#person-grid .card-item').forEach(card => {
       const img = card.querySelector('img').src;
       const name = card.querySelector('.person-name').value;
@@ -1301,7 +1989,6 @@
       pageData.persons.push({ img, name, rel });
     });
 
-    // 儲存重要信物（垂直兩個文字方格：信物名稱與說明/意義）
     document.querySelectorAll('#keepsake-grid .card-item').forEach(card => {
       const img = card.querySelector('img').src;
       const name = card.querySelector('.keepsake-name').value;
@@ -1350,7 +2037,6 @@
     document.getElementById('field-dislike').value = d.dislike || '';
     document.getElementById('field-keywords').value = d.keywords || '';
 
-    // 載入大頭照 (上下雙圖)
     if (d.avatar1 || d.avatar) setImgSrc('avatar1', d.avatar1 || d.avatar);
     if (d.avatar2) setImgSrc('avatar2', d.avatar2);
 
@@ -1401,7 +2087,7 @@
     for(let i=0; i<3; i++) { addPersonCard(); addKeepsakeCard(); addOutfitCard(); }
   }
 
-  /* ---------------- 動態卡片 (重要的人：垂直兩個文字方格) ---------------- */
+  /* ---------------- 動態卡片 ---------------- */
   function addPersonCard(imgSrc = "", nameVal = "", relVal = "") {
     personCount++; const id = `p${personCount}`;
     const cardHtml = `
@@ -1424,7 +2110,6 @@
     document.getElementById('person-grid').insertAdjacentHTML('beforeend', cardHtml);
   }
 
-  /* ---------------- 動態卡片 (重要信物：格式與重要的人一致，垂直兩個文字方格) ---------------- */
   function addKeepsakeCard(imgSrc = "", nameVal = "", descVal = "") {
     keepsakeCount++; const id = `k${keepsakeCount}`;
     const cardHtml = `
@@ -1447,7 +2132,6 @@
     document.getElementById('keepsake-grid').insertAdjacentHTML('beforeend', cardHtml);
   }
 
-  /* ---------------- 動態卡片 (衣服穿搭) ---------------- */
   function addOutfitCard(imgSrc = "", val = "") {
     outfitCount++; const id = `c${outfitCount}`;
     const cardHtml = `
@@ -1469,11 +2153,10 @@
     document.getElementById('outfit-grid').insertAdjacentHTML('beforeend', cardHtml);
   }
 
-  /* ---------------- 匯出 PDF / PNG (純淨版面無按鈕) ---------------- */
+  /* ---------------- 匯出 PDF / PNG ---------------- */
   function exportToPNG() {
     showNotification("正在產生角色卡 PNG 圖片...", "info");
     const card = document.getElementById('cardContainer');
-    
     card.classList.add('export-readonly-mode');
 
     html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
@@ -1483,7 +2166,7 @@
       link.href = canvas.toDataURL('image/png');
       link.click();
       showNotification("PNG 圖片匯出成功！", "success");
-    }).catch(err => {
+    }).catch(() => {
       showNotification("匯出 PNG 失敗，請重試", "danger");
     }).finally(() => {
       card.classList.remove('export-readonly-mode');
@@ -1493,7 +2176,6 @@
   function exportToPDF() {
     showNotification("正在產生角色卡 PDF 檔案...", "info");
     const card = document.getElementById('cardContainer');
-    
     card.classList.add('export-readonly-mode');
 
     html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
@@ -1507,7 +2189,7 @@
       const name = document.getElementById('field-name').value.trim() || "OC角色卡";
       pdf.save(`${name}_角色卡.pdf`);
       showNotification("PDF 檔案匯出成功！", "success");
-    }).catch(err => {
+    }).catch(() => {
       showNotification("匯出 PDF 失敗，請重試", "danger");
     }).finally(() => {
       card.classList.remove('export-readonly-mode');
@@ -1516,7 +2198,7 @@
 
   /* ---------------- 本地備份與 JSON 匯出匯入 ---------------- */
   function exportDataJson() {
-    const exportBundle = { appData, accountsData, sharedFoldersData };
+    const exportBundle = { appData, accountsData, sharedFoldersData, votesData };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportBundle));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -1534,13 +2216,16 @@
             appData = bundle.appData;
             if (bundle.accountsData) accountsData = bundle.accountsData;
             if (bundle.sharedFoldersData) sharedFoldersData = bundle.sharedFoldersData;
+            if (bundle.votesData) votesData = bundle.votesData;
           } else {
             appData = bundle;
           }
           saveToLocalStorage();
           saveAccountsToStorage();
           saveSharedFoldersToStorage();
+          saveVotesToStorage();
           renderTree();
+          updateInboxBadge();
           if (appData.tree.length > 0) {
             const firstPage = findFirstPage(appData.tree);
             if (firstPage) switchPage(firstPage.id);

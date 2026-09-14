@@ -54,7 +54,7 @@
       to { transform: translateX(0); opacity: 1; }
     }
 
-    /* ---------------- 左側選單 ---------------- */
+    /* ---------------- 選單 (側邊欄) ---------------- */
     .sidebar {
       width: var(--sidebar-width);
       background: #2c3e50;
@@ -66,11 +66,19 @@
     }
     .sidebar.closed { transform: translateX(-100%); }
 
+    /* 靠右選單位置設定 */
+    .sidebar.right-side {
+      left: auto; right: 0;
+    }
+    .sidebar.right-side.closed {
+      transform: translateX(100%);
+    }
+
     .sidebar-header {
       padding: 12px 15px; background: #1a252f;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .sidebar-title { font-weight: bold; font-size: 1.05em; }
+    .sidebar-title { font-weight: bold; font-size: 1em; }
 
     /* 賬號管理控制欄 */
     .account-bar {
@@ -141,6 +149,9 @@
       background: #2c3e50; color: white; border: none; padding: 8px 12px;
       border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
+    .toggle-sidebar-btn.right-side {
+      left: auto; right: 12px;
+    }
 
     /* ---------------- 右側主頁面 ---------------- */
     .main-wrapper {
@@ -174,7 +185,7 @@
     }
 
     /* 圖片上傳區 */
-    .image-uploader-wrapper { position: relative; width: 100%; height: 180px; }
+    .image-uploader-wrapper { position: relative; width: 100%; height: 140px; }
     .image-uploader {
       width: 100%; height: 100%; border: 2px dashed #aaa; border-radius: 8px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -285,14 +296,38 @@
       padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer;
     }
 
+    /* ---------------- 匯出唯讀模式樣式 (純淨版面無按鈕) ---------------- */
+    .export-readonly-mode .add-btn,
+    .export-readonly-mode .delete-card-btn,
+    .export-readonly-mode .image-overlay,
+    .export-readonly-mode .submit-btn,
+    .export-readonly-mode .timeline-control-bar,
+    .export-readonly-mode .events-bar button,
+    .export-readonly-mode .image-uploader span {
+      display: none !important;
+    }
+    .export-readonly-mode input,
+    .export-readonly-mode textarea {
+      border: none !important;
+      background: transparent !important;
+      resize: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 4px 0 !important;
+    }
+    .export-readonly-mode .image-uploader-wrapper,
+    .export-readonly-mode .image-uploader {
+      border: none !important;
+    }
+
     @media (min-width: 600px) {
       .grid-row { flex-direction: row; }
       .info-left { flex: 1.2; }
       .avatar-right { flex: 0.9; }
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
-      .image-uploader-wrapper { height: 160px; }
       .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
+      .sidebar.right-side.closed { transform: translateX(100%); position: absolute; }
     }
   </style>
 </head>
@@ -301,13 +336,16 @@
 <!-- 通知容器 (帶關閉按鈕) -->
 <div class="notification-container" id="notification-container"></div>
 
-<button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">☰ 選單</button>
+<button type="button" class="toggle-sidebar-btn" id="toggleSidebarBtn" onclick="toggleSidebar()">☰ 選單</button>
 
-<!-- 左側選單 -->
+<!-- 側邊欄選單 -->
 <div class="sidebar closed" id="sidebar">
   <div class="sidebar-header">
     <span class="sidebar-title">📁 角色卡系統 Pro Max</span>
-    <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
+    <div>
+      <button style="background:none; border:none; color:#f39c12; cursor:pointer; font-weight:bold; margin-right:8px;" onclick="toggleSidebarPosition()" title="切換選單靠左/靠右">↔ 位置</button>
+      <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
+    </div>
   </div>
 
   <!-- 賬號管理區 -->
@@ -342,6 +380,7 @@
       <div class="grid-row">
         <div class="section-box info-left">
           <div class="form-group"><label>名字：</label><input type="text" id="field-name" oninput="updateMaxProgressTag()"></div>
+          <div class="form-group"><label>別稱：</label><input type="text" id="field-alias"></div>
           <div class="form-group"><label>身份：</label><input type="text" id="field-identity"></div>
           <div class="form-group"><label>能力：</label><input type="text" id="field-ability"></div>
           <div class="form-group"><label>年齡：</label><input type="text" id="field-age"></div>
@@ -351,25 +390,37 @@
           <div class="form-group"><label>喜好：</label><input type="text" id="field-like"></div>
           <div class="form-group"><label>厭惡：</label><input type="text" id="field-dislike"></div>
           <div class="form-group"><label>關鍵詞：</label><input type="text" id="field-keywords"></div>
-          <div class="form-group vertical">
-            <label>代表性的一句話：</label>
-            <textarea id="field-quote" rows="2"></textarea>
-          </div>
         </div>
 
+        <!-- 大頭照 (改為上下兩個上傳方格) -->
         <div class="section-box avatar-right">
-          <div class="section-title">大頭照</div>
-          <div class="image-uploader-wrapper">
-            <div class="image-uploader" onclick="triggerInitialUpload('avatar')">
-              <img id="avatar-preview" src="" style="display:none;">
-              <span id="avatar-text">📷 點擊上傳圖片</span>
+          <div class="section-title">大頭照 / 立繪</div>
+          
+          <!-- 大頭照 1 -->
+          <div class="image-uploader-wrapper" style="margin-bottom: 10px;">
+            <div class="image-uploader" onclick="triggerInitialUpload('avatar1')">
+              <img id="avatar1-preview" src="" style="display:none;">
+              <span id="avatar1-text">📷 上傳大頭照 1</span>
             </div>
-            <div class="image-overlay" id="avatar-overlay" style="display:none;">
-              <button type="button" class="overlay-btn" onclick="openModalById('avatar-preview')">🔍 檢視/縮放</button>
-              <button type="button" class="overlay-btn" onclick="triggerUpload('avatar')">🔄 更換</button>
+            <div class="image-overlay" id="avatar1-overlay" style="display:none;">
+              <button type="button" class="overlay-btn" onclick="openModalById('avatar1-preview')">🔍 檢視/縮放</button>
+              <button type="button" class="overlay-btn" onclick="triggerUpload('avatar1')">🔄 更換</button>
             </div>
           </div>
-          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar')">
+          <input type="file" id="avatar1-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar1')">
+
+          <!-- 大頭照 2 -->
+          <div class="image-uploader-wrapper">
+            <div class="image-uploader" onclick="triggerInitialUpload('avatar2')">
+              <img id="avatar2-preview" src="" style="display:none;">
+              <span id="avatar2-text">📷 上傳大頭照 2</span>
+            </div>
+            <div class="image-overlay" id="avatar2-overlay" style="display:none;">
+              <button type="button" class="overlay-btn" onclick="openModalById('avatar2-preview')">🔍 檢視/縮放</button>
+              <button type="button" class="overlay-btn" onclick="triggerUpload('avatar2')">🔄 更換</button>
+            </div>
+          </div>
+          <input type="file" id="avatar2-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, 'avatar2')">
         </div>
       </div>
 
@@ -493,8 +544,8 @@
 <script>
   /* ---------------- 全局數據與狀態控制 ---------------- */
   let currentUser = "DefaultUser";
-  let accountsData = {}; // accountId -> { id, username, pass, linkedUserIds: [] }
-  let sharedFoldersData = {}; // folderId -> { id, name, code, creatorId, members: [], children: [], lastModified }
+  let accountsData = {};
+  let sharedFoldersData = {};
   let appData = { tree: [] };
 
   let activePageId = "";
@@ -504,8 +555,10 @@
   let majorEvents = [];
   let currentProgress = 0;
   let lastSyncTimestamp = 0;
+  let sidebarPos = 'left';
 
   window.onload = function() {
+    initSidebarPosition();
     initAccountSystem();
     loadFromLocalStorage();
     renderTree();
@@ -514,7 +567,32 @@
     setupRealtimeSync();
   };
 
-  /* ---------------- 即時通知系統 (帶關閉按鈕) ---------------- */
+  /* ---------------- 選單位置切換 (靠左/靠右) ---------------- */
+  function initSidebarPosition() {
+    sidebarPos = localStorage.getItem('oc_sidebar_pos') || 'left';
+    applySidebarPosition();
+  }
+
+  function toggleSidebarPosition() {
+    sidebarPos = (sidebarPos === 'left') ? 'right' : 'left';
+    localStorage.setItem('oc_sidebar_pos', sidebarPos);
+    applySidebarPosition();
+    showNotification(`已將選單位置切換至【${sidebarPos === 'left' ? '靠左' : '靠右'}】`, 'info');
+  }
+
+  function applySidebarPosition() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    if (sidebarPos === 'right') {
+      sidebar.classList.add('right-side');
+      toggleBtn.classList.add('right-side');
+    } else {
+      sidebar.classList.remove('right-side');
+      toggleBtn.classList.remove('right-side');
+    }
+  }
+
+  /* ---------------- 即時通知系統 ---------------- */
   function showNotification(msg, type = 'info') {
     const container = document.getElementById('notification-container');
     const toast = document.createElement('div');
@@ -584,7 +662,6 @@
       accountsData[targetId] = { id: targetId, username: name, pass: pass || "123456", linkedUserIds: [targetId] };
     }
 
-    // 進行憑證雙向互通同步：將當前賬號與新賬號的所有關聯賬號取聯集
     const currentGroup = accountsData[currentUser].linkedUserIds || [currentUser];
     const targetGroup = accountsData[targetId].linkedUserIds || [targetId];
     const mergedGroup = Array.from(new Set([...currentGroup, ...targetGroup, currentUser, targetId]));
@@ -625,7 +702,6 @@
       delete accountsData[delId];
       localStorage.removeItem(`oc_app_data_${delId}`);
 
-      // 遍歷所有剩餘賬號，同步刪除登入憑證
       Object.keys(accountsData).forEach(id => {
         if (accountsData[id].linkedUserIds) {
           accountsData[id].linkedUserIds = accountsData[id].linkedUserIds.filter(x => x !== delId);
@@ -659,7 +735,6 @@
       saveSharedFoldersToStorage();
     }
 
-    // 加入用戶自己的目錄樹
     if (!appData.tree.some(n => n.id === sfId)) {
       appData.tree.push({ id: sfId, type: "shared_ref", folderId: sfId });
       saveToLocalStorage();
@@ -676,14 +751,12 @@
   }
 
   function setupRealtimeSync() {
-    // 跨分頁監控
     window.addEventListener('storage', (e) => {
       if (e.key === 'oc_sync_ts' || e.key === 'oc_shared_folders_v2') {
         reloadSharedAndRender();
       }
     });
 
-    // 定時輪詢監控 (隨時檢測人數、內容變動)
     setInterval(() => {
       const ts = localStorage.getItem('oc_sync_ts') || "0";
       if (parseInt(ts) > lastSyncTimestamp) {
@@ -703,7 +776,7 @@
     }
   }
 
-  /* ---------------- 樹狀選單邏輯 (含共享文件夾權限) ---------------- */
+  /* ---------------- 樹狀選單邏輯 (含共享轉換與自訂邀請碼) ---------------- */
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
   function renderTree() {
@@ -769,7 +842,6 @@
 
       const sharedTagHtml = node.isShared ? ` [共享] <span class="shared-code-tag">[邀請碼: ${node.code}]</span><span class="shared-count-tag">(${node.membersCount}人)</span>` : '';
 
-      // 權限判斷：在共享文件夾內，非創作者不可刪除資料頁
       const isNonCreatorPageInShared = sharedCtx && node.type === 'page' && sharedCtx.creatorId !== currentUser;
 
       header.innerHTML = `
@@ -778,6 +850,7 @@
         <span class="item-title">${node.type === 'folder' ? '📁' : '📄'} ${node.name}${sharedTagHtml}</span>
         <div class="item-btns">
           <button title="重新命名" onclick="event.stopPropagation(); renameNode('${node.id}')">✏️</button>
+          ${node.type === 'folder' && !node.isShared ? `<button title="將此資料夾轉為共享夾" onclick="event.stopPropagation(); convertToSharedFolder('${node.id}')">🔗</button>` : ''}
           ${node.type === 'folder' ? `<button title="新增資料頁" onclick="event.stopPropagation(); promptAddPage('${node.id}')">📄+</button>` : ''}
           ${!isNonCreatorPageInShared ? `<button title="刪除" onclick="event.stopPropagation(); deleteNode('${node.id}')">✕</button>` : ''}
         </div>
@@ -854,18 +927,28 @@
     }
   }
 
+  /* 建立根資料夾（支援自訂邀請碼） */
   function promptAddFolder() {
     const name = prompt("請輸入根資料夾名稱：");
     if (!name) return;
     const isShared = confirm("是否建立為【共享文件夾】？（其它使用者可憑邀請碼加入）");
     
     if (isShared) {
+      let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
+      if (customCode !== null) customCode = customCode.trim();
+      if (!customCode) customCode = "SF-" + Math.floor(1000 + Math.random() * 9000);
+
+      // 檢查邀請碼唯一性
+      const codeExists = Object.values(sharedFoldersData).some(sf => sf.code === customCode);
+      if (codeExists) {
+        return alert("該邀請碼已被使用，請重新建立並選擇不同的邀請碼！");
+      }
+
       const sfId = "sf_" + Date.now();
-      const code = "SF-" + Math.floor(1000 + Math.random() * 9000);
       sharedFoldersData[sfId] = {
         id: sfId,
         name: name,
-        code: code,
+        code: customCode,
         creatorId: currentUser,
         members: [currentUser],
         children: [{ id: "p_" + Date.now(), name: "未命名 OC", type: "page", data: {} }],
@@ -874,12 +957,50 @@
       saveSharedFoldersToStorage();
       appData.tree.push({ id: sfId, type: "shared_ref", folderId: sfId });
       saveToLocalStorage();
-      showNotification(`共享資料夾已建立！邀請碼：${code}`, 'success');
+      showNotification(`共享資料夾已建立！邀請碼：${customCode}`, 'success');
     } else {
       appData.tree.push({ id: "f_" + Date.now(), name, type: "folder", collapsed: false, children: [] });
       saveToLocalStorage();
     }
     renderTree();
+  }
+
+  /* 將已有資料夾變成共享資料夾 */
+  function convertToSharedFolder(folderId) {
+    const res = findNodeAndParent(folderId);
+    if (!res || res.node.type !== 'folder' || res.isShared) return;
+
+    if (!confirm(`確定要將資料夾【${res.node.name}】轉為共享資料夾嗎？`)) return;
+
+    let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
+    if (customCode !== null) customCode = customCode.trim();
+    if (!customCode) customCode = "SF-" + Math.floor(1000 + Math.random() * 9000);
+
+    const codeExists = Object.values(sharedFoldersData).some(sf => sf.code === customCode);
+    if (codeExists) {
+      return alert("該邀請碼已被使用，請使用不同的邀請碼！");
+    }
+
+    const sfId = "sf_" + Date.now();
+    const folderData = res.node;
+
+    sharedFoldersData[sfId] = {
+      id: sfId,
+      name: folderData.name,
+      code: customCode,
+      creatorId: currentUser,
+      members: [currentUser],
+      children: folderData.children || [],
+      lastModified: Date.now()
+    };
+    saveSharedFoldersToStorage();
+
+    // 替換樹狀結構節點
+    res.list[res.index] = { id: sfId, type: "shared_ref", folderId: sfId };
+    saveToLocalStorage();
+
+    renderTree();
+    showNotification(`已將【${folderData.name}】轉為共享資料夾！邀請碼：${customCode}`, 'success');
   }
 
   function promptAddPage(parentId) {
@@ -904,7 +1025,6 @@
     const res = findNodeAndParent(id);
     if (!res) return;
 
-    // 共享文件夾權限校驗：非創作者不得刪除資料頁
     if (res.node.type === 'page' && res.parent && res.parent.creatorId && res.parent.creatorId !== currentUser) {
       showNotification("【權限限制】非創作者不得刪除共享文件夾內的資料頁！", "danger");
       return;
@@ -1093,6 +1213,7 @@
 
     const pageData = {
       name: document.getElementById('field-name').value,
+      alias: document.getElementById('field-alias').value,
       identity: document.getElementById('field-identity').value,
       ability: document.getElementById('field-ability').value,
       age: document.getElementById('field-age').value,
@@ -1102,18 +1223,20 @@
       like: document.getElementById('field-like').value,
       dislike: document.getElementById('field-dislike').value,
       keywords: document.getElementById('field-keywords').value,
-      quote: document.getElementById('field-quote').value,
-      avatar: document.getElementById('avatar-preview').src,
+      avatar1: document.getElementById('avatar1-preview').src,
+      avatar2: document.getElementById('avatar2-preview').src,
       maxLimit: document.getElementById('maxLimitInput').value,
       timeline: timelineData,
       majorEvents: majorEvents,
       persons: [], outfits: []
     };
 
+    // 儲存重要的人（雙欄位：名字與關係）
     document.querySelectorAll('#person-grid .card-item').forEach(card => {
       const img = card.querySelector('img').src;
-      const val = card.querySelector('input[type="text"]').value;
-      pageData.persons.push({ img, val });
+      const name = card.querySelector('.person-name').value;
+      const rel = card.querySelector('.person-rel').value;
+      pageData.persons.push({ img, name, rel });
     });
 
     document.querySelectorAll('#outfit-grid .card-item').forEach(card => {
@@ -1140,6 +1263,7 @@
 
     const d = res.node.data;
     document.getElementById('field-name').value = d.name || '';
+    document.getElementById('field-alias').value = d.alias || '';
     document.getElementById('field-identity').value = d.identity || '';
     document.getElementById('field-ability').value = d.ability || '';
     document.getElementById('field-age').value = d.age || '';
@@ -1149,9 +1273,10 @@
     document.getElementById('field-like').value = d.like || '';
     document.getElementById('field-dislike').value = d.dislike || '';
     document.getElementById('field-keywords').value = d.keywords || '';
-    document.getElementById('field-quote').value = d.quote || '';
 
-    if (d.avatar) setImgSrc('avatar', d.avatar);
+    // 載入大頭照 (上下雙圖)
+    if (d.avatar1 || d.avatar) setImgSrc('avatar1', d.avatar1 || d.avatar);
+    if (d.avatar2) setImgSrc('avatar2', d.avatar2);
 
     timelineData = d.timeline || {};
     majorEvents = d.majorEvents || [];
@@ -1169,7 +1294,7 @@
     personCount = 0; outfitCount = 0;
 
     if (d.persons && d.persons.length) {
-      d.persons.forEach(p => addPersonCard(p.img, p.val));
+      d.persons.forEach(p => addPersonCard(p.img, p.name || p.val || "", p.rel || ""));
     } else { for(let i=0; i<3; i++) addPersonCard(); }
 
     if (d.outfits && d.outfits.length) {
@@ -1187,8 +1312,8 @@
     for(let i=0; i<3; i++) { addPersonCard(); addOutfitCard(); }
   }
 
-  /* ---------------- 動態卡片 ---------------- */
-  function addPersonCard(imgSrc = "", val = "") {
+  /* ---------------- 動態卡片 (重要的人：名字 + 關係) ---------------- */
+  function addPersonCard(imgSrc = "", nameVal = "", relVal = "") {
     personCount++; const id = `p${personCount}`;
     const cardHtml = `
       <div class="card-item" id="${id}-card">
@@ -1204,7 +1329,10 @@
           </div>
         </div>
         <input type="file" id="${id}-input" accept="image/*" style="display:none" onchange="uploadImageBase64(this, '${id}')">
-        <input type="text" placeholder="名字 / 關係" value="${val}">
+        <div style="display:flex; gap:4px; margin-top:2px;">
+          <input type="text" class="person-name" placeholder="名字" value="${nameVal}" style="flex:1;">
+          <input type="text" class="person-rel" placeholder="關係" value="${relVal}" style="flex:1;">
+        </div>
       </div>`;
     document.getElementById('person-grid').insertAdjacentHTML('beforeend', cardHtml);
   }
@@ -1230,10 +1358,14 @@
     document.getElementById('outfit-grid').insertAdjacentHTML('beforeend', cardHtml);
   }
 
-  /* ---------------- 匯出 PDF / PNG ---------------- */
+  /* ---------------- 匯出 PDF / PNG (隱藏多餘按鈕 - 僅閱讀模式) ---------------- */
   function exportToPNG() {
     showNotification("正在產生角色卡 PNG 圖片...", "info");
     const card = document.getElementById('cardContainer');
+    
+    // 切換至純淨唯讀版面
+    card.classList.add('export-readonly-mode');
+
     html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
       const link = document.createElement('a');
       const name = document.getElementById('field-name').value.trim() || "OC角色卡";
@@ -1243,12 +1375,18 @@
       showNotification("PNG 圖片匯出成功！", "success");
     }).catch(err => {
       showNotification("匯出 PNG 失敗，請重試", "danger");
+    }).finally(() => {
+      card.classList.remove('export-readonly-mode');
     });
   }
 
   function exportToPDF() {
     showNotification("正在產生角色卡 PDF 檔案...", "info");
     const card = document.getElementById('cardContainer');
+    
+    // 切換至純淨唯讀版面
+    card.classList.add('export-readonly-mode');
+
     html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
@@ -1262,6 +1400,8 @@
       showNotification("PDF 檔案匯出成功！", "success");
     }).catch(err => {
       showNotification("匯出 PDF 失敗，請重試", "danger");
+    }).finally(() => {
+      card.classList.remove('export-readonly-mode');
     });
   }
 

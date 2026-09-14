@@ -14,6 +14,7 @@
       --primary-color: #28a745;
       --accent-color: #007bff;
       --sidebar-width: 320px;
+      --right-sidebar-width: 300px;
       --card-bg: #ffffff;
     }
 
@@ -28,8 +29,8 @@
 
     /* ---------------- 通知系統 (Toast Notifications) ---------------- */
     .notification-container {
-      position: fixed; top: 15px; right: 15px; z-index: 9999;
-      display: flex; flex-direction: column; gap: 8px; max-width: 340px; width: 90%;
+      position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px; max-width: 400px; width: 90%;
       pointer-events: none;
     }
     .toast-item {
@@ -50,11 +51,11 @@
     .toast-close-btn:hover { color: #fff; }
 
     @keyframes toastIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
-    /* ---------------- 選單 (左側側邊欄) ---------------- */
+    /* ---------------- 左側選單 (側邊欄) ---------------- */
     .sidebar {
       width: var(--sidebar-width);
       background: #2c3e50;
@@ -82,12 +83,12 @@
     }
     .sidebar-title { font-weight: bold; font-size: 1em; }
 
-    /* 賬號管理控制欄與信箱/好友入口 */
+    /* 賬號管理控制欄與信箱入口 */
     .account-bar {
       padding: 10px; background: #243342; border-bottom: 1px solid #34495e;
       display: flex; flex-direction: column; gap: 6px; font-size: 0.85em;
     }
-    .account-info { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+    .account-info { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
     .account-select-wrap { display: flex; gap: 4px; }
     .account-select-wrap select {
       flex: 1; background: #34495e; color: #fff; border: 1px solid #4e6d8c;
@@ -158,86 +159,99 @@
       border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    /* ---------------- 右側好友/群組選單 ---------------- */
-    .toggle-friends-btn {
+    /* ---------------- 右側好友與群組彈出式側邊欄 ---------------- */
+    .toggle-right-sidebar-btn {
       position: absolute; top: 12px; right: 12px; z-index: 90;
       background: #2c3e50; color: white; border: none; padding: 8px 12px;
       border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    .friends-sidebar {
-      width: 290px;
-      background: #2c3e50;
-      color: #ecf0f1;
+    .right-sidebar {
+      width: var(--right-sidebar-width);
+      background: #2c3e50; color: #ecf0f1;
       display: flex; flex-direction: column;
       transition: transform 0.3s ease;
-      z-index: 100;
-      position: fixed; right: 0; top: 0; bottom: 0;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.25);
+      z-index: 100; position: absolute; right: 0; top: 0; bottom: 0;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
     }
-    .friends-sidebar.closed { transform: translateX(100%); }
+    .right-sidebar.closed { transform: translateX(100%); }
 
-    .friends-sidebar-header {
+    .right-sidebar-header {
       padding: 12px 15px; background: #1a252f;
       display: flex; justify-content: space-between; align-items: center;
-      font-weight: bold; font-size: 1em;
     }
 
-    .friends-sidebar-content {
-      flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 15px;
+    .right-sidebar-content {
+      flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px;
     }
 
-    .friends-section-title {
+    .right-section-title {
       font-size: 0.9em; font-weight: bold; border-bottom: 1px solid #4e6d8c;
-      padding-bottom: 5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .friend-item-card {
-      background: #34495e; border-radius: 6px; padding: 8px 10px;
+      padding-bottom: 4px; margin-bottom: 6px; color: #f39c12;
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px; font-size: 0.88em; cursor: pointer; transition: background 0.2s;
     }
-    .friend-item-card:hover { background: #415b76; }
 
-    /* ---------------- 網頁內獨立視窗 (聊天室) ---------------- */
+    .friend-list-box, .group-list-box {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .friend-item, .group-item {
+      background: #34495e; padding: 8px 10px; border-radius: 6px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.85em; transition: background 0.2s;
+    }
+    .friend-item:hover, .group-item:hover { background: #3d566e; }
+
+    .friend-actions button, .group-actions button {
+      background: #007bff; color: white; border: none; padding: 3px 8px;
+      border-radius: 4px; cursor: pointer; font-size: 0.8em;
+    }
+
+    /* ---------------- 網頁內獨立聊天視窗 (可調整尺寸/位置) ---------------- */
     .chat-window {
-      position: fixed; bottom: 20px; right: 20px;
-      width: 360px; height: 460px; min-width: 280px; min-height: 300px;
+      position: fixed; width: 380px; height: 500px; top: 80px; right: 320px;
       background: #ffffff; border: 2px solid #2c3e50; border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 4000;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 4000;
       display: flex; flex-direction: column; resize: both; overflow: hidden;
+      min-width: 280px; min-height: 320px;
     }
-    .chat-header {
-      background: #2c3e50; color: white; padding: 10px 12px;
-      cursor: move; user-select: none;
-      display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.95em;
-    }
-    .chat-close-btn {
-      background: none; border: none; color: #ecf0f1; font-size: 1.1em;
-      cursor: pointer; padding: 0 4px; line-height: 1;
-    }
-    .chat-close-btn:hover { color: #e74c3c; }
 
-    .chat-body {
-      flex: 1; padding: 12px; overflow-y: auto; background: #f4f6f9;
-      display: flex; flex-direction: column; gap: 8px;
+    .chat-header {
+      background: #2c3e50; color: #fff; padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: move; font-weight: bold; font-size: 0.95em; user-select: none;
     }
+
+    .chat-header .chat-close-btn {
+      background: none; border: none; color: #fff; font-size: 1.2em;
+      cursor: pointer; line-height: 1;
+    }
+
+    .chat-messages {
+      flex: 1; padding: 12px; overflow-y: auto; background: #f8f9fa;
+      display: flex; flex-direction: column; gap: 10px; font-size: 0.88em;
+    }
+
     .chat-msg-item {
-      background: #ffffff; border-radius: 8px; padding: 8px 12px;
-      border: 1px solid #e0e6ed; font-size: 0.88em; line-height: 1.4; word-break: break-word;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      background: #fff; border-radius: 8px; padding: 8px 12px;
+      border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      word-break: break-all;
     }
-    .chat-footer {
-      padding: 8px 10px; background: #eef2f7; border-top: 1px solid #cbd5e0;
+    .chat-msg-item.self {
+      background: #e3f2fd; border-color: #bbdefb; align-self: flex-end; width: 90%;
+    }
+
+    .chat-input-bar {
+      padding: 8px 10px; background: #fff; border-top: 1px solid #ddd;
       display: flex; gap: 6px; align-items: center;
     }
-    .chat-footer input {
+    .chat-input-bar input {
       flex: 1; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px;
-      font-size: 0.9em; outline: none; background: #fff;
+      font-size: 0.9em; outline: none;
     }
-    .chat-footer button {
+    .chat-input-bar button {
       background: var(--accent-color); color: white; border: none;
-      padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.88em;
+      padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9em;
     }
 
     /* ---------------- 右側主頁面 ---------------- */
@@ -263,7 +277,7 @@
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
     }
 
-    /* 大頭照/立繪欄位：圖片自動適配填滿空間，不拉伸，邊緣改為 0.5cm 空隙 */
+    /* 大頭照/立繪欄位：圖片自動適配填滿空間，不拉伸，邊緣為 0.5cm 空隙 */
     .avatar-right {
       padding: 0.5cm !important;
       display: flex;
@@ -394,7 +408,7 @@
     /* 交互彈窗 (Dialog Modal) */
     .dialog-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.6); z-index: 3500; justify-content: center; align-items: center;
     }
     .dialog-card {
       background: #fff; border-radius: 10px; padding: 20px; width: 90%; max-width: 440px;
@@ -448,6 +462,8 @@
       .cards-grid { grid-template-columns: repeat(3, 1fr); }
       .sidebar { position: relative; }
       .sidebar.closed { transform: translateX(-100%); position: absolute; }
+      .right-sidebar { position: relative; }
+      .right-sidebar.closed { transform: translateX(100%); position: absolute; }
     }
   </style>
 </head>
@@ -456,13 +472,13 @@
 <!-- 通知容器 -->
 <div class="notification-container" id="notification-container"></div>
 
-<!-- 左側選單按鈕 -->
+<!-- 左側選單切換按鈕 -->
 <button type="button" class="toggle-sidebar-btn" id="toggleSidebarBtn" onclick="toggleSidebar()">☰ 選單</button>
 
-<!-- 右側好友/群組按鈕 -->
-<button type="button" class="toggle-friends-btn" id="toggleFriendsBtn" onclick="toggleFriendsSidebar()">👥 好友/群組</button>
+<!-- 右側好友/群組切換按鈕 -->
+<button type="button" class="toggle-right-sidebar-btn" id="toggleRightSidebarBtn" onclick="toggleRightSidebar()">👥 好友/群組</button>
 
-<!-- 左側側邊欄選單 -->
+<!-- 左側邊欄選單 -->
 <div class="sidebar closed" id="sidebar">
   <div class="sidebar-resizer" id="sidebarResizer"></div>
   <div class="sidebar-header">
@@ -470,12 +486,12 @@
     <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleSidebar()">✕</button>
   </div>
 
-  <!-- 賬號管理與信箱/好友控制欄 -->
+  <!-- 賬號管理與信箱控制欄 -->
   <div class="account-bar">
     <div class="account-info">
-      <span>👤 當前暱稱: <strong id="current-user-display">未登入</strong></span>
-      <div style="display:flex; gap:4px; align-items:center;">
-        <button class="account-btn-sm" style="background:#f39c12;" onclick="openEditNicknameModal()">✏️ 更改暱稱</button>
+      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">👤 <strong id="current-user-display">未登入</strong></span>
+      <div style="display:flex; gap:4px; align-items:center; flex-shrink:0;">
+        <button class="account-btn-sm" style="background:#e67e22;" onclick="openChangeNicknameModal()" title="修改暱稱">✏️ 暱稱</button>
         <button class="account-btn-sm" style="background:#8e44ad;" onclick="openInboxModal()">
           ✉️ 信箱 <span id="inbox-badge" style="background:#e74c3c; color:white; border-radius:10px; padding:1px 6px; font-size:0.75em; display:none;">0</span>
         </button>
@@ -491,7 +507,7 @@
 
     <!-- 好友申請輸入框 -->
     <div style="display:flex; gap:4px; margin-top:4px;">
-      <input type="text" id="add-friend-input" placeholder="輸入暱稱/名稱申請好友..." style="flex:1; padding:3px 6px; border-radius:4px; border:1px solid #4e6d8c; background:#34495e; color:#fff; font-size:0.8em;">
+      <input type="text" id="add-friend-input" placeholder="輸入好友暱稱或賬號..." style="flex:1; padding:3px 6px; border-radius:4px; border:1px solid #4e6d8c; background:#34495e; color:#fff; font-size:0.8em;">
       <button class="account-btn-sm" style="background:#e67e22;" onclick="sendFriendRequest()">+ 加好友</button>
     </div>
   </div>
@@ -508,41 +524,42 @@
   <div class="folder-container" id="tree-root"></div>
 </div>
 
-<!-- 右側彈出式好友/群組名單面板 -->
-<div class="friends-sidebar closed" id="friendsSidebar">
-  <div class="friends-sidebar-header">
-    <span>👥 好友與群組名單</span>
-    <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleFriendsSidebar()">✕</button>
+<!-- 右側好友與群組彈出式側邊欄 -->
+<div class="right-sidebar closed" id="rightSidebar">
+  <div class="right-sidebar-header">
+    <span style="font-weight:bold; font-size:1em;">💬 好友與群組</span>
+    <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleRightSidebar()">✕</button>
   </div>
-  <div class="friends-sidebar-content">
-    <div class="friends-section">
-      <div class="friends-section-title">
+  <div class="right-sidebar-content">
+    <!-- 好友名單區塊 -->
+    <div>
+      <div class="right-section-title">
         <span>🤝 我的好友</span>
-        <button class="account-btn-sm" style="background:#e67e22; padding:2px 6px;" onclick="focusAddFriendInput()">+ 新增</button>
       </div>
-      <div id="friends-list-container"></div>
+      <div class="friend-list-box" id="friend-list-container"></div>
     </div>
 
-    <div class="friends-section">
-      <div class="friends-section-title">
+    <!-- 群組名單區塊 -->
+    <div>
+      <div class="right-section-title">
         <span>👨‍👩‍👧‍👦 我的群組</span>
         <button class="account-btn-sm" style="background:#27ae60; padding:2px 6px;" onclick="openCreateGroupModal()">+ 建立群組</button>
       </div>
-      <div id="groups-list-container"></div>
+      <div class="group-list-box" id="group-list-container"></div>
     </div>
   </div>
 </div>
 
-<!-- 獨立視窗 (網頁內聊天室) -->
-<div id="chatWindow" class="chat-window" style="display:none;">
+<!-- 獨立聊天視窗 (動態生成於頁面) -->
+<div class="chat-window" id="chatWindow" style="display:none;">
   <div class="chat-header" id="chatHeader">
     <span id="chatTitle">💬 聊天室</span>
     <button class="chat-close-btn" onclick="closeChatWindow()">✕</button>
   </div>
-  <div class="chat-body" id="chatBody"></div>
-  <div class="chat-footer">
-    <input type="text" id="chatInput" placeholder="輸入文字..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-    <button type="button" onclick="sendChatMessage()">發送</button>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-bar">
+    <input type="text" id="chatInputText" placeholder="輸入訊息..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+    <button onclick="sendChatMessage()">發送</button>
   </div>
 </div>
 
@@ -566,7 +583,7 @@
           <div class="form-group"><label>關鍵詞：</label><input type="text" id="field-keywords"></div>
         </div>
 
-        <!-- 大頭照 / 立繪（保留0.5cm邊緣空隙，圖片自動縮放適配不拉伸） -->
+        <!-- 大頭照 / 立繪（保留 0.5cm 邊緣空隙，圖片自動縮放適配不拉伸） -->
         <div class="section-box avatar-right">
           <div class="section-title">大頭照 / 立繪</div>
           <div class="avatar-container-inner">
@@ -696,12 +713,12 @@
   </div>
 </div>
 
-<!-- 註冊新賬號 Modal -->
+<!-- 註冊新賬號 Modal（包含暱稱設定） -->
 <div class="dialog-overlay" id="registerDialogModal">
   <div class="dialog-card">
     <h3>註冊新賬號</h3>
-    <div class="form-group"><label>賬號名稱：</label><input type="text" id="reg-input-name" placeholder="請輸入使用者名稱/賬號"></div>
-    <div class="form-group"><label>設定暱稱：</label><input type="text" id="reg-input-nickname" placeholder="請設定顯示暱稱"></div>
+    <div class="form-group"><label>賬號名稱：</label><input type="text" id="reg-input-name" placeholder="請輸入使用者名稱 (帳號)"></div>
+    <div class="form-group"><label>設定暱稱：</label><input type="text" id="reg-input-nick" placeholder="請輸入顯示暱稱"></div>
     <div class="form-group"><label>登入密碼：</label><input type="password" id="reg-input-pass" placeholder="設定密碼 (選填)"></div>
     <div class="dialog-btns">
       <button class="btn-cancel" onclick="closeRegisterModal()">取消</button>
@@ -710,26 +727,27 @@
   </div>
 </div>
 
-<!-- 更改暱稱 Modal -->
-<div class="dialog-overlay" id="editNicknameModal">
+<!-- 修改暱稱 Modal -->
+<div class="dialog-overlay" id="changeNicknameDialogModal">
   <div class="dialog-card">
-    <h3>更改賬號暱稱</h3>
-    <p style="font-size:0.85em; color:#666;">更改後會給所有好友和已加入的共享資料夾成員發送通知信件。</p>
-    <div class="form-group"><label>新暱稱：</label><input type="text" id="new-nickname-input" placeholder="請輸入新暱稱"></div>
+    <h3>修改個人暱稱</h3>
+    <div class="form-group"><label>全新暱稱：</label><input type="text" id="change-nick-input" placeholder="請輸入新暱稱"></div>
     <div class="dialog-btns">
-      <button class="btn-cancel" onclick="closeEditNicknameModal()">取消</button>
-      <button class="btn-save" onclick="submitChangeNickname()">儲存暱稱</button>
+      <button class="btn-cancel" onclick="closeChangeNicknameModal()">取消</button>
+      <button class="btn-save" style="background:#e67e22;" onclick="submitChangeNickname()">確定修改</button>
     </div>
   </div>
 </div>
 
 <!-- 建立群組 Modal -->
-<div class="dialog-overlay" id="createGroupModal">
+<div class="dialog-overlay" id="createGroupDialogModal">
   <div class="dialog-card">
     <h3>建立新群組</h3>
     <div class="form-group"><label>群組名稱：</label><input type="text" id="group-name-input" placeholder="請輸入群組名稱"></div>
-    <label style="font-weight:bold; font-size:0.9em; display:block; margin-bottom:6px;">選擇加入的好友成員：</label>
-    <div id="group-friends-select-list" style="max-height:160px; overflow-y:auto; border:1px solid #ccc; padding:8px; border-radius:6px; margin-bottom:12px;"></div>
+    <div style="margin-top:10px;">
+      <label style="font-size:0.85em; font-weight:bold; color:#2c3e50;">選擇群組成員 (好友)：</label>
+      <div id="group-friends-select-list" style="max-height:160px; overflow-y:auto; margin-top:6px; display:flex; flex-direction:column; gap:6px; border:1px solid #ddd; padding:8px; border-radius:6px;"></div>
+    </div>
     <div class="dialog-btns">
       <button class="btn-cancel" onclick="closeCreateGroupModal()">取消</button>
       <button class="btn-save" style="background:#27ae60;" onclick="submitCreateGroup()">建立群組</button>
@@ -798,11 +816,13 @@
   let accountsData = {};
   let sharedFoldersData = {};
   let votesData = {};
-  let chatsData = {};
   let groupsData = {};
+  let chatsData = {};
   let appData = { tree: [] };
 
   let activePageId = "";
+  let activeChatId = null;
+  let activeChatType = null; // 'friend' or 'group'
   let personCount = 0;
   let keepsakeCount = 0;
   let outfitCount = 0;
@@ -812,14 +832,13 @@
   let lastSyncTimestamp = 0;
   let isCurrentPageReadOnly = false;
   let currentMembersSfId = null;
-  let activeChatTarget = null; // { type: 'friend'|'group', id: '...' }
 
   window.onload = function() {
     initSidebarResizer();
     initAccountSystem();
     loadFromLocalStorage();
     loadVotesFromStorage();
-    loadChatsAndGroupsFromStorage();
+    loadGroupsAndChatsFromStorage();
     renderTree();
     renderFriendsAndGroups();
     updateInboxBadge();
@@ -830,30 +849,31 @@
   };
 
   /* ---------------- 輔助函式：尋找賬號與暱稱 ---------------- */
-  function findAccountByUsernameOrNickname(query) {
-    if (!query) return null;
-    const trimmed = query.trim();
+  function findAccountByUsernameOrNickname(identifier) {
+    if (!identifier) return null;
+    const trimmed = identifier.trim();
     for (let id in accountsData) {
-      if (accountsData[id].username === trimmed || accountsData[id].nickname === trimmed) return accountsData[id];
+      if (accountsData[id].username === trimmed || (accountsData[id].nickname && accountsData[id].nickname === trimmed)) {
+        return accountsData[id];
+      }
     }
     return null;
   }
 
-  function getAccountNickname(userId) {
-    if (!userId) return "未知使用者";
-    if (accountsData[userId]) {
-      return accountsData[userId].nickname || accountsData[userId].username || userId;
-    }
-    for (let id in accountsData) {
-      if (accountsData[id].username === userId || accountsData[id].nickname === userId) {
-        return accountsData[id].nickname || accountsData[id].username;
-      }
-    }
-    return userId;
+  function getUserNickname(username) {
+    const acc = findAccountByUsernameOrNickname(username);
+    if (acc && acc.nickname) return acc.nickname;
+    return username;
   }
 
-  function getCurrentNickname() {
-    return getAccountNickname(currentUser);
+  function getCurrentUsername() {
+    return accountsData[currentUser] ? accountsData[currentUser].username : currentUser;
+  }
+
+  function getCurrentUserNickname() {
+    const currAcc = accountsData[currentUser];
+    if (currAcc && currAcc.nickname) return currAcc.nickname;
+    return getCurrentUsername();
   }
 
   /* ---------------- 選單寬度動態調整 ---------------- */
@@ -932,7 +952,8 @@
 
   function updateAccountUI() {
     const currAcc = accountsData[currentUser];
-    document.getElementById('current-user-display').innerText = getCurrentNickname();
+    const nick = getUserNickname(currAcc ? currAcc.username : currentUser);
+    document.getElementById('current-user-display').innerText = nick;
     const select = document.getElementById('linked-account-select');
     select.innerHTML = '';
     
@@ -942,35 +963,37 @@
       if (accountsData[accId]) {
         const opt = document.createElement('option');
         opt.value = accId;
-        opt.innerText = getAccountNickname(accId) + (accId === currentUser ? " (當前)" : "");
+        const displayNick = getUserNickname(accountsData[accId].username);
+        opt.innerText = displayNick + (accId === currentUser ? " (當前)" : "");
         if (accId === currentUser) opt.selected = true;
         select.appendChild(opt);
       }
     });
     updateInboxBadge();
+    renderFriendsAndGroups();
   }
 
-  /* 註冊新賬號功能 (需要同時設定暱稱) */
+  /* 註冊新賬號功能 (含暱稱設定) */
   function openRegisterModal() { document.getElementById('registerDialogModal').style.display = 'flex'; }
   function closeRegisterModal() { document.getElementById('registerDialogModal').style.display = 'none'; }
 
   function submitRegisterAccount() {
     const name = document.getElementById('reg-input-name').value.trim();
-    const nickname = document.getElementById('reg-input-nickname').value.trim();
+    const nick = document.getElementById('reg-input-nick').value.trim();
     const pass = document.getElementById('reg-input-pass').value.trim();
-
     if (!name) return alert("請輸入賬號名稱！");
-    if (!nickname) return alert("註冊時必須設定暱稱！");
 
     if (findAccountByUsernameOrNickname(name)) {
       return alert("該賬號名稱已被使用，請更換一個名稱！");
     }
 
     const newId = "acc_" + Date.now();
+    const finalNick = nick || name;
+
     accountsData[newId] = {
       id: newId,
       username: name,
-      nickname: nickname,
+      nickname: finalNick,
       pass: pass || "123456",
       linkedUserIds: [newId],
       friends: [],
@@ -982,82 +1005,72 @@
     closeRegisterModal();
     loadFromLocalStorage();
     renderTree();
-    renderFriendsAndGroups();
     updateAccountUI();
-    showNotification(`註冊成功！已切換至新賬號 [${nickname}]`, 'success');
+    showNotification(`註冊成功！已切換至新賬號 [${finalNick}]`, 'success');
   }
 
-  /* 暱稱修改與通知功能 */
-  function openEditNicknameModal() {
-    const currAcc = accountsData[currentUser];
-    document.getElementById('new-nickname-input').value = currAcc ? (currAcc.nickname || currAcc.username) : '';
-    document.getElementById('editNicknameModal').style.display = 'flex';
+  /* 更改暱稱功能 */
+  function openChangeNicknameModal() {
+    const currNick = getCurrentUserNickname();
+    document.getElementById('change-nick-input').value = currNick;
+    document.getElementById('changeNicknameDialogModal').style.display = 'flex';
   }
-
-  function closeEditNicknameModal() {
-    document.getElementById('editNicknameModal').style.display = 'none';
-  }
+  function closeChangeNicknameModal() { document.getElementById('changeNicknameDialogModal').style.display = 'none'; }
 
   function submitChangeNickname() {
-    const newNick = document.getElementById('new-nickname-input').value.trim();
-    if (!newNick) return alert("暱稱不能為空！");
+    const newNick = document.getElementById('change-nick-input').value.trim();
+    if (!newNick) return alert("請輸入有效的新暱稱！");
 
     const currAcc = accountsData[currentUser];
-    const oldNick = currAcc.nickname || currAcc.username;
-    if (newNick === oldNick) {
-      closeEditNicknameModal();
-      return;
-    }
+    const oldNick = getUserNickname(currAcc.username);
+    if (newNick === oldNick) return closeChangeNicknameModal();
 
     currAcc.nickname = newNick;
-    saveAccountsToStorage();
 
-    // 通知所有好友和已加入的共享資料夾成員
-    const notifiedUserIds = new Set();
-
-    // 1. 收集好友
-    (currAcc.friends || []).forEach(fAccId => {
-      if (fAccId !== currentUser) notifiedUserIds.add(fAccId);
+    // 給所有好友發送改名通知
+    const friends = currAcc.friends || [];
+    friends.forEach(fName => {
+      const fAcc = findAccountByUsernameOrNickname(fName);
+      if (fAcc) {
+        if (!fAcc.inbox) fAcc.inbox = [];
+        fAcc.inbox.unshift({
+          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+          type: "system_notice",
+          content: `【${oldNick}】已改名為【${newNick}】`,
+          timestamp: Date.now()
+        });
+      }
     });
 
-    // 2. 收集所有共享資料夾成員
+    // 給所有已加入的共享資料夾成員發送通知
     Object.values(sharedFoldersData).forEach(sf => {
-      if (sf.members && sf.members.includes(currAcc.username) || sf.members.includes(oldNick) || sf.members.includes(currentUser)) {
-        sf.members.forEach(m => {
-          const acc = findAccountByUsernameOrNickname(m);
-          if (acc && acc.id !== currentUser) {
-            notifiedUserIds.add(acc.id);
+      if (sf.members && sf.members.includes(currAcc.username)) {
+        sf.members.forEach(mName => {
+          if (mName !== currAcc.username) {
+            const mAcc = findAccountByUsernameOrNickname(mName);
+            if (mAcc) {
+              if (!mAcc.inbox) mAcc.inbox = [];
+              const exists = mAcc.inbox.some(m => m.content === `【${oldNick}】已改名為【${newNick}】` && (Date.now() - m.timestamp < 5000));
+              if (!exists) {
+                mAcc.inbox.unshift({
+                  id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+                  type: "system_notice",
+                  content: `【${oldNick}】已改名為【${newNick}】`,
+                  timestamp: Date.now()
+                });
+              }
+            }
           }
         });
       }
     });
 
-    // 發送通知信件到信箱
-    notifiedUserIds.forEach(targetId => {
-      const targetAcc = accountsData[targetId];
-      if (targetAcc) {
-        if (!targetAcc.inbox) targetAcc.inbox = [];
-        targetAcc.inbox.unshift({
-          id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
-          type: "nickname_changed",
-          fromUser: newNick,
-          oldNickname: oldNick,
-          newNickname: newNick,
-          content: `【${oldNick}】已改名為【${newNick}】`,
-          timestamp: Date.now(),
-          status: "info"
-        });
-      }
-    });
-
     saveAccountsToStorage();
-    closeEditNicknameModal();
+    closeChangeNicknameModal();
     updateAccountUI();
     renderTree();
-    renderFriendsAndGroups();
-    if (activeChatTarget) renderChatMessages();
-
-    showNotification(`暱稱已更新為【${newNick}】，並已發送通知至所有好友及共享成員！`, 'success');
+    if (activeChatId) renderChatMessages();
+    showNotification(`暱稱已成功修改為【${newNick}】，並已發送通知至相關好友與共享成員！`, 'success');
   }
 
   function openAccountModal() { document.getElementById('accountDialogModal').style.display = 'flex'; }
@@ -1068,9 +1081,7 @@
     const pass = document.getElementById('acc-input-pass').value.trim();
     if (!name) return alert("請輸入賬號名稱！");
 
-    let targetAcc = findAccountByUsernameOrNickname(name);
-    let targetId = targetAcc ? targetAcc.id : null;
-
+    let targetId = Object.keys(accountsData).find(id => accountsData[id].username === name || accountsData[id].nickname === name);
     if (!targetId) {
       targetId = "acc_" + Date.now();
       accountsData[targetId] = { id: targetId, username: name, nickname: name, pass: pass || "123456", linkedUserIds: [targetId], friends: [], inbox: [] };
@@ -1089,7 +1100,7 @@
     saveAccountsToStorage();
     closeAccountModal();
     updateAccountUI();
-    showNotification(`已成功關聯賬號 [${getAccountNickname(targetId)}]，登入憑證已雙向同步！`, 'success');
+    showNotification(`已成功關聯賬號 [${getUserNickname(name)}]，登入憑證已雙向同步！`, 'success');
   }
 
   function switchAccount(accId) {
@@ -1099,20 +1110,20 @@
     saveAccountsToStorage();
     loadFromLocalStorage();
     renderTree();
-    renderFriendsAndGroups();
     if (appData.tree.length > 0) {
       const firstPage = findFirstPage(appData.tree);
       if (firstPage) switchPage(firstPage.id);
     }
     updateAccountUI();
-    showNotification(`已切換至賬號：${getAccountNickname(accId)}`, 'info');
+    showNotification(`已切換至賬號：${getUserNickname(accountsData[accId].username)}`, 'info');
   }
 
   function confirmDeleteCurrentAccount() {
     if (Object.keys(accountsData).length <= 1) {
       return alert("系統至少需保留一個賬號！");
     }
-    if (confirm(`確定要刪除當前賬號 [${getCurrentNickname()}] 嗎？這將同步從所有關聯賬號中移除此憑證！`)) {
+    const nick = getUserNickname(accountsData[currentUser].username);
+    if (confirm(`確定要刪除當前賬號 [${nick}] 嗎？這將同步從所有關聯賬號中移除此憑證！`)) {
       const delId = currentUser;
       delete accountsData[delId];
       localStorage.removeItem(`oc_app_data_${delId}`);
@@ -1127,103 +1138,44 @@
       saveAccountsToStorage();
       loadFromLocalStorage();
       renderTree();
-      renderFriendsAndGroups();
       updateAccountUI();
       showNotification("賬號已刪除，並已同步從所有關聯賬號中清除登入憑證！", 'warning');
     }
   }
 
-  /* ---------------- 好友與群組側邊欄管理 ---------------- */
-  function toggleFriendsSidebar() {
-    document.getElementById('friendsSidebar').classList.toggle('closed');
-  }
-
-  function focusAddFriendInput() {
-    if (document.getElementById('sidebar').classList.contains('closed')) {
-      toggleSidebar();
-    }
-    document.getElementById('add-friend-input').focus();
-  }
-
-  function renderFriendsAndGroups() {
-    const friendContainer = document.getElementById('friends-list-container');
-    const groupContainer = document.getElementById('groups-list-container');
-    if (!friendContainer || !groupContainer) return;
-
-    friendContainer.innerHTML = '';
-    groupContainer.innerHTML = '';
-
-    const currAcc = accountsData[currentUser];
-    if (!currAcc) return;
-
-    // 渲染好友
-    const friends = currAcc.friends || [];
-    if (friends.length === 0) {
-      friendContainer.innerHTML = '<div style="color:#888; font-size:0.8em; text-align:center; padding:10px;">暫無好友</div>';
-    } else {
-      friends.forEach(fId => {
-        const friendNick = getAccountNickname(fId);
-        const card = document.createElement('div');
-        card.className = 'friend-item-card';
-        card.innerHTML = `
-          <span>👤 ${friendNick}</span>
-          <button class="account-btn-sm" style="background:#007bff;" onclick="openChatWithTarget('friend', '${fId}')">💬 聊天</button>
-        `;
-        friendContainer.appendChild(card);
-      });
-    }
-
-    // 渲染群組
-    const myGroups = Object.values(groupsData).filter(g => g.members && g.members.includes(currentUser));
-    if (myGroups.length === 0) {
-      groupContainer.innerHTML = '<div style="color:#888; font-size:0.8em; text-align:center; padding:10px;">暫未加入任何群組</div>';
-    } else {
-      myGroups.forEach(g => {
-        const card = document.createElement('div');
-        card.className = 'friend-item-card';
-        card.innerHTML = `
-          <span>👨‍👩‍👧‍👦 ${g.name} (${g.members.length}人)</span>
-          <button class="account-btn-sm" style="background:#007bff;" onclick="openChatWithTarget('group', '${g.id}')">💬 聊天</button>
-        `;
-        groupContainer.appendChild(card);
-      });
-    }
-  }
-
-  /* ---------------- 好友申請 ---------------- */
+  /* ---------------- 好友系統 (提交好友申請) ---------------- */
   function sendFriendRequest() {
     const input = document.getElementById('add-friend-input');
     const targetName = input.value.trim();
-    if (!targetName) return alert("請輸入要添加的好友暱稱或名稱！");
-
-    const currNick = getCurrentNickname();
-    if (targetName === currNick || targetName === accountsData[currentUser].username) {
-      return alert("不能新增自己為好友！");
-    }
-
-    const targetAcc = findAccountByUsernameOrNickname(targetName);
-    if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱是否正確。`);
+    if (!targetName) return alert("請輸入要添加的好友暱稱或賬號！");
 
     const currAcc = accountsData[currentUser];
+    const currUsername = currAcc.username;
+    const currNick = getUserNickname(currUsername);
+
+    const targetAcc = findAccountByUsernameOrNickname(targetName);
+    if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱或暱稱。`);
+
+    if (targetAcc.username === currUsername) return alert("不能新增自己為好友！");
+
     if (!currAcc.friends) currAcc.friends = [];
-    if (currAcc.friends.includes(targetAcc.id)) return alert(`【${getAccountNickname(targetAcc.id)}】已經是您的好友了！`);
+    if (currAcc.friends.includes(targetAcc.username)) return alert(`【${getUserNickname(targetAcc.username)}】已經是您的好友了！`);
 
     if (!targetAcc.inbox) targetAcc.inbox = [];
-    const existingReq = targetAcc.inbox.find(m => m.type === 'friend_request' && m.fromUserId === currentUser && m.status === 'pending');
+    const existingReq = targetAcc.inbox.find(m => m.type === 'friend_request' && m.fromUser === currUsername && m.status === 'pending');
     if (existingReq) return alert("已發送過好友申請，請勿重複提交！");
 
     targetAcc.inbox.unshift({
       id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
       type: "friend_request",
-      fromUserId: currentUser,
-      fromUserNick: currNick,
+      fromUser: currUsername,
       timestamp: Date.now(),
       status: "pending"
     });
 
     saveAccountsToStorage();
     input.value = '';
-    showNotification(`已成功向【${getAccountNickname(targetAcc.id)}】提交好友申請！`, 'success');
+    showNotification(`已成功向【${getUserNickname(targetAcc.username)}】提交好友申請！`, 'success');
   }
 
   function acceptFriendRequest(msgId) {
@@ -1234,22 +1186,22 @@
     if (!msg) return;
 
     msg.status = 'accepted';
-    const friendId = msg.fromUserId;
+    const friendUsername = msg.fromUser;
 
     if (!currAcc.friends) currAcc.friends = [];
-    if (!currAcc.friends.includes(friendId)) currAcc.friends.push(friendId);
+    if (!currAcc.friends.includes(friendUsername)) currAcc.friends.push(friendUsername);
 
-    const friendAcc = accountsData[friendId];
+    const friendAcc = findAccountByUsernameOrNickname(friendUsername);
     if (friendAcc) {
       if (!friendAcc.friends) friendAcc.friends = [];
-      if (!friendAcc.friends.includes(currentUser)) friendAcc.friends.push(currentUser);
+      if (!friendAcc.friends.includes(currAcc.username)) friendAcc.friends.push(currAcc.username);
     }
 
     saveAccountsToStorage();
-    showNotification(`已與【${getAccountNickname(friendId)}】成為好友！`, 'success');
+    showNotification(`已與【${getUserNickname(friendUsername)}】成為好友！`, 'success');
     renderInboxUI();
-    renderFriendsAndGroups();
     updateInboxBadge();
+    renderFriendsAndGroups();
   }
 
   function rejectFriendRequest(msgId) {
@@ -1265,165 +1217,214 @@
     updateInboxBadge();
   }
 
-  /* ---------------- 多人群組建立功能 ---------------- */
-  function openCreateGroupModal() {
+  /* ---------------- 右側好友與群組 UI 渲染 ---------------- */
+  function toggleRightSidebar() {
+    document.getElementById('rightSidebar').classList.toggle('closed');
+  }
+
+  function renderFriendsAndGroups() {
+    const friendContainer = document.getElementById('friend-list-container');
+    const groupContainer = document.getElementById('group-list-container');
+    if (!friendContainer || !groupContainer) return;
+
+    friendContainer.innerHTML = '';
+    groupContainer.innerHTML = '';
+
     const currAcc = accountsData[currentUser];
     const friends = (currAcc && currAcc.friends) ? currAcc.friends : [];
 
     if (friends.length === 0) {
-      return alert("您目前還沒有好友，請先新增好友後再建立群組！");
+      friendContainer.innerHTML = '<div style="font-size:0.8em; color:#95a5a6; padding:4px;">暫無好友，請上方加好友</div>';
+    } else {
+      friends.forEach(fName => {
+        const nick = getUserNickname(fName);
+        const item = document.createElement('div');
+        item.className = 'friend-item';
+        item.innerHTML = `
+          <span>👤 ${nick}</span>
+          <div class="friend-actions">
+            <button onclick="openChatWithFriend('${fName}')">💬 聊天</button>
+          </div>
+        `;
+        friendContainer.appendChild(item);
+      });
     }
 
-    const selectListContainer = document.getElementById('group-friends-select-list');
-    selectListContainer.innerHTML = '';
+    // 群組名單
+    const myGroups = Object.values(groupsData).filter(g => g.members && g.members.includes(currAcc ? currAcc.username : ''));
+    if (myGroups.length === 0) {
+      groupContainer.innerHTML = '<div style="font-size:0.8em; color:#95a5a6; padding:4px;">暫無群組</div>';
+    } else {
+      myGroups.forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'group-item';
+        item.innerHTML = `
+          <span>👨‍👩‍👧‍👦 ${g.name} (${g.members.length}人)</span>
+          <div class="group-actions">
+            <button onclick="openChatWithGroup('${g.id}')">💬 聊天</button>
+          </div>
+        `;
+        groupContainer.appendChild(item);
+      });
+    }
+  }
 
-    friends.forEach(fId => {
-      const fNick = getAccountNickname(fId);
-      const row = document.createElement('div');
-      row.style.cssText = "display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9em;";
-      row.innerHTML = `
-        <input type="checkbox" value="${fId}" id="chk_friend_${fId}">
-        <label for="chk_friend_${fId}" style="cursor:pointer;">👤 ${fNick}</label>
-      `;
-      selectListContainer.appendChild(row);
-    });
+  /* 建立群組 Modal 邏輯 */
+  function openCreateGroupModal() {
+    const container = document.getElementById('group-friends-select-list');
+    container.innerHTML = '';
+    const currAcc = accountsData[currentUser];
+    const friends = (currAcc && currAcc.friends) ? currAcc.friends : [];
+
+    if (friends.length === 0) {
+      container.innerHTML = '<div style="font-size:0.8em; color:#888;">暫無好友可供選擇，請先添加好友！</div>';
+    } else {
+      friends.forEach(fName => {
+        const nick = getUserNickname(fName);
+        const label = document.createElement('label');
+        label.style.cssText = "display:flex; align-items:center; gap:6px; font-size:0.85em; cursor:pointer;";
+        label.innerHTML = `<input type="checkbox" value="${fName}"> <span>👤 ${nick}</span>`;
+        container.appendChild(label);
+      });
+    }
 
     document.getElementById('group-name-input').value = '';
-    document.getElementById('createGroupModal').style.display = 'flex';
+    document.getElementById('createGroupDialogModal').style.display = 'flex';
   }
 
   function closeCreateGroupModal() {
-    document.getElementById('createGroupModal').style.display = 'none';
+    document.getElementById('createGroupDialogModal').style.display = 'none';
   }
 
   function submitCreateGroup() {
-    const groupName = document.getElementById('group-name-input').value.trim();
-    if (!groupName) return alert("請輸入群組名稱！");
+    const name = document.getElementById('group-name-input').value.trim();
+    if (!name) return alert("請輸入群組名稱！");
 
-    const checkedInputs = document.querySelectorAll('#group-friends-select-list input[type="checkbox"]:checked');
-    if (checkedInputs.length === 0) {
-      return alert("請至少選擇一位好友加入群組！");
-    }
+    const checkboxes = document.querySelectorAll('#group-friends-select-list input[type="checkbox"]:checked');
+    const selectedFriends = Array.from(checkboxes).map(cb => cb.value);
 
-    const memberIds = [currentUser];
-    checkedInputs.forEach(chk => memberIds.push(chk.value));
+    if (selectedFriends.length === 0) return alert("請至少選擇一位好友加入群組！");
+
+    const currUsername = getCurrentUsername();
+    const members = Array.from(new Set([currUsername, ...selectedFriends]));
 
     const groupId = "grp_" + Date.now();
     groupsData[groupId] = {
       id: groupId,
-      name: groupName,
-      creatorId: currentUser,
-      members: memberIds,
-      createdAt: Date.now()
+      name: name,
+      creator: currUsername,
+      members: members
     };
 
-    saveChatsAndGroupsToStorage();
+    saveGroupsAndChatsToStorage();
     closeCreateGroupModal();
     renderFriendsAndGroups();
-    showNotification(`已成功建立群組【${groupName}】！`, 'success');
+    showNotification(`已成功建立群組【${name}】！`, 'success');
   }
 
-  /* ---------------- 即時聊天室與獨立視窗控制 ---------------- */
-  function loadChatsAndGroupsFromStorage() {
-    const rawChats = localStorage.getItem('oc_chats_v2');
-    if (rawChats) chatsData = JSON.parse(rawChats);
-
-    const rawGroups = localStorage.getItem('oc_groups_v2');
-    if (rawGroups) groupsData = JSON.parse(rawGroups);
+  /* ---------------- 網頁獨立視窗聊天功能 ---------------- */
+  function loadGroupsAndChatsFromStorage() {
+    const rawGrp = localStorage.getItem('oc_groups_v2');
+    if (rawGrp) groupsData = JSON.parse(rawGrp);
+    const rawChat = localStorage.getItem('oc_chats_v2');
+    if (rawChat) chatsData = JSON.parse(rawChat);
   }
 
-  function saveChatsAndGroupsToStorage() {
-    localStorage.setItem('oc_chats_v2', JSON.stringify(chatsData));
+  function saveGroupsAndChatsToStorage() {
     localStorage.setItem('oc_groups_v2', JSON.stringify(groupsData));
+    localStorage.setItem('oc_chats_v2', JSON.stringify(chatsData));
     localStorage.setItem('oc_sync_ts', Date.now().toString());
   }
 
-  function getChatId(type, targetId) {
-    if (type === 'group') return targetId;
-    const pair = [currentUser, targetId].sort();
-    return `chat_${pair[0]}_${pair[1]}`;
+  function openChatWithFriend(friendUsername) {
+    const currUsername = getCurrentUsername();
+    const chatId = [currUsername, friendUsername].sort().join("_chat_");
+    const friendNick = getUserNickname(friendUsername);
+    activeChatId = chatId;
+    activeChatType = 'friend';
+
+    document.getElementById('chatTitle').innerText = `💬 與 ${friendNick} 聊天中`;
+    document.getElementById('chatWindow').style.display = 'flex';
+    renderChatMessages();
   }
 
-  function openChatWithTarget(type, targetId) {
-    activeChatTarget = { type, id: targetId };
-    const chatWin = document.getElementById('chatWindow');
-    chatWin.style.display = 'flex';
+  function openChatWithGroup(groupId) {
+    const grp = groupsData[groupId];
+    if (!grp) return;
+    activeChatId = groupId;
+    activeChatType = 'group';
 
-    let titleText = "";
-    if (type === 'friend') {
-      titleText = `💬 與 ${getAccountNickname(targetId)} 的聊天室`;
-    } else {
-      const grp = groupsData[targetId];
-      titleText = `👨‍👩‍👧‍👦 群組：${grp ? grp.name : '聊天室'}`;
-    }
-    document.getElementById('chatTitle').innerText = titleText;
-
+    document.getElementById('chatTitle').innerText = `👨‍👩‍👧‍👦 群組: ${grp.name}`;
+    document.getElementById('chatWindow').style.display = 'flex';
     renderChatMessages();
   }
 
   function closeChatWindow() {
     document.getElementById('chatWindow').style.display = 'none';
-    activeChatTarget = null;
-  }
-
-  /* 格式化發送時間：HH/MM（24小時制） DD/MM/YY */
-  function formatChatTimestamp(ts) {
-    const date = new Date(ts);
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
-    const DD = String(date.getDate()).padStart(2, '0');
-    const MM = String(date.getMonth() + 1).padStart(2, '0');
-    const YY = String(date.getFullYear()).slice(-2);
-    return `${hh}/${mm} ${DD}/${MM}/${YY}`;
+    activeChatId = null;
+    activeChatType = null;
   }
 
   function renderChatMessages() {
-    if (!activeChatTarget) return;
-    const chatId = getChatId(activeChatTarget.type, activeChatTarget.id);
-    const body = document.getElementById('chatBody');
-    body.innerHTML = '';
+    const container = document.getElementById('chatMessages');
+    if (!container || !activeChatId) return;
+    container.innerHTML = '';
 
-    const messages = chatsData[chatId] || [];
-    messages.forEach(msg => {
-      const msgItem = document.createElement('div');
-      msgItem.className = 'chat-msg-item';
-      const senderNick = getAccountNickname(msg.senderId);
+    const chatHistory = chatsData[activeChatId] || [];
+    const currUsername = getCurrentUsername();
+
+    chatHistory.forEach(msg => {
+      const item = document.createElement('div');
+      const isSelf = (msg.sender === currUsername);
+      item.className = `chat-msg-item ${isSelf ? 'self' : ''}`;
+
+      const senderNick = getUserNickname(msg.sender);
       const timeStr = formatChatTimestamp(msg.timestamp);
 
-      msgItem.innerHTML = `【${senderNick}】：${msg.text}（發送時間：${timeStr}）`;
-      body.appendChild(msgItem);
+      // 嚴格依照要求格式：【賬號昵稱】：【發送的内容】（【發送時間：HH/MM DD/MM/YY】）
+      item.innerHTML = `<strong>【${senderNick}】</strong>：${escapeHtml(msg.content)} <span style="font-size:0.75em; color:#7f8c8d; margin-left:4px;">（【發送時間：${timeStr}】）</span>`;
+
+      container.appendChild(item);
     });
 
-    body.scrollTop = body.scrollHeight;
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function formatChatTimestamp(ts) {
+    const d = new Date(ts);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const DD = String(d.getDate()).padStart(2, '0');
+    const MM = String(d.getMonth() + 1).padStart(2, '0');
+    const YY = String(d.getFullYear()).slice(-2);
+    return `${hh}/${mm} ${DD}/${MM}/${YY}`;
   }
 
   function sendChatMessage() {
-    if (!activeChatTarget) return;
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text) return;
+    const input = document.getElementById('chatInputText');
+    const content = input.value.trim();
+    if (!content || !activeChatId) return;
 
-    const chatId = getChatId(activeChatTarget.type, activeChatTarget.id);
-    if (!chatsData[chatId]) chatsData[chatId] = [];
+    const currUsername = getCurrentUsername();
+    const currNick = getUserNickname(currUsername);
 
-    const senderNick = getCurrentNickname();
+    if (!chatsData[activeChatId]) chatsData[activeChatId] = [];
 
     const newMsg = {
-      id: "m_" + Date.now(),
-      senderId: currentUser,
-      senderNick: senderNick,
-      text: text,
+      id: "msg_" + Date.now(),
+      sender: currUsername,
+      content: content,
       timestamp: Date.now()
     };
 
-    chatsData[chatId].push(newMsg);
-    saveChatsAndGroupsToStorage();
+    chatsData[activeChatId].push(newMsg);
+    saveGroupsAndChatsToStorage();
 
     input.value = '';
     renderChatMessages();
 
-    // 聊天室有新訊息時，給參與在內的成員發送即時通知：【帳號暱稱】：【發送的內容】
-    showNotification(`【${senderNick}】：${text}`, 'info');
+    // 發送即時通知給參與在內的成員：【賬號昵稱】：【發送的内容】
+    showNotification(`【${currNick}】：${content}`, 'info');
   }
 
   function setupChatWindowDraggable() {
@@ -1439,10 +1440,7 @@
       const rect = win.getBoundingClientRect();
       initialLeft = rect.left;
       initialTop = rect.top;
-      win.style.right = 'auto';
-      win.style.bottom = 'auto';
-      win.style.left = initialLeft + 'px';
-      win.style.top = initialTop + 'px';
+      document.body.style.userSelect = 'none';
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -1451,9 +1449,19 @@
       const dy = e.clientY - startY;
       win.style.left = (initialLeft + dx) + 'px';
       win.style.top = (initialTop + dy) + 'px';
+      win.style.right = 'auto';
     });
 
-    document.addEventListener('mouseup', () => { isDragging = false; });
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.userSelect = '';
+      }
+    });
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
   /* ---------------- 信箱與投票管理 ---------------- */
@@ -1473,7 +1481,7 @@
       badge.style.display = 'none';
       return;
     }
-    const pendingCount = currAcc.inbox.filter(m => m.status === 'pending').length;
+    const pendingCount = currAcc.inbox.filter(m => m.status === 'pending' || m.type === 'system_notice').length;
     if (pendingCount > 0) {
       badge.innerText = pendingCount;
       badge.style.display = 'inline-block';
@@ -1493,19 +1501,22 @@
       return;
     }
 
+    const currUsername = getCurrentUsername();
+
     currAcc.inbox.forEach(msg => {
       const item = document.createElement('div');
       item.style.cssText = "background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; font-size:0.9em;";
 
       const timeStr = new Date(msg.timestamp).toLocaleString();
 
-      if (msg.type === 'nickname_changed') {
+      if (msg.type === 'system_notice') {
         item.innerHTML = `
-          <div>📢 系統通知：<strong>【${msg.oldNickname}】</strong> 已改名為 <strong>【${msg.newNickname}】</strong> <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
+          <div>📢 <strong>【系統通知】</strong> ${msg.content} <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
         `;
       } else if (msg.type === 'friend_request') {
+        const fromNick = getUserNickname(msg.fromUser);
         item.innerHTML = `
-          <div>🤝 <strong>【${msg.fromUserNick || getAccountNickname(msg.fromUserId)}】</strong> 向您發送了好友申請 <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
+          <div>🤝 <strong>【${fromNick}】</strong> 向您發送了好友申請 <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
           <div style="display:flex; justify-content:flex-end; gap:6px;">
             ${msg.status === 'pending' ? `
               <button onclick="acceptFriendRequest('${msg.id}')" style="background:#27ae60; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【接受】</button>
@@ -1514,8 +1525,9 @@
           </div>
         `;
       } else if (msg.type === 'shared_folder_invite') {
+        const fromNick = getUserNickname(msg.fromUser);
         item.innerHTML = `
-          <div>📁 <strong>【${getAccountNickname(msg.fromUser)}】</strong> 邀請您加入共享資料夾 <strong>【${msg.folderName}】</strong> <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
+          <div>📁 <strong>【${fromNick}】</strong> 邀請您加入共享資料夾 <strong>【${msg.folderName}】</strong> <span style="font-size:0.75em; color:#999;">(${timeStr})</span></div>
           <div style="display:flex; justify-content:flex-end; gap:6px;">
             ${msg.status === 'pending' ? `
               <button onclick="acceptFolderInvite('${msg.id}')" style="background:#27ae60; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">【加入】</button>
@@ -1528,7 +1540,8 @@
         const isKick = msg.type === 'kick_vote';
         const sf = sharedFoldersData[msg.folderId];
         const totalMembers = vote ? vote.totalMembersAtStart : (sf ? sf.members.length : 0);
-        const currNick = getCurrentNickname();
+        const fromNick = getUserNickname(msg.fromUser);
+        const targetNick = isKick ? getUserNickname(msg.targetUser) : '';
 
         let approveCount = 0, rejectCount = 0;
         let userVoted = null;
@@ -1536,14 +1549,14 @@
           Object.entries(vote.votes).forEach(([u, v]) => {
             if (v === 'approve') approveCount++;
             if (v === 'reject') rejectCount++;
-            if (u === currNick || u === currentUser) userVoted = v;
+            if (u === currUsername) userVoted = v;
           });
         }
 
         const voteStatusText = vote ? vote.status : 'ended';
 
         item.innerHTML = `
-          <div>🗳️ <strong>【${getAccountNickname(msg.fromUser)}】</strong> 發起投票：${isKick ? `將成員【<strong>${getAccountNickname(msg.targetUser)}</strong>】踢出共享資料夾` : '刪除共享資料夾'} <strong>【${msg.folderName}】</strong></div>
+          <div>🗳️ <strong>【${fromNick}】</strong> 發起投票：${isKick ? `將成員【<strong>${targetNick}</strong>】踢出共享資料夾` : '刪除共享資料夾'} <strong>【${msg.folderName}】</strong></div>
           <div style="font-size:0.8em; color:#555; background:#fff; padding:6px; border-radius:4px; border:1px solid #eee;">
             當前票數：<span style="color:#27ae60; font-weight:bold;">贊成 (${approveCount})</span> | <span style="color:#e74c3c; font-weight:bold;">反對 (${rejectCount})</span> / 總人數: ${totalMembers}
           </div>
@@ -1578,8 +1591,8 @@
       return;
     }
 
-    const currNick = getCurrentNickname();
-    vote.votes[currNick] = choice;
+    const currUsername = getCurrentUsername();
+    vote.votes[currUsername] = choice;
     saveVotesToStorage();
 
     const currAcc = accountsData[currentUser];
@@ -1620,9 +1633,10 @@
     if (isPassed) {
       vote.status = 'passed';
       if (vote.type === 'kick') {
-        sf.members = sf.members.filter(m => m !== vote.targetUser && m !== getAccountNickname(vote.targetUser));
+        const targetNick = getUserNickname(vote.targetUser);
+        sf.members = sf.members.filter(m => m !== vote.targetUser);
         saveSharedFoldersToStorage();
-        showNotification(`投票通過！成員【${getAccountNickname(vote.targetUser)}】已被踢出共享資料夾【${sf.name}】`, 'warning');
+        showNotification(`投票通過！成員【${targetNick}】已被踢出共享資料夾【${sf.name}】`, 'warning');
       } else if (vote.type === 'delete_folder') {
         delete sharedFoldersData[vote.folderId];
         saveSharedFoldersToStorage();
@@ -1641,18 +1655,20 @@
     const sf = sharedFoldersData[sfId];
     if (!sf) return;
 
+    const targetNick = getUserNickname(targetUsername);
+
     const activeVote = Object.values(votesData).find(v => v.folderId === sfId && v.type === 'kick' && v.targetUser === targetUsername && v.status === 'active');
     if (activeVote) {
-      return showNotification(`已有對【${getAccountNickname(targetUsername)}】的踢出投票進行中！`, 'warning');
+      return showNotification(`已有對【${targetNick}】的踢出投票進行中！`, 'warning');
     }
 
     const totalMembers = sf.members.length;
 
     if (totalMembers <= 2) {
-      if (confirm(`確定將成員【${getAccountNickname(targetUsername)}】踢出共享資料夾【${sf.name}】嗎？`)) {
+      if (confirm(`確定將成員【${targetNick}】踢出共享資料夾【${sf.name}】嗎？`)) {
         sf.members = sf.members.filter(m => m !== targetUsername);
         saveSharedFoldersToStorage();
-        showNotification(`成員【${getAccountNickname(targetUsername)}】已被踢出共享資料夾！`, 'warning');
+        showNotification(`成員【${targetNick}】已被踢出共享資料夾！`, 'warning');
         if (currentMembersSfId === sfId) renderFolderMembersList(sf);
         renderTree();
       }
@@ -1660,7 +1676,7 @@
     }
 
     const voteId = "vote_kick_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
 
     votesData[voteId] = {
       id: voteId,
@@ -1668,9 +1684,9 @@
       folderId: sfId,
       folderName: sf.name,
       targetUser: targetUsername,
-      initiator: currNick,
+      initiator: currUsername,
       totalMembersAtStart: totalMembers,
-      votes: { [currNick]: 'approve' },
+      votes: { [currUsername]: 'approve' },
       status: 'active'
     };
 
@@ -1682,7 +1698,7 @@
           id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
           type: "kick_vote",
           voteId: voteId,
-          fromUser: currNick,
+          fromUser: currUsername,
           targetUser: targetUsername,
           folderId: sfId,
           folderName: sf.name,
@@ -1695,7 +1711,7 @@
     saveVotesToStorage();
     saveAccountsToStorage();
     checkVoteResult(voteId);
-    showNotification(`已發起將【${getAccountNickname(targetUsername)}】踢出共享資料夾的投票！`, 'success');
+    showNotification(`已發起將【${targetNick}】踢出共享資料夾的投票！`, 'success');
   }
 
   function initiateDeleteFolderVote(sfId) {
@@ -1709,16 +1725,16 @@
 
     const totalMembers = sf.members.length;
     const voteId = "vote_del_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
 
     votesData[voteId] = {
       id: voteId,
       type: 'delete_folder',
       folderId: sfId,
       folderName: sf.name,
-      initiator: currNick,
+      initiator: currUsername,
       totalMembersAtStart: totalMembers,
-      votes: { [currNick]: 'approve' },
+      votes: { [currUsername]: 'approve' },
       status: 'active'
     };
 
@@ -1730,7 +1746,7 @@
           id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
           type: "delete_folder_vote",
           voteId: voteId,
-          fromUser: currNick,
+          fromUser: currUsername,
           folderId: sfId,
           folderName: sf.name,
           timestamp: Date.now(),
@@ -1769,17 +1785,17 @@
     if (!container) return;
     container.innerHTML = '';
 
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
 
     sf.members.forEach(mName => {
-      const memberNick = getAccountNickname(mName);
       const row = document.createElement('div');
       row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:8px 10px;";
 
-      const isSelf = (mName === currNick || mName === accountsData[currentUser].username || mName === currentUser);
+      const isSelf = (mName === currUsername);
+      const nick = getUserNickname(mName);
 
       row.innerHTML = `
-        <span style="font-size:0.9em; font-weight:${isSelf ? 'bold' : 'normal'};">👤 ${memberNick} ${isSelf ? '<span style="color:#007bff; font-size:0.8em;">(您自己)</span>' : ''}</span>
+        <span style="font-size:0.9em; font-weight:${isSelf ? 'bold' : 'normal'};">👤 ${nick} ${isSelf ? '<span style="color:#007bff; font-size:0.8em;">(您自己)</span>' : ''}</span>
         <div>
           ${isSelf ? `
             <button onclick="leaveSharedFolder('${sf.id}')" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">【退出】</button>
@@ -1797,10 +1813,10 @@
     const sf = sharedFoldersData[sfId];
     if (!sf) return;
 
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
     if (!confirm(`確定要退出共享資料夾【${sf.name}】嗎？`)) return;
 
-    sf.members = sf.members.filter(m => m !== currNick && m !== accountsData[currentUser].username);
+    sf.members = sf.members.filter(m => m !== currUsername);
     appData.tree = appData.tree.filter(n => !(n.type === 'shared_ref' && n.folderId === sfId));
     
     if (sf.members.length === 0) {
@@ -1817,7 +1833,7 @@
   function sendFolderInviteFromModal(sfId) {
     const input = document.getElementById('invite-member-input');
     const targetName = input ? input.value.trim() : '';
-    if (!targetName) return alert("請輸入使用者暱稱/名稱！");
+    if (!targetName) return alert("請輸入使用者暱稱或名稱！");
 
     const sf = sharedFoldersData[sfId];
     if (!sf) return;
@@ -1825,17 +1841,15 @@
     const targetAcc = findAccountByUsernameOrNickname(targetName);
     if (!targetAcc) return alert(`未找到使用者 [${targetName}]！請確認名稱。`);
 
-    if (sf.members.includes(targetAcc.nickname) || sf.members.includes(targetAcc.username)) {
-      return alert(`【${targetAcc.nickname}】已經是此共享資料夾的成員！`);
-    }
+    if (sf.members.includes(targetAcc.username)) return alert(`【${getUserNickname(targetAcc.username)}】已經是此共享資料夾的成員！`);
 
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
     if (!targetAcc.inbox) targetAcc.inbox = [];
 
     targetAcc.inbox.unshift({
       id: "msg_" + Date.now() + "_" + Math.floor(Math.random()*1000),
       type: "shared_folder_invite",
-      fromUser: currNick,
+      fromUser: currUsername,
       folderId: sfId,
       folderName: sf.name,
       code: sf.code,
@@ -1845,7 +1859,7 @@
 
     saveAccountsToStorage();
     input.value = '';
-    showNotification(`已發送加入申請至【${targetAcc.nickname}】的信箱！`, 'success');
+    showNotification(`已發送加入申請至【${getUserNickname(targetAcc.username)}】的信箱！`, 'success');
   }
 
   function acceptFolderInvite(msgId) {
@@ -1864,9 +1878,9 @@
       return;
     }
 
-    const currNick = getCurrentNickname();
-    if (!sf.members.includes(currNick)) {
-      sf.members.push(currNick);
+    const currUsername = getCurrentUsername();
+    if (!sf.members.includes(currUsername)) {
+      sf.members.push(currUsername);
       saveSharedFoldersToStorage();
     }
 
@@ -1908,9 +1922,9 @@
     if (!sfId) return alert("無效的共享邀請碼！");
 
     const folder = sharedFoldersData[sfId];
-    const currNick = getCurrentNickname();
-    if (!folder.members.includes(currNick)) {
-      folder.members.push(currNick);
+    const currUsername = getCurrentUsername();
+    if (!folder.members.includes(currUsername)) {
+      folder.members.push(currUsername);
       folder.lastModified = Date.now();
       saveSharedFoldersToStorage();
     }
@@ -1932,7 +1946,7 @@
 
   function setupRealtimeSync() {
     window.addEventListener('storage', (e) => {
-      if (['oc_sync_ts', 'oc_shared_folders_v2', 'oc_accounts_v2', 'oc_votes_v2', 'oc_chats_v2', 'oc_groups_v2'].includes(e.key)) {
+      if (['oc_sync_ts', 'oc_shared_folders_v2', 'oc_accounts_v2', 'oc_votes_v2', 'oc_groups_v2', 'oc_chats_v2'].includes(e.key)) {
         reloadSharedAndRender();
       }
     });
@@ -1954,16 +1968,19 @@
     if (rawAcc) accountsData = JSON.parse(rawAcc);
 
     loadVotesFromStorage();
-    loadChatsAndGroupsFromStorage();
+    loadGroupsAndChatsFromStorage();
 
     renderTree();
     renderFriendsAndGroups();
     updateInboxBadge();
-    if (activeChatTarget) renderChatMessages();
 
     if (activePageId) {
       const pageRes = findNodeAndParent(activePageId);
       if (pageRes && pageRes.node.data) loadPageData(activePageId);
+    }
+
+    if (activeChatId) {
+      renderChatMessages();
     }
 
     if (document.getElementById('inboxDialogModal').style.display === 'flex') {
@@ -2139,7 +2156,7 @@
     if (!name) return;
     const isShared = confirm("是否建立為【共享文件夾】？（其它使用者可憑邀請碼加入）");
     
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
 
     if (isShared) {
       let customCode = prompt("請設定共享邀請碼（留空則自動生成）：");
@@ -2157,7 +2174,7 @@
         name: name,
         code: customCode,
         creatorId: currentUser,
-        members: [currNick],
+        members: [currUsername],
         children: [{ id: "p_" + Date.now(), name: "未命名 OC", type: "page", creatorId: currentUser, data: {} }],
         lastModified: Date.now()
       };
@@ -2189,14 +2206,14 @@
 
     const sfId = "sf_" + Date.now();
     const folderData = res.node;
-    const currNick = getCurrentNickname();
+    const currUsername = getCurrentUsername();
 
     sharedFoldersData[sfId] = {
       id: sfId,
       name: folderData.name,
       code: customCode,
       creatorId: currentUser,
-      members: [currNick],
+      members: [currUsername],
       children: folderData.children || [],
       lastModified: Date.now()
     };
@@ -2227,7 +2244,6 @@
     }
   }
 
-  /* 刪除節點（共享資料夾刪除發起投票） */
   function deleteNode(id) {
     const res = findNodeAndParent(id);
     if (!res) return;
@@ -2712,7 +2728,7 @@
 
   /* ---------------- 本地備份與 JSON 匯出匯入 ---------------- */
   function exportDataJson() {
-    const exportBundle = { appData, accountsData, sharedFoldersData, votesData, chatsData, groupsData };
+    const exportBundle = { appData, accountsData, sharedFoldersData, votesData, groupsData, chatsData };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportBundle));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -2731,8 +2747,8 @@
             if (bundle.accountsData) accountsData = bundle.accountsData;
             if (bundle.sharedFoldersData) sharedFoldersData = bundle.sharedFoldersData;
             if (bundle.votesData) votesData = bundle.votesData;
-            if (bundle.chatsData) chatsData = bundle.chatsData;
             if (bundle.groupsData) groupsData = bundle.groupsData;
+            if (bundle.chatsData) chatsData = bundle.chatsData;
           } else {
             appData = bundle;
           }
@@ -2740,7 +2756,7 @@
           saveAccountsToStorage();
           saveSharedFoldersToStorage();
           saveVotesToStorage();
-          saveChatsAndGroupsToStorage();
+          saveGroupsAndChatsToStorage();
           renderTree();
           renderFriendsAndGroups();
           updateInboxBadge();
@@ -2798,43 +2814,13 @@
       resetZoom();
     }
   }
-  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
 
-  function setupZoomAndPan() {
-    const viewport = document.getElementById('modalViewport');
-    const container = document.getElementById('modalImgContainer');
-
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.15 : -0.15;
-      adjustZoom(delta);
-    });
-
-    viewport.addEventListener('mousedown', (e) => {
-      if (currentScale > 1) {
-        isDragging = true;
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
-        viewport.style.cursor = 'grabbing';
-      }
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
-        updateTransform();
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      viewport.style.cursor = 'grab';
-    });
+  function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
   }
 
   function adjustZoom(delta) {
-    currentScale = Math.min(Math.max(0.5, currentScale + delta), 4);
+    currentScale = Math.max(0.2, Math.min(5, currentScale + delta));
     updateTransform();
   }
 
@@ -2845,7 +2831,42 @@
 
   function updateTransform() {
     const container = document.getElementById('modalImgContainer');
-    container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+    if (container) {
+      container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+    }
+  }
+
+  function setupZoomAndPan() {
+    const viewport = document.getElementById('modalViewport');
+    if (!viewport) return;
+
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      viewport.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        viewport.style.cursor = 'grab';
+      }
+    });
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      adjustZoom(delta);
+    }, { passive: false });
   }
 </script>
 </body>
